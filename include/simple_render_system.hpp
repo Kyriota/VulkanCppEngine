@@ -1,6 +1,5 @@
 #pragma once
 
-#include "lve_camera.hpp"
 #include "lve_device.hpp"
 #include "lve_frame_info.hpp"
 #include "lve_game_object.hpp"
@@ -24,12 +23,11 @@ namespace lve
         void renderGameObjects(FrameInfo &frameInfo, std::vector<LveGameObject> &gameObjects);
 
     private:
-        void createPipelineLayout();
-        void createPipeline(VkRenderPass renderPass);
+        void createGraphicPipelineLayout();
+        void createGraphicPipeline(VkRenderPass renderPass);
 
         LveDevice &lveDevice;
-
-        std::unique_ptr<LvePipeline> lvePipeline;
-        VkPipelineLayout pipelineLayout;
+        std::unique_ptr<LveGraphicPipeline> lveGraphicPipeline;
+        VkPipelineLayout graphicPipelineLayout;
     };
 } // namespace lve

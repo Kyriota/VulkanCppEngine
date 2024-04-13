@@ -4,6 +4,7 @@
 #include "lve_buffer.hpp"
 #include "lve_camera.hpp"
 #include "simple_render_system.hpp"
+#include "simple_compute_system.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -45,6 +46,7 @@ namespace lve
         }
 
         SimpleRenderSystem simpleRenderSystem{lveDevice, lveRenderer.getSwapChainRenderPass()};
+        SimpleComputeSystem simpleComputeSystem{lveDevice};
         LveCamera camera{};
 
         auto viewerObject = LveGameObject::createGameObject();
