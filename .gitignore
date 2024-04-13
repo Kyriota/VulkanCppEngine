@@ -1,0 +1,4 @@
+*.spv
+*.obj
+external/*
+build/*
