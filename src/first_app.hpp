@@ -5,6 +5,7 @@
 #include "lve_game_object.hpp"
 #include "lve_renderer.hpp"
 #include "lve_window.hpp"
+#include "lve_image.hpp"
 
 // std
 #include <memory>
@@ -15,8 +16,8 @@ namespace lve
     class FirstApp
     {
     public:
-        static constexpr int WIDTH = 800;
-        static constexpr int HEIGHT = 600;
+        static constexpr int INIT_WIDTH = 800;
+        static constexpr int INIT_HEIGHT = 600;
 
         FirstApp();
         ~FirstApp();
@@ -29,9 +30,20 @@ namespace lve
     private:
         void loadGameObjects();
 
-        LveWindow lveWindow{WIDTH, HEIGHT, "Vulkan Tutorial"};
+        LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "Vulkan Tutorial"};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
+
+        LveImageConfig screenTextureConfig{
+            INIT_WIDTH,
+            INIT_HEIGHT,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
+        LveImage screenTextureImg{
+            lveDevice,
+            screenTextureConfig};
 
         // note: order of declarations matters because of destruction order
         std::unique_ptr<LveDescriptorPool> globalPool{};

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add source files cpp and header files hpp
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "include/*.hpp")
+file(GLOB_RECURSE HEADERS "src/*.hpp")
 
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

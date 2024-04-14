@@ -8,14 +8,14 @@
 
 namespace lve
 {
-    class SimpleComputeSystem
+    class ComputeSystem
     {
     public:
-        SimpleComputeSystem(LveDevice &device);
-        ~SimpleComputeSystem();
+        ComputeSystem(LveDevice &device);
+        ~ComputeSystem();
 
-        SimpleComputeSystem(const SimpleComputeSystem &) = delete;
-        SimpleComputeSystem &operator=(const SimpleComputeSystem &) = delete;
+        ComputeSystem(const ComputeSystem &) = delete;
+        ComputeSystem &operator=(const ComputeSystem &) = delete;
 
         void dispatchComputePipeline(VkCommandBuffer commandBuffer, uint32_t width, uint32_t height);
 

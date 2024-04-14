@@ -1,4 +1,4 @@
-#include "simple_render_system.hpp"
+#include "render_system.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -20,19 +20,19 @@ namespace lve
         glm::mat4 normalMatrix{1.f};
     };
 
-    SimpleRenderSystem::SimpleRenderSystem(LveDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
+    RenderSystem::RenderSystem(LveDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
         : lveDevice{device}
     {
         createGraphicPipelineLayout(globalSetLayout);
         createGraphicPipeline(renderPass);
     }
 
-    SimpleRenderSystem::~SimpleRenderSystem()
+    RenderSystem::~RenderSystem()
     {
         vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
     }
 
-    void SimpleRenderSystem::renderGameObjects(FrameInfo &frameInfo)
+    void RenderSystem::renderGameObjects(FrameInfo &frameInfo)
     {
         bind(frameInfo.commandBuffer, lveGraphicPipeline->getPipeline());
 
@@ -67,7 +67,7 @@ namespace lve
         }
     }
 
-    void SimpleRenderSystem::createGraphicPipelineLayout(VkDescriptorSetLayout globalSetLayout)
+    void RenderSystem::createGraphicPipelineLayout(VkDescriptorSetLayout globalSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -89,7 +89,7 @@ namespace lve
         }
     }
 
-    void SimpleRenderSystem::createGraphicPipeline(VkRenderPass renderPass)
+    void RenderSystem::createGraphicPipeline(VkRenderPass renderPass)
     {
         assert(graphicPipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 

@@ -3,8 +3,8 @@
 #include "keyboard_movement_controller.hpp"
 #include "lve_buffer.hpp"
 #include "lve_camera.hpp"
-#include "simple_render_system.hpp"
-// #include "simple_compute_system.hpp"
+#include "render_system.hpp"
+#include "compute_system.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -69,11 +69,11 @@ namespace lve
                 .build(globalDescriptorSets[i]);
         }
 
-        SimpleRenderSystem simpleRenderSystem{
+        RenderSystem simpleRenderSystem{
             lveDevice,
             lveRenderer.getSwapChainRenderPass(),
             globalSetLayout->getDescriptorSetLayout()};
-        // SimpleComputeSystem simpleComputeSystem{lveDevice};
+        // ComputeSystem simpleComputeSystem{lveDevice};
         LveCamera camera{};
 
         auto viewerObject = LveGameObject::createGameObject();
@@ -115,7 +115,9 @@ namespace lve
 
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
-                simpleRenderSystem.renderGameObjects(frameInfo);
+
+                // simpleRenderSystem.renderGameObjects(frameInfo);
+
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
             }
