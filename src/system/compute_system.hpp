@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lve_device.hpp"
-#include "lve_pipeline.hpp"
+#include "../lve/lve_device.hpp"
+#include "../lve/lve_pipeline.hpp"
 
 // std
 #include <memory>
