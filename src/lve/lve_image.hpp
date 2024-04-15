@@ -3,11 +3,12 @@
 #include "lve_device.hpp"
 
 // libs
-#include "stb_image.h"
 #include <vulkan/vulkan.h>
 
 namespace lve
 {
+
+    VkSampler createDefaultSampler(LveDevice &device);
 
     struct LveImageConfig
     {
@@ -17,6 +18,9 @@ namespace lve
         VkImageTiling tiling;
         VkImageUsageFlags usage;
         VkMemoryPropertyFlags properties;
+        VkImageLayout imgLayout;
+        VkSampler sampler;
+        VkImageLayout layout;
     };
 
     class LveImage
@@ -31,6 +35,7 @@ namespace lve
         VkImage getVkImage() const { return image; }
         VkImageView getVkImageView() const { return imageView; }
         VkDeviceMemory getVkDeviceMemory() const { return imageMemory; }
+        VkDescriptorImageInfo *getDescriptorInfoPtr() { return &imageDescriptorInfo; }
 
     private:
         LveDevice &lveDevice;
@@ -41,6 +46,8 @@ namespace lve
         void createImage(LveImageConfig imageConfig);
 
         VkImageView createImageView(VkFormat format);
+
+        VkDescriptorImageInfo imageDescriptorInfo;
     };
 
 } // namespace lve

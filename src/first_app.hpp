@@ -5,7 +5,6 @@
 #include "lve/lve_game_object.hpp"
 #include "lve/lve_renderer.hpp"
 #include "lve/lve_window.hpp"
-#include "lve/lve_image.hpp"
 
 // std
 #include <memory>
@@ -34,19 +33,13 @@ namespace lve
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
 
-        LveImageConfig screenTextureConfig{
-            INIT_WIDTH,
-            INIT_HEIGHT,
-            VK_FORMAT_R8G8B8A8_SRGB,
-            VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
-        LveImage screenTextureImg{
-            lveDevice,
-            screenTextureConfig};
+        VkImage screenTexture;
+        VkDeviceMemory screenTextureMemory;
 
         // note: order of declarations matters because of destruction order
         std::unique_ptr<LveDescriptorPool> globalPool{};
+        std::unique_ptr<LveDescriptorPool> screenTextureSamplePool{};
+        std::unique_ptr<LveDescriptorPool> screenTextureStoragePool{};
         LveGameObject::Map gameObjects;
     };
 } // namespace lve

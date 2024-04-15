@@ -5,6 +5,36 @@
 
 namespace lve
 {
+    VkSampler createDefaultSampler(LveDevice &device)
+    {
+        VkSampler sampler;
+
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = 16;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.minLod = 0;
+        samplerInfo.maxLod = 0;
+        samplerInfo.mipLodBias = 0;
+
+        if (vkCreateSampler(device.device(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create texture sampler!");
+        }
+
+        return sampler;
+    }
+
     LveImage::LveImage(
         LveDevice &device,
         LveImageConfig imageConfig) : lveDevice{device}
@@ -22,22 +52,22 @@ namespace lve
     void LveImage::createImage(
         LveImageConfig imageConfig)
     {
-        VkImageCreateInfo imageInfo{};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = imageConfig.width;
-        imageInfo.extent.height = imageConfig.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = imageConfig.format;
-        imageInfo.tiling = imageConfig.tiling;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = imageConfig.usage;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        VkImageCreateInfo imageCreateInfo{};
+        imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageCreateInfo.extent.width = imageConfig.width;
+        imageCreateInfo.extent.height = imageConfig.height;
+        imageCreateInfo.extent.depth = 1;
+        imageCreateInfo.mipLevels = 1;
+        imageCreateInfo.arrayLayers = 1;
+        imageCreateInfo.format = imageConfig.format;
+        imageCreateInfo.tiling = imageConfig.tiling;
+        imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageCreateInfo.usage = imageConfig.usage;
+        imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateImage(lveDevice.device(), &imageInfo, nullptr, &image) != VK_SUCCESS)
+        if (vkCreateImage(lveDevice.device(), &imageCreateInfo, nullptr, &image) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create image!");
         }
@@ -58,6 +88,11 @@ namespace lve
         vkBindImageMemory(lveDevice.device(), image, imageMemory, 0);
 
         imageView = createImageView(imageConfig.format);
+
+        // image descriptor info
+        imageDescriptorInfo.imageLayout = imageConfig.layout;
+        imageDescriptorInfo.imageView = imageView;
+        imageDescriptorInfo.sampler = imageConfig.sampler;
     }
 
     VkImageView LveImage::createImageView(VkFormat format)

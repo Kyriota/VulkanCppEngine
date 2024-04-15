@@ -10,6 +10,7 @@
 #include <array>
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 namespace lve
 {
@@ -20,21 +21,9 @@ namespace lve
         glm::mat4 normalMatrix{1.f};
     };
 
-    RenderSystem::RenderSystem(LveDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout)
-        : lveDevice{device}
+    void renderGameObjects(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline)
     {
-        createGraphicPipelineLayout(globalSetLayout);
-        createGraphicPipeline(renderPass);
-    }
-
-    RenderSystem::~RenderSystem()
-    {
-        vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
-    }
-
-    void RenderSystem::renderGameObjects(FrameInfo &frameInfo)
-    {
-        bind(frameInfo.commandBuffer, lveGraphicPipeline->getPipeline());
+        bind(frameInfo.commandBuffer, graphicPipeline->getPipeline());
 
         vkCmdBindDescriptorSets(
             frameInfo.commandBuffer,
@@ -67,6 +56,39 @@ namespace lve
         }
     }
 
+    void renderScreenTexture(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline)
+    {
+        bind(frameInfo.commandBuffer, graphicPipeline->getPipeline());
+
+        vkCmdBindDescriptorSets(
+            frameInfo.commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            graphicPipelineLayout,
+            0,
+            1,
+            &frameInfo.textureSampleDescriptorSet,
+            0,
+            nullptr);
+
+        vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+    }
+
+    RenderSystem::RenderSystem(
+        LveDevice &device,
+        VkRenderPass renderPass,
+        VkDescriptorSetLayout globalSetLayout,
+        GraphicPipelineConfigInfo &graphicPipelineConfigInfo)
+        : lveDevice{device}
+    {
+        createGraphicPipelineLayout(globalSetLayout);
+        createGraphicPipeline(renderPass, graphicPipelineConfigInfo);
+    }
+
+    RenderSystem::~RenderSystem()
+    {
+        vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
+    }
+
     void RenderSystem::createGraphicPipelineLayout(VkDescriptorSetLayout globalSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
@@ -89,19 +111,15 @@ namespace lve
         }
     }
 
-    void RenderSystem::createGraphicPipeline(VkRenderPass renderPass)
+    void RenderSystem::createGraphicPipeline(VkRenderPass renderPass, GraphicPipelineConfigInfo &graphicPipelineConfigInfo)
     {
         assert(graphicPipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-        GraphicPipelineConfigInfo graphicPipelineConfig{};
-        LveGraphicPipeline::defaultPipelineConfigInfo(graphicPipelineConfig);
-        graphicPipelineConfig.renderPass = renderPass;
-        graphicPipelineConfig.pipelineLayout = graphicPipelineLayout;
+        graphicPipelineConfigInfo.renderPass = renderPass;
+        graphicPipelineConfigInfo.pipelineLayout = graphicPipelineLayout;
         lveGraphicPipeline = std::make_unique<LveGraphicPipeline>(
             lveDevice,
-            "shaders/simple_shader.vert.spv",
-            "shaders/simple_shader.frag.spv",
-            graphicPipelineConfig);
+            graphicPipelineConfigInfo);
     }
 
 } // namespace lve

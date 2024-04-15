@@ -17,7 +17,7 @@ namespace lve
 
     struct GraphicPipelineConfigInfo
     {
-        GraphicPipelineConfigInfo() = default;
+        GraphicPipelineConfigInfo();
         GraphicPipelineConfigInfo(const GraphicPipelineConfigInfo &) = delete;
         GraphicPipelineConfigInfo &operator=(const GraphicPipelineConfigInfo &) = delete;
 
@@ -30,9 +30,15 @@ namespace lve
         VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
         std::vector<VkDynamicState> dynamicStateEnables;
         VkPipelineDynamicStateCreateInfo dynamicStateInfo;
-        VkPipelineLayout pipelineLayout = nullptr;
-        VkRenderPass renderPass = nullptr;
-        uint32_t subpass = 0;
+
+        VkPipelineLayout pipelineLayout;
+        VkRenderPass renderPass;
+        uint32_t subpass;
+
+        std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions;
+        std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions;
+        std::string vertFilepath;
+        std::string fragFilepath;
     };
 
     class LveGraphicPipeline
@@ -40,25 +46,16 @@ namespace lve
     public:
         LveGraphicPipeline(
             LveDevice &device,
-            const std::string &vertFilepath,
-            const std::string &fragFilepath,
             const GraphicPipelineConfigInfo &configInfo);
         ~LveGraphicPipeline();
 
         LveGraphicPipeline(const LveGraphicPipeline &) = delete;
         LveGraphicPipeline &operator=(const LveGraphicPipeline &) = delete;
 
-        void bind(VkCommandBuffer commandBuffer);
-
-        static void defaultPipelineConfigInfo(GraphicPipelineConfigInfo &configInfo);
-
         VkPipeline getPipeline() { return graphicPipeline; }
 
     private:
-        void createGraphicsPipeline(
-            const std::string &vertFilepath,
-            const std::string &fragFilepath,
-            const GraphicPipelineConfigInfo &configInfo);
+        void createGraphicsPipeline(const GraphicPipelineConfigInfo &configInfo);
 
         LveDevice &lveDevice;
         VkPipeline graphicPipeline;
