@@ -1,4 +1,5 @@
 #include "render_system.hpp"
+#include "../lve/lve_pipeline_op.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -76,11 +77,11 @@ namespace lve
     RenderSystem::RenderSystem(
         LveDevice &device,
         VkRenderPass renderPass,
-        VkDescriptorSetLayout globalSetLayout,
+        VkDescriptorSetLayout descriptorSetLayout,
         GraphicPipelineConfigInfo &graphicPipelineConfigInfo)
         : lveDevice{device}
     {
-        createGraphicPipelineLayout(globalSetLayout);
+        createGraphicPipelineLayout(descriptorSetLayout);
         createGraphicPipeline(renderPass, graphicPipelineConfigInfo);
     }
 
@@ -89,14 +90,14 @@ namespace lve
         vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
     }
 
-    void RenderSystem::createGraphicPipelineLayout(VkDescriptorSetLayout globalSetLayout)
+    void RenderSystem::createGraphicPipelineLayout(VkDescriptorSetLayout descriptorSetLayout)
     {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
         pushConstantRange.size = sizeof(SimplePushConstantData);
 
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts{descriptorSetLayout};
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

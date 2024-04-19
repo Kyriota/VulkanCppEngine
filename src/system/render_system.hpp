@@ -3,7 +3,7 @@
 #include "../lve/lve_device.hpp"
 #include "../lve/lve_frame_info.hpp"
 #include "../lve/lve_game_object.hpp"
-#include "../lve/lve_pipeline.hpp"
+#include "../lve/lve_pipeline_graphics.hpp"
 
 // std
 #include <memory>
@@ -22,7 +22,7 @@ namespace lve
         RenderSystem(
             LveDevice &device,
             VkRenderPass renderPass,
-            VkDescriptorSetLayout globalSetLayout,
+            VkDescriptorSetLayout descriptorSetLayout,
             GraphicPipelineConfigInfo &graphicPipelineConfigInfo);
         ~RenderSystem();
 
@@ -33,7 +33,7 @@ namespace lve
         LveGraphicPipeline *getPipeline() const { return lveGraphicPipeline.get(); }
 
     private:
-        void createGraphicPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+        void createGraphicPipelineLayout(VkDescriptorSetLayout descriptorSetLayout);
         void createGraphicPipeline(VkRenderPass renderPass, GraphicPipelineConfigInfo &graphicPipelineConfigInfo);
 
         LveDevice &lveDevice;
