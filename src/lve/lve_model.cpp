@@ -71,7 +71,7 @@ namespace lve
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        lveDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
+        vertexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
     }
 
     void LveModel::createIndexBuffers(const std::vector<uint32_t> &indices)
@@ -105,7 +105,7 @@ namespace lve
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        lveDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
+        indexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
     }
 
     void LveModel::draw(VkCommandBuffer commandBuffer)

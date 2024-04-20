@@ -50,13 +50,6 @@ namespace lve
             swapChain = nullptr;
         }
 
-        for (int i = 0; i < depthImages.size(); i++)
-        {
-            vkDestroyImageView(device.device(), depthImageViews[i], nullptr);
-            vkDestroyImage(device.device(), depthImages[i], nullptr);
-            vkFreeMemory(device.device(), depthImageMemorys[i], nullptr);
-        }
-
         for (auto framebuffer : swapChainFramebuffers)
         {
             vkDestroyFramebuffer(device.device(), framebuffer, nullptr);
@@ -302,7 +295,7 @@ namespace lve
         swapChainFramebuffers.resize(imageCount());
         for (size_t i = 0; i < imageCount(); i++)
         {
-            std::array<VkImageView, 2> attachments = {swapChainImageViews[i], depthImageViews[i]};
+            std::array<VkImageView, 2> attachments = {swapChainImageViews[i], depthImages[i].getImageView(0)};
 
             VkExtent2D swapChainExtent = getSwapChainExtent();
             VkFramebufferCreateInfo framebufferInfo = {};
@@ -331,11 +324,8 @@ namespace lve
         swapChainDepthFormat = depthFormat;
         VkExtent2D swapChainExtent = getSwapChainExtent();
 
-        depthImages.resize(imageCount());
-        depthImageMemorys.resize(imageCount());
-        depthImageViews.resize(imageCount());
-
-        for (int i = 0; i < depthImages.size(); i++)
+        int depthImagesSize = imageCount();
+        for (int i = 0; i < depthImagesSize; i++)
         {
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -353,15 +343,15 @@ namespace lve
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            device.createImageWithInfo(
+            LveImage depthImage{
+                device,
                 imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                depthImages[i],
-                depthImageMemorys[i]);
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            };
 
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            viewInfo.image = depthImages[i];
+            viewInfo.image = depthImage.getImage();
             viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = depthFormat;
             viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -370,10 +360,9 @@ namespace lve
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(device.device(), &viewInfo, nullptr, &depthImageViews[i]) != VK_SUCCESS)
-            {
-                throw std::runtime_error("failed to create texture image view!");
-            }
+            depthImage.createImageView(0, &viewInfo);
+
+            depthImages.push_back(std::move(depthImage));
         }
     }
 

@@ -10,7 +10,7 @@
 
 namespace lve
 {
-    class LveImage
+    class LveImage // wrapper for VkImage, VkDeviceMemory, and VkImageView
     {
     public:
         LveImage(
@@ -23,6 +23,9 @@ namespace lve
         LveImage(const LveImage &) = delete;
         LveImage &operator=(const LveImage &) = delete;
 
+        LveImage(LveImage&& other) noexcept;
+        LveImage& operator=(LveImage&& other) = delete;
+
         bool hasImageView(int id) const;
 
         void createImageView(
@@ -33,6 +36,8 @@ namespace lve
 
         void convertLayout(VkImageLayout newLayout);
 
+        VkImage getImage() const { return image; }
+
     private:
         void allocateMemory(VkMemoryPropertyFlags memPropertyFlags);
 
@@ -41,5 +46,4 @@ namespace lve
         VkImage image;
         std::unordered_map<int, VkImageView> imageViews;
     };
-
 } // namespace lve

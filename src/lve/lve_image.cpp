@@ -37,6 +37,16 @@ namespace lve
         vkFreeMemory(lveDevice.device(), imageMemory, nullptr);
     }
 
+    LveImage::LveImage(LveImage &&other) noexcept
+        : lveDevice{other.lveDevice},
+          imageMemory{other.imageMemory},
+          image{other.image},
+          imageViews{std::move(other.imageViews)}
+    {
+        other.image = nullptr;
+        other.imageMemory = nullptr;
+    }
+
     bool LveImage::hasImageView(int id) const
     {
         return imageViews.find(id) != imageViews.end();

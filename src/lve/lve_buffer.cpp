@@ -10,6 +10,7 @@
 // std
 #include <cassert>
 #include <cstring>
+#include <stdexcept>
 
 namespace lve
 {
@@ -47,7 +48,7 @@ namespace lve
     {
         alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
         bufferSize = alignmentSize * instanceCount;
-        device.createBuffer(bufferSize, usageFlags, memoryPropertyFlags, buffer, memory);
+        createBuffer(bufferSize, usageFlags, memoryPropertyFlags, buffer, memory);
     }
 
     LveBuffer::~LveBuffer()
@@ -55,6 +56,40 @@ namespace lve
         unmap();
         vkDestroyBuffer(lveDevice.device(), buffer, nullptr);
         vkFreeMemory(lveDevice.device(), memory, nullptr);
+    }
+
+    void LveBuffer::createBuffer(
+        VkDeviceSize size,
+        VkBufferUsageFlags usage,
+        VkMemoryPropertyFlags properties,
+        VkBuffer &buffer,
+        VkDeviceMemory &bufferMemory)
+    {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(lveDevice.device(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create vertex buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(lveDevice.device(), buffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = lveDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
+
+        if (vkAllocateMemory(lveDevice.device(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to allocate vertex buffer memory!");
+        }
+
+        vkBindBufferMemory(lveDevice.device(), buffer, bufferMemory, 0);
     }
 
     /**
@@ -84,6 +119,21 @@ namespace lve
             vkUnmapMemory(lveDevice.device(), memory);
             mapped = nullptr;
         }
+    }
+
+    void LveBuffer::copyBufferFrom(VkBuffer srcBuffer, VkDeviceSize size)
+    {
+        VkCommandBuffer commandBuffer = lveDevice.beginSingleTimeCommands();
+
+        VkBufferCopy copyRegion{};
+        /* Optional
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0;
+        */
+        copyRegion.size = size;
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, buffer, 1, &copyRegion);
+
+        lveDevice.endSingleTimeCommands(commandBuffer);
     }
 
     /**
