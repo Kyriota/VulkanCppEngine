@@ -15,8 +15,6 @@ namespace lve
         VkCommandBuffer commandBuffer;
         LveCamera &camera;
         VkDescriptorSet globalDescriptorSet;
-        VkDescriptorSet textureSampleDescriptorSet;
-        VkDescriptorSet textureStorageDescriptorSet;
         LveGameObject::Map &gameObjects;
     };
 } // namespace lve

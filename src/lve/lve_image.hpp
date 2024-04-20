@@ -5,49 +5,41 @@
 // libs
 #include <vulkan/vulkan.h>
 
+// std
+#include <unordered_map>
+
 namespace lve
 {
-
-    VkSampler createDefaultSampler(LveDevice &device);
-
-    struct LveImageConfig
-    {
-        uint32_t width;
-        uint32_t height;
-        VkFormat format;
-        VkImageTiling tiling;
-        VkImageUsageFlags usage;
-        VkMemoryPropertyFlags properties;
-        VkImageLayout imgLayout;
-        VkSampler sampler;
-        VkImageLayout layout;
-    };
-
     class LveImage
     {
     public:
         LveImage(
             LveDevice &device,
-            LveImageConfig imageConfig);
+            VkImageCreateInfo imageCreateInfo,
+            VkMemoryPropertyFlags memPropertyFlags);
 
         ~LveImage();
 
-        VkImage getVkImage() const { return image; }
-        VkImageView getVkImageView() const { return imageView; }
-        VkDeviceMemory getVkDeviceMemory() const { return imageMemory; }
-        VkDescriptorImageInfo *getDescriptorInfoPtr() { return &imageDescriptorInfo; }
+        LveImage(const LveImage &) = delete;
+        LveImage &operator=(const LveImage &) = delete;
+
+        bool hasImageView(int id) const;
+
+        void createImageView(
+            int id,
+            const VkImageViewCreateInfo *pImageViewCreateInfo);
+
+        VkImageView getImageView(int id) const;
+
+        void convertLayout(VkImageLayout newLayout);
 
     private:
+        void allocateMemory(VkMemoryPropertyFlags memPropertyFlags);
+
         LveDevice &lveDevice;
-        VkImage image;
         VkDeviceMemory imageMemory;
-        VkImageView imageView;
-
-        void createImage(LveImageConfig imageConfig);
-
-        VkImageView createImageView(VkFormat format);
-
-        VkDescriptorImageInfo imageDescriptorInfo;
+        VkImage image;
+        std::unordered_map<int, VkImageView> imageViews;
     };
 
 } // namespace lve

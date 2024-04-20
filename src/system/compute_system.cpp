@@ -26,7 +26,7 @@ namespace lve
             computePipelineLayout,
             0,
             1,
-            &frameInfo.textureStorageDescriptorSet,
+            &frameInfo.globalDescriptorSet,
             0,
             nullptr);
         vkCmdDispatch(frameInfo.commandBuffer, width, height, 1);

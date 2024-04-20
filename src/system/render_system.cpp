@@ -67,7 +67,7 @@ namespace lve
             graphicPipelineLayout,
             0,
             1,
-            &frameInfo.textureSampleDescriptorSet,
+            &frameInfo.globalDescriptorSet,
             0,
             nullptr);
 

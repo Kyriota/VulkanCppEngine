@@ -34,17 +34,9 @@ namespace lve
     {
         globalPool =
             LveDescriptorPool::Builder(lveDevice)
-                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT * 3)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-                .build();
-        screenTextureSamplePool =
-            LveDescriptorPool::Builder(lveDevice)
-                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-                .build();
-        screenTextureStoragePool =
-            LveDescriptorPool::Builder(lveDevice)
-                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
         loadGameObjects();
@@ -69,6 +61,8 @@ namespace lve
         auto globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)
                 .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
                 .build();
 
         std::vector<VkDescriptorSet> globalDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -80,20 +74,10 @@ namespace lve
                 .build(globalDescriptorSets[i]);
         }
 
+        /*
         // ================== Create Screen Texture ==================
 
-        auto screenTextureSampleSetLayout =
-            LveDescriptorSetLayout::Builder(lveDevice)
-                .addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                .build();
-
-        auto screenTextureStorageSetLayout =
-            LveDescriptorSetLayout::Builder(lveDevice)
-                .addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
-                .build();
-
-        VkDescriptorImageInfo screenTextureDescriptorInfo{};
-        {
+        { // Initialize screen texture and screenTextureDescriptorInfo
             VkImageCreateInfo screenTextureInfo{};
             screenTextureInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             screenTextureInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -228,20 +212,21 @@ namespace lve
         }
 
         // ================== End of Create Screen Texture ==================
+        */
 
-        // GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
-        // graphicPipelineConfigInfo.vertFilepath = "shaders/simple_shader.vert.spv";
-        // graphicPipelineConfigInfo.fragFilepath = "shaders/simple_shader.frag.spv";
-        // graphicPipelineConfigInfo.vertexBindingDescriptions = LveModel::Vertex::getBindingDescriptions();
-        // graphicPipelineConfigInfo.vertexAttributeDescriptions = LveModel::Vertex::getAttributeDescriptions();
+        GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
+        graphicPipelineConfigInfo.vertFilepath = "shaders/simple_shader.vert.spv";
+        graphicPipelineConfigInfo.fragFilepath = "shaders/simple_shader.frag.spv";
+        graphicPipelineConfigInfo.vertexBindingDescriptions = LveModel::Vertex::getBindingDescriptions();
+        graphicPipelineConfigInfo.vertexAttributeDescriptions = LveModel::Vertex::getAttributeDescriptions();
 
-        // RenderSystem simpleRenderSystem{
-        //     lveDevice,
-        //     lveRenderer.getSwapChainRenderPass(),
-        //     globalSetLayout->getDescriptorSetLayout(),
-        //     "shaders/simple_shader.vert.spv",
-        //     "shaders/simple_shader.frag.spv"};
+        RenderSystem simpleRenderSystem{
+            lveDevice,
+            lveRenderer.getSwapChainRenderPass(),
+            globalSetLayout->getDescriptorSetLayout(),
+            graphicPipelineConfigInfo};
 
+        /*
         // ================== Create Screen Texture Pipeline Info ==================
 
         GraphicPipelineConfigInfo screenTexturePipelineConfigInfo{};
@@ -291,12 +276,13 @@ namespace lve
             screenTexturePipelineConfigInfo};
 
         ComputeSystem simpleComputeSystem{lveDevice, "shaders/my_compute_shader.comp.spv"};
+        */
 
         LveCamera camera{};
 
-        // auto viewerObject = LveGameObject::createGameObject();
-        // viewerObject.transform.translation.z = -2.5f;
-        // KeyboardMovementController cameraController{};
+        auto viewerObject = LveGameObject::createGameObject();
+        viewerObject.transform.translation.z = -2.5f;
+        KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         while (!lveWindow.shouldClose())
@@ -308,11 +294,11 @@ namespace lve
                 std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            // cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
-            // camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+            cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
+            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
-            // float aspect = lveRenderer.getAspectRatio();
-            // camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+            float aspect = lveRenderer.getAspectRatio();
+            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
             if (auto commandBuffer = lveRenderer.beginFrame())
             {
@@ -323,27 +309,25 @@ namespace lve
                     commandBuffer,
                     camera,
                     globalDescriptorSets[frameIndex],
-                    textureSampleDescriptorSets[frameIndex],
-                    textureStorageDescriptorSets[frameIndex],
                     gameObjects};
 
-                // // update
-                // GlobalUbo ubo{};
-                // ubo.projectionView = camera.getProjection() * camera.getView();
-                // uboBuffers[frameIndex]->writeToBuffer(&ubo);
-                // uboBuffers[frameIndex]->flush();
+                // update
+                GlobalUbo ubo{};
+                ubo.projectionView = camera.getProjection() * camera.getView();
+                uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                uboBuffers[frameIndex]->flush();
 
                 VkExtent2D extent = lveWindow.getExtent();
-                simpleComputeSystem.dispatchComputePipeline(
-                    frameInfo,
-                    static_cast<int>(std::ceil(extent.width / 8.f)),
-                    static_cast<int>(std::ceil(extent.height / 8.f)));
+                // simpleComputeSystem.dispatchComputePipeline(
+                //     frameInfo,
+                //     static_cast<int>(std::ceil(extent.width / 8.f)),
+                //     static_cast<int>(std::ceil(extent.height / 8.f)));
 
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-                // renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
-                renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
+                renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
+                // renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
 
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
@@ -376,6 +360,26 @@ namespace lve
         floor.transform.translation = {0.f, .5f, 0.f};
         floor.transform.scale = {3.f, 1.f, 3.f};
         gameObjects.emplace(floor.getId(), std::move(floor));
+    }
+
+    VkImageCreateInfo FirstApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
+    {
+        VkImageCreateInfo screenTextureInfo{};
+        screenTextureInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        screenTextureInfo.imageType = VK_IMAGE_TYPE_2D;
+        screenTextureInfo.format = format;
+        screenTextureInfo.extent.width = extent.width;
+        screenTextureInfo.extent.height = extent.height;
+        screenTextureInfo.extent.depth = 1;
+        screenTextureInfo.mipLevels = 1;
+        screenTextureInfo.arrayLayers = 1;
+        screenTextureInfo.tiling = VK_IMAGE_TILING_LINEAR;
+        screenTextureInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+        screenTextureInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+        screenTextureInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        screenTextureInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        return screenTextureInfo;
     }
 
 } // namespace lve
