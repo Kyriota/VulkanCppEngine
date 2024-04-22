@@ -34,7 +34,7 @@ namespace lve
         void createScreenTextureImageView();
 
 
-        LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "Vulkan Tutorial"};
+        LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "Vulkan Compute Shader Raytracer"};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
 

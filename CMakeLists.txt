@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(vulkan-tutorial)
+project(vulkan-compute-shader-raytracer)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -23,8 +23,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/external/lib/li
 
 # Compile shaders
 add_custom_target(rebuild_shaders
+    COMMAND ${CMAKE_COMMAND} -E echo "Rebuilding shaders..."
     COMMAND ${CMAKE_SOURCE_DIR}/compile_shaders.bat
-    COMMENT "Rebuilding shaders..."
+    RESULT_VARIABLE SHADER_COMPILE_RESULT
     VERBATIM
 )
 
