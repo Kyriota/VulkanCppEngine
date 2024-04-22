@@ -13,17 +13,17 @@
 
 namespace lve
 {
-    class FirstApp
+    class ComputeRTApp
     {
     public:
         static constexpr int INIT_WIDTH = 800;
         static constexpr int INIT_HEIGHT = 600;
 
-        FirstApp();
-        ~FirstApp();
+        ComputeRTApp();
+        ~ComputeRTApp();
 
-        FirstApp(const FirstApp &) = delete;
-        FirstApp &operator=(const FirstApp &) = delete;
+        ComputeRTApp(const ComputeRTApp &) = delete;
+        ComputeRTApp &operator=(const ComputeRTApp &) = delete;
 
         void run();
 

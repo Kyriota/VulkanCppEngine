@@ -1,4 +1,4 @@
-#include "first_app.hpp"
+#include "compute_RT_app.hpp"
 
 #include "keyboard_movement_controller.hpp"
 #include "lve/lve_buffer.hpp"
@@ -31,7 +31,7 @@ namespace lve
         alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
     };
 
-    FirstApp::FirstApp()
+    ComputeRTApp::ComputeRTApp()
     {
         globalPool =
             LveDescriptorPool::Builder(lveDevice)
@@ -45,12 +45,12 @@ namespace lve
         createScreenTextureImageView();
     }
 
-    FirstApp::~FirstApp()
+    ComputeRTApp::~ComputeRTApp()
     {
         LveSamplerManager::clearSamplers();
     }
 
-    void FirstApp::run()
+    void ComputeRTApp::run()
     {
         std::vector<std::unique_ptr<LveBuffer>> uboBuffers(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
         for (int i = 0; i < uboBuffers.size(); i++)
@@ -172,7 +172,7 @@ namespace lve
         vkDeviceWaitIdle(lveDevice.device());
     }
 
-    void FirstApp::loadGameObjects()
+    void ComputeRTApp::loadGameObjects()
     {
         std::shared_ptr<LveModel> lveModel =
             LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
@@ -197,7 +197,7 @@ namespace lve
         gameObjects.emplace(floor.getId(), std::move(floor));
     }
 
-    VkImageCreateInfo FirstApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
+    VkImageCreateInfo ComputeRTApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
     {
         VkImageCreateInfo screenTextureInfo{};
         screenTextureInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -217,7 +217,7 @@ namespace lve
         return screenTextureInfo;
     }
 
-    void FirstApp::createScreenTextureImageView()
+    void ComputeRTApp::createScreenTextureImageView()
     {
         VkImageViewCreateInfo screenTextureViewInfo{};
         screenTextureViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
