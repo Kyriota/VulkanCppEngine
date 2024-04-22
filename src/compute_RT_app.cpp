@@ -84,10 +84,9 @@ namespace lve
                 .build(globalDescriptorSets[i]);
         }
 
-        /*
         GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
-        graphicPipelineConfigInfo.vertFilepath = "shaders/simple_shader.vert.spv";
-        graphicPipelineConfigInfo.fragFilepath = "shaders/simple_shader.frag.spv";
+        graphicPipelineConfigInfo.vertFilepath = "build/shaders/simple_shader.vert.spv";
+        graphicPipelineConfigInfo.fragFilepath = "build/shaders/simple_shader.frag.spv";
         graphicPipelineConfigInfo.vertexBindingDescriptions = LveModel::Vertex::getBindingDescriptions();
         graphicPipelineConfigInfo.vertexAttributeDescriptions = LveModel::Vertex::getAttributeDescriptions();
 
@@ -96,11 +95,10 @@ namespace lve
             lveRenderer.getSwapChainRenderPass(),
             {globalSetLayout->getDescriptorSetLayout()},
             graphicPipelineConfigInfo};
-        */
 
         GraphicPipelineConfigInfo screenTexturePipelineConfigInfo{};
-        screenTexturePipelineConfigInfo.vertFilepath = "shaders/screen_texture_shader.vert.spv";
-        screenTexturePipelineConfigInfo.fragFilepath = "shaders/screen_texture_shader.frag.spv";
+        screenTexturePipelineConfigInfo.vertFilepath = "build/shaders/screen_texture_shader.vert.spv";
+        screenTexturePipelineConfigInfo.fragFilepath = "build/shaders/screen_texture_shader.frag.spv";
 
         RenderSystem screenTextureRenderSystem{
             lveDevice,
@@ -111,13 +109,13 @@ namespace lve
         ComputeSystem simpleComputeSystem{
             lveDevice,
             {globalSetLayout->getDescriptorSetLayout()},
-            "shaders/my_compute_shader.comp.spv"};
+            "build/shaders/my_compute_shader.comp.spv"};
 
         LveCamera camera{};
 
-        // auto viewerObject = LveGameObject::createGameObject();
-        // viewerObject.transform.translation.z = -2.5f;
-        // KeyboardMovementController cameraController{};
+        auto viewerObject = LveGameObject::createGameObject();
+        viewerObject.transform.translation.z = -2.5f;
+        KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         while (!lveWindow.shouldClose())
@@ -129,11 +127,11 @@ namespace lve
                 std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            // cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
-            // camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+            cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
+            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
-            // float aspect = lveRenderer.getAspectRatio();
-            // camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+            float aspect = lveRenderer.getAspectRatio();
+            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
             if (auto commandBuffer = lveRenderer.beginFrame())
             {
@@ -147,10 +145,10 @@ namespace lve
                     gameObjects};
 
                 // update
-                // GlobalUbo ubo{};
-                // ubo.projectionView = camera.getProjection() * camera.getView();
-                // uboBuffers[frameIndex]->writeToBuffer(&ubo);
-                // uboBuffers[frameIndex]->flush();
+                GlobalUbo ubo{};
+                ubo.projectionView = camera.getProjection() * camera.getView();
+                uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                uboBuffers[frameIndex]->flush();
 
                 VkExtent2D extent = lveWindow.getExtent();
                 simpleComputeSystem.dispatchComputePipeline(
@@ -161,8 +159,8 @@ namespace lve
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-                // renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
-                renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
+                renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
+                // renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
 
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
