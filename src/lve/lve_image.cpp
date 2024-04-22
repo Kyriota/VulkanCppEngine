@@ -41,7 +41,8 @@ namespace lve
         : lveDevice{other.lveDevice},
           imageMemory{other.imageMemory},
           image{other.image},
-          imageViews{std::move(other.imageViews)}
+          imageViews{std::move(other.imageViews)},
+          imageLayout{other.imageLayout}
     {
         other.image = nullptr;
         other.imageMemory = nullptr;
@@ -110,6 +111,16 @@ namespace lve
             &imageMemoryBarrier);
 
         lveDevice.endSingleTimeCommands(commandBuffer);
+
+        imageLayout = newLayout;
+    }
+
+    VkDescriptorImageInfo LveImage::getDescriptorImageInfo(int imageViewId, VkSampler sampler) const
+    {
+        return VkDescriptorImageInfo{
+            .sampler = sampler,
+            .imageView = getImageView(imageViewId),
+            .imageLayout = imageLayout};
     }
 
     void LveImage::allocateMemory(VkMemoryPropertyFlags memPropertyFlags)

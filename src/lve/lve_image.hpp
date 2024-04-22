@@ -38,6 +38,8 @@ namespace lve
 
         VkImage getImage() const { return image; }
 
+        VkDescriptorImageInfo getDescriptorImageInfo(int imageViewId, VkSampler sampler) const;
+
     private:
         void allocateMemory(VkMemoryPropertyFlags memPropertyFlags);
 
@@ -45,5 +47,6 @@ namespace lve
         VkDeviceMemory imageMemory;
         VkImage image;
         std::unordered_map<int, VkImageView> imageViews;
+        VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     };
 } // namespace lve

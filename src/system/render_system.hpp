@@ -22,7 +22,7 @@ namespace lve
         RenderSystem(
             LveDevice &device,
             VkRenderPass renderPass,
-            VkDescriptorSetLayout descriptorSetLayout,
+            std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
             GraphicPipelineConfigInfo &graphicPipelineConfigInfo);
         ~RenderSystem();
 
@@ -33,7 +33,7 @@ namespace lve
         LveGraphicPipeline *getPipeline() const { return lveGraphicPipeline.get(); }
 
     private:
-        void createGraphicPipelineLayout(VkDescriptorSetLayout descriptorSetLayout);
+        void createGraphicPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
         void createGraphicPipeline(VkRenderPass renderPass, GraphicPipelineConfigInfo &graphicPipelineConfigInfo);
 
         LveDevice &lveDevice;

@@ -1,6 +1,5 @@
 #include "lve_model.hpp"
-
-#include "lve_utils.hpp"
+#include "lve_hash.hpp"
 
 // libs
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -14,7 +13,7 @@
 #include <unordered_map>
 
 namespace std
-{
+{   
     template <>
     struct hash<lve::LveModel::Vertex>
     {

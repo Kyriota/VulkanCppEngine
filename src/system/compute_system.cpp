@@ -5,10 +5,13 @@
 
 namespace lve
 {
-    ComputeSystem::ComputeSystem(LveDevice &device, const std::string &compFilepath)
+    ComputeSystem::ComputeSystem(
+        LveDevice &device,
+        std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
+        const std::string &compFilepath)
         : lveDevice{device}
     {
-        createComputePipelineLayout();
+        createComputePipelineLayout(descriptorSetLayouts);
         createComputePipeline(compFilepath);
     }
 
@@ -32,30 +35,12 @@ namespace lve
         vkCmdDispatch(frameInfo.commandBuffer, width, height, 1);
     }
 
-    void ComputeSystem::createComputePipelineLayout()
+    void ComputeSystem::createComputePipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
     {
-        VkDescriptorSetLayoutBinding storageImageLayoutBinding{};
-        storageImageLayoutBinding.binding = 0;
-        storageImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-        storageImageLayoutBinding.descriptorCount = 1;
-        storageImageLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-
-        VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-        descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptorSetLayoutCreateInfo.bindingCount = 1;
-        descriptorSetLayoutCreateInfo.pBindings = &storageImageLayoutBinding;
-
-        VkDescriptorSetLayout descriptorSetLayout;
-        if (vkCreateDescriptorSetLayout(lveDevice.device(), &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) !=
-            VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create descriptor set layout!");
-        }
-
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+        pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         
         if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &computePipelineLayout) !=

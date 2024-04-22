@@ -3,6 +3,7 @@
 #include "keyboard_movement_controller.hpp"
 #include "lve/lve_buffer.hpp"
 #include "lve/lve_camera.hpp"
+#include "lve/lve_sampler_manager.hpp"
 #include "system/render_system.hpp"
 #include "system/compute_system.hpp"
 
@@ -40,9 +41,14 @@ namespace lve
                 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
         loadGameObjects();
+
+        createScreenTextureImageView();
     }
 
-    FirstApp::~FirstApp() {}
+    FirstApp::~FirstApp()
+    {
+        LveSamplerManager::clearSamplers();
+    }
 
     void FirstApp::run()
     {
@@ -66,154 +72,19 @@ namespace lve
                 .build();
 
         std::vector<VkDescriptorSet> globalDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+        VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
+            0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
             auto bufferInfo = uboBuffers[i]->descriptorInfo();
             LveDescriptorWriter(*globalSetLayout, *globalPool)
                 .writeBuffer(0, &bufferInfo)
+                .writeImage(1, &screenTextureDescriptorInfo) // combined image sampler
+                .writeImage(2, &screenTextureDescriptorInfo) // storage image
                 .build(globalDescriptorSets[i]);
         }
 
         /*
-        // ================== Create Screen Texture ==================
-
-        { // Initialize screen texture and screenTextureDescriptorInfo
-            VkImageCreateInfo screenTextureInfo{};
-            screenTextureInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            screenTextureInfo.imageType = VK_IMAGE_TYPE_2D;
-            screenTextureInfo.extent.width = lveWindow.getExtent().width;
-            screenTextureInfo.extent.height = lveWindow.getExtent().height;
-            screenTextureInfo.extent.depth = 1;
-            screenTextureInfo.mipLevels = 1;
-            screenTextureInfo.arrayLayers = 1;
-            screenTextureInfo.format = VK_FORMAT_R8G8B8A8_SNORM;
-            screenTextureInfo.tiling = VK_IMAGE_TILING_LINEAR;
-            screenTextureInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            screenTextureInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-            screenTextureInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-            screenTextureInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            screenTextureInfo.flags = 0;
-            screenTextureInfo.pNext = nullptr;
-
-            if (vkCreateImage(lveDevice.device(), &screenTextureInfo, nullptr, &screenTexture) != VK_SUCCESS)
-            {
-                throw std::runtime_error("failed to create image!");
-            }
-
-            VkMemoryRequirements memRequirements;
-            vkGetImageMemoryRequirements(lveDevice.device(), screenTexture, &memRequirements);
-
-            VkMemoryAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = lveDevice.findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-            if (vkAllocateMemory(lveDevice.device(), &allocInfo, nullptr, &screenTextureMemory) != VK_SUCCESS)
-            {
-                throw std::runtime_error("failed to allocate image memory!");
-            }
-
-            vkBindImageMemory(lveDevice.device(), screenTexture, screenTextureMemory, 0);
-
-            { // Convert image to general layout
-                VkCommandBuffer commandBuffer = lveDevice.beginSingleTimeCommands();
-                VkImageMemoryBarrier barrier{};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                barrier.image = screenTexture;
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                barrier.subresourceRange.baseMipLevel = 0;
-                barrier.subresourceRange.levelCount = 1;
-                barrier.subresourceRange.baseArrayLayer = 0;
-                barrier.subresourceRange.layerCount = 1;
-                barrier.srcAccessMask = 0;
-                barrier.dstAccessMask = 0;
-
-                vkCmdPipelineBarrier(
-                    commandBuffer,
-                    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                    0,
-                    0,
-                    nullptr,
-                    0,
-                    nullptr,
-                    1,
-                    &barrier);
-
-                lveDevice.endSingleTimeCommands(commandBuffer);
-            }
-
-            VkImageViewCreateInfo screenTextureViewInfo{};
-            screenTextureViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            screenTextureViewInfo.image = screenTexture;
-            screenTextureViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            screenTextureViewInfo.format = VK_FORMAT_R8G8B8A8_SNORM;
-            screenTextureViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            screenTextureViewInfo.subresourceRange.baseMipLevel = 0;
-            screenTextureViewInfo.subresourceRange.levelCount = 1;
-            screenTextureViewInfo.subresourceRange.baseArrayLayer = 0;
-            screenTextureViewInfo.subresourceRange.layerCount = 1;
-
-            VkImageView screenTextureView;
-            if (vkCreateImageView(lveDevice.device(), &screenTextureViewInfo, nullptr, &screenTextureView) != VK_SUCCESS)
-            {
-                throw std::runtime_error("failed to create image view!");
-            }
-
-            VkSamplerCreateInfo defaultSamplerInfo{};
-            defaultSamplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-            defaultSamplerInfo.magFilter = VK_FILTER_LINEAR;
-            defaultSamplerInfo.minFilter = VK_FILTER_LINEAR;
-            defaultSamplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            defaultSamplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            defaultSamplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            defaultSamplerInfo.anisotropyEnable = VK_TRUE;
-            defaultSamplerInfo.maxAnisotropy = 16;
-            defaultSamplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-            defaultSamplerInfo.unnormalizedCoordinates = VK_FALSE;
-            defaultSamplerInfo.compareEnable = VK_FALSE;
-            defaultSamplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-            defaultSamplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            defaultSamplerInfo.minLod = 0;
-            defaultSamplerInfo.maxLod = 0;
-            defaultSamplerInfo.mipLodBias = 0;
-
-            VkSampler defaultSampler;
-            if (vkCreateSampler(lveDevice.device(), &defaultSamplerInfo, nullptr, &defaultSampler) != VK_SUCCESS)
-            {
-                throw std::runtime_error("failed to create default sampler!");
-            }
-
-            screenTextureDescriptorInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-            screenTextureDescriptorInfo.imageView = screenTextureView;
-            screenTextureDescriptorInfo.sampler = defaultSampler;
-
-            lveDevice.createImageWithInfo(screenTextureInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, screenTexture, screenTextureMemory);
-        }
-
-        std::vector<VkDescriptorSet> textureSampleDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
-        for (int i = 0; i < textureSampleDescriptorSets.size(); i++)
-        {
-            LveDescriptorWriter(*screenTextureSampleSetLayout, *screenTextureSamplePool)
-                .writeImage(0, &screenTextureDescriptorInfo)
-                .build(textureSampleDescriptorSets[i]);
-        }
-
-        std::vector<VkDescriptorSet> textureStorageDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
-        for (int i = 0; i < textureStorageDescriptorSets.size(); i++)
-        {
-            LveDescriptorWriter(*screenTextureStorageSetLayout, *screenTextureStoragePool)
-                .writeImage(0, &screenTextureDescriptorInfo)
-                .build(textureStorageDescriptorSets[i]);
-        }
-
-        // ================== End of Create Screen Texture ==================
-        */
-
         GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
         graphicPipelineConfigInfo.vertFilepath = "shaders/simple_shader.vert.spv";
         graphicPipelineConfigInfo.fragFilepath = "shaders/simple_shader.frag.spv";
@@ -223,66 +94,30 @@ namespace lve
         RenderSystem simpleRenderSystem{
             lveDevice,
             lveRenderer.getSwapChainRenderPass(),
-            globalSetLayout->getDescriptorSetLayout(),
+            {globalSetLayout->getDescriptorSetLayout()},
             graphicPipelineConfigInfo};
-
-        /*
-        // ================== Create Screen Texture Pipeline Info ==================
+        */
 
         GraphicPipelineConfigInfo screenTexturePipelineConfigInfo{};
         screenTexturePipelineConfigInfo.vertFilepath = "shaders/screen_texture_shader.vert.spv";
         screenTexturePipelineConfigInfo.fragFilepath = "shaders/screen_texture_shader.frag.spv";
 
-        // VkPipelineLayout screenTexturePipelineLayout;
-        // {
-        //     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo{};
-        //     descriptorSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        //     descriptorSetLayoutInfo.bindingCount = 1;
-
-        //     VkDescriptorSetLayoutBinding binding{};
-        //     binding.binding = 0;
-        //     binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        //     binding.descriptorCount = 1;
-        //     binding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-        //     binding.pImmutableSamplers = nullptr;
-
-        //     descriptorSetLayoutInfo.pBindings = &binding;
-        //     VkDescriptorSetLayout screenTextureDescriptorSetLayout;
-        //     if (vkCreateDescriptorSetLayout(lveDevice.device(), &descriptorSetLayoutInfo, nullptr, &screenTextureDescriptorSetLayout) != VK_SUCCESS)
-        //     {
-        //         throw std::runtime_error("failed to create descriptor set layout!");
-        //     }
-
-        //     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        //     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        //     pipelineLayoutInfo.setLayoutCount = 1;
-        //     pipelineLayoutInfo.pSetLayouts = &screenTextureDescriptorSetLayout;
-        //     if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &screenTexturePipelineLayout) != VK_SUCCESS)
-        //     {
-        //         throw std::runtime_error("failed to create pipeline layout!");
-        //     }
-
-        //     vkDestroyDescriptorSetLayout(lveDevice.device(), screenTextureDescriptorSetLayout, nullptr);
-        // }
-
-        // screenTexturePipelineConfigInfo.pipelineLayout = screenTexturePipelineLayout;
-
-        // ================== End of Create Screen Texture Pipeline Info ==================
-
         RenderSystem screenTextureRenderSystem{
             lveDevice,
             lveRenderer.getSwapChainRenderPass(),
-            screenTextureSampleSetLayout->getDescriptorSetLayout(),
+            {globalSetLayout->getDescriptorSetLayout()},
             screenTexturePipelineConfigInfo};
 
-        ComputeSystem simpleComputeSystem{lveDevice, "shaders/my_compute_shader.comp.spv"};
-        */
+        ComputeSystem simpleComputeSystem{
+            lveDevice,
+            {globalSetLayout->getDescriptorSetLayout()},
+            "shaders/my_compute_shader.comp.spv"};
 
         LveCamera camera{};
 
-        auto viewerObject = LveGameObject::createGameObject();
-        viewerObject.transform.translation.z = -2.5f;
-        KeyboardMovementController cameraController{};
+        // auto viewerObject = LveGameObject::createGameObject();
+        // viewerObject.transform.translation.z = -2.5f;
+        // KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         while (!lveWindow.shouldClose())
@@ -294,11 +129,11 @@ namespace lve
                 std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
-            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+            // cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
+            // camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
-            float aspect = lveRenderer.getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
+            // float aspect = lveRenderer.getAspectRatio();
+            // camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
             if (auto commandBuffer = lveRenderer.beginFrame())
             {
@@ -312,22 +147,22 @@ namespace lve
                     gameObjects};
 
                 // update
-                GlobalUbo ubo{};
-                ubo.projectionView = camera.getProjection() * camera.getView();
-                uboBuffers[frameIndex]->writeToBuffer(&ubo);
-                uboBuffers[frameIndex]->flush();
+                // GlobalUbo ubo{};
+                // ubo.projectionView = camera.getProjection() * camera.getView();
+                // uboBuffers[frameIndex]->writeToBuffer(&ubo);
+                // uboBuffers[frameIndex]->flush();
 
                 VkExtent2D extent = lveWindow.getExtent();
-                // simpleComputeSystem.dispatchComputePipeline(
-                //     frameInfo,
-                //     static_cast<int>(std::ceil(extent.width / 8.f)),
-                //     static_cast<int>(std::ceil(extent.height / 8.f)));
+                simpleComputeSystem.dispatchComputePipeline(
+                    frameInfo,
+                    static_cast<int>(std::ceil(extent.width / 8.f)),
+                    static_cast<int>(std::ceil(extent.height / 8.f)));
 
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-                renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
-                // renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
+                // renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
+                renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
 
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
@@ -380,6 +215,22 @@ namespace lve
         screenTextureInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         return screenTextureInfo;
+    }
+
+    void FirstApp::createScreenTextureImageView()
+    {
+        VkImageViewCreateInfo screenTextureViewInfo{};
+        screenTextureViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        screenTextureViewInfo.image = screenTextureImage.getImage();
+        screenTextureViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        screenTextureViewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        screenTextureViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        screenTextureViewInfo.subresourceRange.baseMipLevel = 0;
+        screenTextureViewInfo.subresourceRange.levelCount = 1;
+        screenTextureViewInfo.subresourceRange.baseArrayLayer = 0;
+        screenTextureViewInfo.subresourceRange.layerCount = 1;
+
+        screenTextureImage.createImageView(0, &screenTextureViewInfo);
     }
 
 } // namespace lve

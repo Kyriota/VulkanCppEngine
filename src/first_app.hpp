@@ -30,7 +30,9 @@ namespace lve
     private:
         void loadGameObjects();
 
-        static VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
+        VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
+        void createScreenTextureImageView();
+
 
         LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "Vulkan Tutorial"};
         LveDevice lveDevice{lveWindow};
