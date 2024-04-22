@@ -2,3 +2,4 @@
 *.obj
 external/*
 build/*
+.vscode/*
