@@ -16,6 +16,7 @@ namespace lve
     class ComputeRTApp
     {
     public:
+        static const std::string WINDOW_RESIZED_CALLBACK_NAME;
         static constexpr int INIT_WIDTH = 800;
         static constexpr int INIT_HEIGHT = 600;
 
@@ -30,21 +31,24 @@ namespace lve
     private:
         void loadGameObjects();
 
-        VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
-        void createScreenTextureImageView();
-
-
         LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "Vulkan Compute Shader Raytracer"};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
 
-        LveImage screenTextureImage{
-            lveDevice,
-            createScreenTextureInfo(VK_FORMAT_R8G8B8A8_UNORM, lveWindow.getExtent()),
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
-
         // note: order of declarations matters because of destruction order
         std::unique_ptr<LveDescriptorPool> globalPool{};
+        std::vector<std::unique_ptr<LveBuffer>> uboBuffers;
+        std::unique_ptr<LveDescriptorSetLayout> globalSetLayout;
+        std::vector<VkDescriptorSet> globalDescriptorSets;
         LveGameObject::Map gameObjects;
+
+        void updateGlobalDescriptorSets(bool build=false);
+
+        LveImage screenTextureImage{lveDevice};
+        VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
+
+        VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
+        void createScreenTextureImageView();
+        void recreateScreenTextureImage(VkExtent2D extent);
     };
 } // namespace lve

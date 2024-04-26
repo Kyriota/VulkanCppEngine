@@ -4,6 +4,7 @@
 #include <array>
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 namespace lve
 {
@@ -114,6 +115,11 @@ namespace lve
         {
             lveWindow.resetWindowResizedFlag();
             recreateSwapChain();
+            
+            for (const auto &callback : windowResizedCallbacks)
+            {
+                callback.second(lveSwapChain->getSwapChainExtent());
+            }
         }
         else if (result != VK_SUCCESS)
         {
@@ -167,5 +173,4 @@ namespace lve
             "Can't end render pass on command buffer from a different frame");
         vkCmdEndRenderPass(commandBuffer);
     }
-
 } // namespace lve

@@ -8,6 +8,8 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+#include <unordered_map>
+#include <functional>
 
 namespace lve
 {
@@ -41,6 +43,10 @@ namespace lve
         void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
         void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
+        using WindowResizedCallback = std::function<void(VkExtent2D)>;
+        void registerWindowResizedCallback(const std::string &name, WindowResizedCallback callback) { windowResizedCallbacks[name] = callback; }
+        void unregisterWindowResizedCallback(const std::string &name) { windowResizedCallbacks.erase(name); }
+
     private:
         void createCommandBuffers();
         void freeCommandBuffers();
@@ -54,5 +60,7 @@ namespace lve
         uint32_t currentImageIndex;
         int currentFrameIndex{0};
         bool isFrameStarted{false};
+
+        std::unordered_map<std::string, WindowResizedCallback> windowResizedCallbacks;
     };
 } // namespace lve

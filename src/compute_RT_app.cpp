@@ -31,6 +31,8 @@ namespace lve
         alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
     };
 
+    const std::string ComputeRTApp::WINDOW_RESIZED_CALLBACK_NAME = "ComputeRTApp";
+
     ComputeRTApp::ComputeRTApp()
     {
         globalPool =
@@ -42,7 +44,15 @@ namespace lve
                 .build();
         loadGameObjects();
 
-        createScreenTextureImageView();
+        // register callback functions for window resize
+        lveRenderer.registerWindowResizedCallback(
+            WINDOW_RESIZED_CALLBACK_NAME,
+            [this](VkExtent2D extent)
+            {
+                printf(" >> Window resized to: %d, %d\n", extent.width, extent.height);
+                recreateScreenTextureImage(extent);
+                updateGlobalDescriptorSets();
+            });
     }
 
     ComputeRTApp::~ComputeRTApp()
@@ -52,7 +62,9 @@ namespace lve
 
     void ComputeRTApp::run()
     {
-        std::vector<std::unique_ptr<LveBuffer>> uboBuffers(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+        uboBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+        globalDescriptorSets.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+
         for (int i = 0; i < uboBuffers.size(); i++)
         {
             uboBuffers[i] = std::make_unique<LveBuffer>(
@@ -64,25 +76,15 @@ namespace lve
             uboBuffers[i]->map();
         }
 
-        auto globalSetLayout =
+        globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)
                 .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                 .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
                 .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
                 .build();
 
-        std::vector<VkDescriptorSet> globalDescriptorSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
-        VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
-            0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
-        for (int i = 0; i < globalDescriptorSets.size(); i++)
-        {
-            auto bufferInfo = uboBuffers[i]->descriptorInfo();
-            LveDescriptorWriter(*globalSetLayout, *globalPool)
-                .writeBuffer(0, &bufferInfo)
-                .writeImage(1, &screenTextureDescriptorInfo) // combined image sampler
-                .writeImage(2, &screenTextureDescriptorInfo) // storage image
-                .build(globalDescriptorSets[i]);
-        }
+        recreateScreenTextureImage(lveWindow.getExtent());
+        updateGlobalDescriptorSets(true);
 
         GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
         graphicPipelineConfigInfo.vertFilepath = "build/shaders/simple_shader.vert.spv";
@@ -159,8 +161,8 @@ namespace lve
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-                renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
-                // renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
+                // renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
+                renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
 
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
@@ -195,6 +197,26 @@ namespace lve
         gameObjects.emplace(floor.getId(), std::move(floor));
     }
 
+    void ComputeRTApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
+    {
+        VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
+            0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
+        for (int i = 0; i < globalDescriptorSets.size(); i++)
+        {
+            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            LveDescriptorWriter writer{*globalSetLayout, *globalPool};
+            writer.writeBuffer(0, &bufferInfo)
+                .writeImage(1, &screenTextureDescriptorInfo)  // combined image sampler
+                .writeImage(2, &screenTextureDescriptorInfo); // storage image
+
+            if (needMemoryAlloc)
+            {
+                writer.allocateDescriptorSet(globalDescriptorSets[i]);
+            }
+            writer.overwrite(globalDescriptorSets[i]);
+        }
+    }
+
     VkImageCreateInfo ComputeRTApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
     {
         VkImageCreateInfo screenTextureInfo{};
@@ -221,7 +243,7 @@ namespace lve
         screenTextureViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         screenTextureViewInfo.image = screenTextureImage.getImage();
         screenTextureViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        screenTextureViewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+        screenTextureViewInfo.format = screenTextureFormat;
         screenTextureViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         screenTextureViewInfo.subresourceRange.baseMipLevel = 0;
         screenTextureViewInfo.subresourceRange.levelCount = 1;
@@ -231,4 +253,13 @@ namespace lve
         screenTextureImage.createImageView(0, &screenTextureViewInfo);
     }
 
+    void ComputeRTApp::recreateScreenTextureImage(VkExtent2D extent)
+    {
+        screenTextureImage = LveImage(
+            lveDevice,
+            createScreenTextureInfo(screenTextureFormat, extent),
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        createScreenTextureImageView();
+    }
 } // namespace lve

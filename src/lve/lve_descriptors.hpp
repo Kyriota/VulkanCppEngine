@@ -75,10 +75,10 @@ namespace lve
         LveDescriptorPool(const LveDescriptorPool &) = delete;
         LveDescriptorPool &operator=(const LveDescriptorPool &) = delete;
 
-        bool allocateDescriptor(
-            const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const;
+        bool allocateDescriptorSet(
+            const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptorSet) const;
 
-        void freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const;
+        void freeDescriptorSet(std::vector<VkDescriptorSet> &descriptorSet) const;
 
         void resetPool();
 
@@ -97,7 +97,7 @@ namespace lve
         LveDescriptorWriter &writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo);
         LveDescriptorWriter &writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo);
 
-        bool build(VkDescriptorSet &set);
+        bool allocateDescriptorSet(VkDescriptorSet &set) const { return pool.allocateDescriptorSet(setLayout.getDescriptorSetLayout(), set); }
         void overwrite(VkDescriptorSet &set);
 
     private:

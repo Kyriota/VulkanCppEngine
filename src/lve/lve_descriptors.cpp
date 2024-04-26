@@ -116,8 +116,8 @@ namespace lve
         vkDestroyDescriptorPool(lveDevice.device(), descriptorPool, nullptr);
     }
 
-    bool LveDescriptorPool::allocateDescriptor(
-        const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor) const
+    bool LveDescriptorPool::allocateDescriptorSet(
+        const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptorSet) const
     {
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -127,20 +127,20 @@ namespace lve
 
         // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
         // a new pool whenever an old pool fills up. But this is beyond our current scope
-        if (vkAllocateDescriptorSets(lveDevice.device(), &allocInfo, &descriptor) != VK_SUCCESS)
+        if (vkAllocateDescriptorSets(lveDevice.device(), &allocInfo, &descriptorSet) != VK_SUCCESS)
         {
             return false;
         }
         return true;
     }
 
-    void LveDescriptorPool::freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const
+    void LveDescriptorPool::freeDescriptorSet(std::vector<VkDescriptorSet> &descriptorSet) const
     {
         vkFreeDescriptorSets(
             lveDevice.device(),
             descriptorPool,
-            static_cast<uint32_t>(descriptors.size()),
-            descriptors.data());
+            static_cast<uint32_t>(descriptorSet.size()),
+            descriptorSet.data());
     }
 
     void LveDescriptorPool::resetPool()
@@ -195,17 +195,6 @@ namespace lve
 
         writes.push_back(write);
         return *this;
-    }
-
-    bool LveDescriptorWriter::build(VkDescriptorSet &set)
-    {
-        bool success = pool.allocateDescriptor(setLayout.getDescriptorSetLayout(), set);
-        if (!success)
-        {
-            return false;
-        }
-        overwrite(set);
-        return true;
     }
 
     void LveDescriptorWriter::overwrite(VkDescriptorSet &set)
