@@ -70,7 +70,7 @@ namespace lve
         vkDestroyCommandPool(device_, commandPool, nullptr);
         vkDestroyDevice(device_, nullptr);
 
-        if (enableValidationLayers)
+        if (enableDebugLayers)
         {
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
@@ -81,9 +81,9 @@ namespace lve
 
     void LveDevice::createInstance()
     {
-        if (enableValidationLayers && !checkValidationLayerSupport())
+        if (enableDebugLayers && !checkDebugLayerSupport())
         {
-            throw std::runtime_error("validation layers requested, but not available!");
+            throw std::runtime_error("debug layers requested, but not available!");
         }
 
         VkApplicationInfo appInfo = {};
@@ -103,10 +103,10 @@ namespace lve
         createInfo.ppEnabledExtensionNames = extensions.data();
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-        if (enableValidationLayers)
+        if (enableDebugLayers)
         {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(debugLayers.size());
+            createInfo.ppEnabledLayerNames = debugLayers.data();
 
             populateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
@@ -189,10 +189,10 @@ namespace lve
 
         // might not really be necessary anymore because device specific validation layers
         // have been deprecated
-        if (enableValidationLayers)
+        if (enableDebugLayers)
         {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(debugLayers.size());
+            createInfo.ppEnabledLayerNames = debugLayers.data();
         }
         else
         {
@@ -261,7 +261,7 @@ namespace lve
 
     void LveDevice::setupDebugMessenger()
     {
-        if (!enableValidationLayers)
+        if (!enableDebugLayers)
             return;
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
@@ -271,7 +271,7 @@ namespace lve
         }
     }
 
-    bool LveDevice::checkValidationLayerSupport()
+    bool LveDevice::checkDebugLayerSupport()
     {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -279,7 +279,7 @@ namespace lve
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for (const char *layerName : validationLayers)
+        for (const char *layerName : debugLayers)
         {
             bool layerFound = false;
 
@@ -309,7 +309,7 @@ namespace lve
 
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-        if (enableValidationLayers)
+        if (enableDebugLayers)
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }

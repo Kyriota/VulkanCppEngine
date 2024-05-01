@@ -49,7 +49,6 @@ namespace lve
             WINDOW_RESIZED_CALLBACK_NAME,
             [this](VkExtent2D extent)
             {
-                printf(" >> Window resized to: %d, %d\n", extent.width, extent.height);
                 recreateScreenTextureImage(extent);
                 updateGlobalDescriptorSets();
             });

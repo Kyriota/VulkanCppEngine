@@ -29,9 +29,9 @@ namespace lve
     {
     public:
 #ifdef NDEBUG
-        const bool enableValidationLayers = false;
+        const bool enableDebugLayers = false;
 #else
-        const bool enableValidationLayers = true;
+        const bool enableDebugLayers = true;
 #endif
 
         LveDevice(LveWindow &window);
@@ -69,7 +69,7 @@ namespace lve
         // helper functions
         bool isDeviceSuitable(VkPhysicalDevice device);
         std::vector<const char *> getRequiredExtensions();
-        bool checkValidationLayerSupport();
+        bool checkDebugLayerSupport();
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
         void hasGflwRequiredInstanceExtensions();
@@ -87,7 +87,7 @@ namespace lve
         VkQueue graphicsQueue_;
         VkQueue presentQueue_;
 
-        const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+        const std::vector<const char *> debugLayers = {"VK_LAYER_KHRONOS_validation", "VK_LAYER_LUNARG_monitor"};
         const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     };
 
