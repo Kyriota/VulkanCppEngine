@@ -1,4 +1,4 @@
-#include "compute_RT_app.hpp"
+#include "my_app.hpp"
 
 // std
 #include <cstdlib>
@@ -7,7 +7,7 @@
 
 int main()
 {
-    lve::ComputeRTApp app{};
+    lve::MyApp app{};
 
     try
     {

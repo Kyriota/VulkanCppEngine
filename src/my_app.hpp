@@ -13,18 +13,18 @@
 
 namespace lve
 {
-    class ComputeRTApp
+    class MyApp
     {
     public:
         static const std::string WINDOW_RESIZED_CALLBACK_NAME;
         static constexpr int INIT_WIDTH = 800;
         static constexpr int INIT_HEIGHT = 600;
 
-        ComputeRTApp();
-        ~ComputeRTApp();
+        MyApp();
+        ~MyApp();
 
-        ComputeRTApp(const ComputeRTApp &) = delete;
-        ComputeRTApp &operator=(const ComputeRTApp &) = delete;
+        MyApp(const MyApp &) = delete;
+        MyApp &operator=(const MyApp &) = delete;
 
         void run();
 

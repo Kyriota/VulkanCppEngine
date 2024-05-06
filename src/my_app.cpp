@@ -1,4 +1,4 @@
-#include "compute_RT_app.hpp"
+#include "my_app.hpp"
 
 #include "keyboard_movement_controller.hpp"
 #include "lve/lve_buffer.hpp"
@@ -31,9 +31,9 @@ namespace lve
         alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
     };
 
-    const std::string ComputeRTApp::WINDOW_RESIZED_CALLBACK_NAME = "ComputeRTApp";
+    const std::string MyApp::WINDOW_RESIZED_CALLBACK_NAME = "MyApp";
 
-    ComputeRTApp::ComputeRTApp()
+    MyApp::MyApp()
     {
         globalPool =
             LveDescriptorPool::Builder(lveDevice)
@@ -54,12 +54,12 @@ namespace lve
             });
     }
 
-    ComputeRTApp::~ComputeRTApp()
+    MyApp::~MyApp()
     {
         LveSamplerManager::clearSamplers();
     }
 
-    void ComputeRTApp::run()
+    void MyApp::run()
     {
         uboBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
         globalDescriptorSets.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -171,7 +171,7 @@ namespace lve
         vkDeviceWaitIdle(lveDevice.device());
     }
 
-    void ComputeRTApp::loadGameObjects()
+    void MyApp::loadGameObjects()
     {
         std::shared_ptr<LveModel> lveModel =
             LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
@@ -196,7 +196,7 @@ namespace lve
         gameObjects.emplace(floor.getId(), std::move(floor));
     }
 
-    void ComputeRTApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
+    void MyApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
     {
         VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
             0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
@@ -216,7 +216,7 @@ namespace lve
         }
     }
 
-    VkImageCreateInfo ComputeRTApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
+    VkImageCreateInfo MyApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
     {
         VkImageCreateInfo screenTextureInfo{};
         screenTextureInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -236,7 +236,7 @@ namespace lve
         return screenTextureInfo;
     }
 
-    void ComputeRTApp::createScreenTextureImageView()
+    void MyApp::createScreenTextureImageView()
     {
         VkImageViewCreateInfo screenTextureViewInfo{};
         screenTextureViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -252,7 +252,7 @@ namespace lve
         screenTextureImage.createImageView(0, &screenTextureViewInfo);
     }
 
-    void ComputeRTApp::recreateScreenTextureImage(VkExtent2D extent)
+    void MyApp::recreateScreenTextureImage(VkExtent2D extent)
     {
         screenTextureImage = LveImage(
             lveDevice,
