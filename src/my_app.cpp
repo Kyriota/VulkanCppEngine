@@ -80,13 +80,13 @@ namespace lve
         // particle buffer includes a int for the number of particles and a vec2 for position of each particle
         particleBuffer = std::make_unique<LveBuffer>(
             lveDevice,
-            sizeof(int) + sizeof(glm::vec2) * particleBufferData.numParticles,
+            sizeof(int) * 2 + sizeof(glm::vec2) * particleBufferData.numParticles, // multiply by 2 for alignment
             1,
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         particleBuffer->map();
         particleBuffer->writeToBuffer(&particleBufferData.numParticles, sizeof(int));
-        particleBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * particleBufferData.numParticles, sizeof(int));
+        particleBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * particleBufferData.numParticles, sizeof(int) * 2);
 
         globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)

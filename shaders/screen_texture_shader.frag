@@ -27,7 +27,7 @@ void main() {
 		vec2 diff = fragTexCoord - particle_position;
 		float distance_sqr = dot(diff, diff);
 		if (distance_sqr < particle_radius_sqr) {
-			if (i == 18)
+			if (i == 0)
 			{
 				outColor = vec4(1.0, 0.0, 0.0, 1.0);
 				return;
