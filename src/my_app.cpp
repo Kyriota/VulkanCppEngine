@@ -41,6 +41,7 @@ namespace lve
                 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+                .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
         loadGameObjects();
 
@@ -75,11 +76,24 @@ namespace lve
             uboBuffers[i]->map();
         }
 
+        ParticleBuffer particleBufferData = initParticleBuffer({300.f, 300.f}, 10.f, 105.f);
+        // particle buffer includes a int for the number of particles and a vec2 for position of each particle
+        particleBuffer = std::make_unique<LveBuffer>(
+            lveDevice,
+            sizeof(int) + sizeof(glm::vec2) * particleBufferData.numParticles,
+            1,
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        particleBuffer->map();
+        particleBuffer->writeToBuffer(&particleBufferData.numParticles, sizeof(int));
+        particleBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * particleBufferData.numParticles, sizeof(int));
+
         globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)
                 .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-                .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-                .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
+                .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // Frag shader input texture
+                .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)           // Compute shader output texture
+                .addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)         // Frag shader input particle buffer
                 .build();
 
         recreateScreenTextureImage(lveWindow.getExtent());
@@ -161,7 +175,11 @@ namespace lve
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
                 // renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
-                renderScreenTexture(frameInfo, screenTextureRenderSystem.getPipelineLayout(), screenTextureRenderSystem.getPipeline());
+                renderScreenTexture(
+                    frameInfo,
+                    screenTextureRenderSystem.getPipelineLayout(),
+                    screenTextureRenderSystem.getPipeline(),
+                    extent);
 
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
@@ -200,13 +218,16 @@ namespace lve
     {
         VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
             0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
+        auto particleBufferInfo = particleBuffer->descriptorInfo();
+
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
-            auto bufferInfo = uboBuffers[i]->descriptorInfo();
+            auto uboBufferInfo = uboBuffers[i]->descriptorInfo();
             LveDescriptorWriter writer{*globalSetLayout, *globalPool};
-            writer.writeBuffer(0, &bufferInfo)
-                .writeImage(1, &screenTextureDescriptorInfo)  // combined image sampler
-                .writeImage(2, &screenTextureDescriptorInfo); // storage image
+            writer.writeBuffer(0, &uboBufferInfo)
+                .writeImage(1, &screenTextureDescriptorInfo) // combined image sampler
+                .writeImage(2, &screenTextureDescriptorInfo) // storage image
+                .writeBuffer(3, &particleBufferInfo);        // storage buffer
 
             if (needMemoryAlloc)
             {
@@ -260,5 +281,25 @@ namespace lve
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         createScreenTextureImageView();
+    }
+
+    ParticleBuffer MyApp::initParticleBuffer(glm::vec2 startPoint, float stride, float maxWidth)
+    {
+        ParticleBuffer particleBuffer{};
+        particleBuffer.numParticles = PARTICLE_COUNT;
+        particleBuffer.positions.resize(particleBuffer.numParticles);
+
+        maxWidth -= std::fmod(maxWidth, stride);
+        int cntPerRow = static_cast<int>(maxWidth / stride);
+        int row, col;
+        for (int i = 0; i < particleBuffer.numParticles; i++)
+        {
+            row = static_cast<int>(i / cntPerRow);
+            col = i % cntPerRow;
+            particleBuffer.positions[i] = startPoint + glm::vec2(col * stride, row * stride);
+            printf("particle %d: %f, %f\n", i, particleBuffer.positions[i].x, particleBuffer.positions[i].y);
+        }
+
+        return particleBuffer;
     }
 } // namespace lve

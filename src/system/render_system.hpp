@@ -14,7 +14,11 @@ namespace lve
 {
     void renderGameObjects(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline);
 
-    void renderScreenTexture(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline);
+    void renderScreenTexture(
+        FrameInfo &frameInfo,
+        VkPipelineLayout graphicPipelineLayout,
+        LveGraphicPipeline *graphicPipeline,
+        VkExtent2D extent);
 
     class RenderSystem
     {

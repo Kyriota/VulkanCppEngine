@@ -22,6 +22,11 @@ namespace lve
         glm::mat4 normalMatrix{1.f};
     };
 
+    struct ScreenExtentPushConstantData
+    {
+        glm::vec2 screenExtent;
+    };
+
     void renderGameObjects(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline)
     {
         bind(frameInfo.commandBuffer, graphicPipeline->getPipeline());
@@ -57,7 +62,11 @@ namespace lve
         }
     }
 
-    void renderScreenTexture(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline)
+    void renderScreenTexture(
+        FrameInfo &frameInfo,
+        VkPipelineLayout graphicPipelineLayout,
+        LveGraphicPipeline *graphicPipeline,
+        VkExtent2D extent)
     {
         bind(frameInfo.commandBuffer, graphicPipeline->getPipeline());
 
@@ -70,6 +79,17 @@ namespace lve
             &frameInfo.globalDescriptorSet,
             0,
             nullptr);
+
+        ScreenExtentPushConstantData push{};
+        push.screenExtent = glm::vec2(extent.width, extent.height);
+        
+        vkCmdPushConstants(
+            frameInfo.commandBuffer,
+            graphicPipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(ScreenExtentPushConstantData),
+            &push);
 
         vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
     }

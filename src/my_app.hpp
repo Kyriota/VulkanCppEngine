@@ -13,6 +13,12 @@
 
 namespace lve
 {
+    struct ParticleBuffer
+    {
+        int numParticles;
+        std::vector<glm::vec2> positions;
+    };
+
     class MyApp
     {
     public:
@@ -38,6 +44,7 @@ namespace lve
         // note: order of declarations matters because of destruction order
         std::unique_ptr<LveDescriptorPool> globalPool{};
         std::vector<std::unique_ptr<LveBuffer>> uboBuffers;
+        std::unique_ptr<LveBuffer> particleBuffer;
         std::unique_ptr<LveDescriptorSetLayout> globalSetLayout;
         std::vector<VkDescriptorSet> globalDescriptorSets;
         LveGameObject::Map gameObjects;
@@ -50,5 +57,8 @@ namespace lve
         VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
         void createScreenTextureImageView();
         void recreateScreenTextureImage(VkExtent2D extent);
+
+        const int PARTICLE_COUNT = 32;
+        ParticleBuffer initParticleBuffer(glm::vec2 startPoint, float stride, float maxWidth);
     };
 } // namespace lve
