@@ -1,5 +1,5 @@
 #include "render_system.hpp"
-#include "../lve/lve_pipeline_op.hpp"
+#include "lve/lve_pipeline_op.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -27,21 +27,26 @@ namespace lve
         glm::vec2 screenExtent;
     };
 
-    void renderGameObjects(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline)
+    void renderGameObjects(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        LveGameObject::Map &gameObjects,
+        VkPipelineLayout graphicPipelineLayout,
+        LveGraphicPipeline *graphicPipeline)
     {
-        bind(frameInfo.commandBuffer, graphicPipeline->getPipeline());
+        bind(cmdBuffer, graphicPipeline->getPipeline());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            cmdBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             graphicPipelineLayout,
             0,
             1,
-            &frameInfo.globalDescriptorSet,
+            pGlobalDescriptorSet,
             0,
             nullptr);
 
-        for (auto &kv : frameInfo.gameObjects)
+        for (auto &kv : gameObjects)
         {
             auto &obj = kv.second;
             if (obj.model == nullptr)
@@ -51,32 +56,33 @@ namespace lve
             push.normalMatrix = obj.transform.normalMatrix();
 
             vkCmdPushConstants(
-                frameInfo.commandBuffer,
+                cmdBuffer,
                 graphicPipelineLayout,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
                 sizeof(SimplePushConstantData),
                 &push);
-            obj.model->bind(frameInfo.commandBuffer);
-            obj.model->draw(frameInfo.commandBuffer);
+            obj.model->bind(cmdBuffer);
+            obj.model->draw(cmdBuffer);
         }
     }
 
     void renderScreenTexture(
-        FrameInfo &frameInfo,
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
         VkPipelineLayout graphicPipelineLayout,
         LveGraphicPipeline *graphicPipeline,
         VkExtent2D extent)
     {
-        bind(frameInfo.commandBuffer, graphicPipeline->getPipeline());
+        bind(cmdBuffer, graphicPipeline->getPipeline());
 
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            cmdBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             graphicPipelineLayout,
             0,
             1,
-            &frameInfo.globalDescriptorSet,
+            pGlobalDescriptorSet,
             0,
             nullptr);
 
@@ -84,14 +90,14 @@ namespace lve
         push.screenExtent = glm::vec2(extent.width, extent.height);
         
         vkCmdPushConstants(
-            frameInfo.commandBuffer,
+            cmdBuffer,
             graphicPipelineLayout,
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0,
             sizeof(ScreenExtentPushConstantData),
             &push);
 
-        vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+        vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
     }
 
     RenderSystem::RenderSystem(

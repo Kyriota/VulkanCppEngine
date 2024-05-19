@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../lve/lve_device.hpp"
-#include "../lve/lve_frame_info.hpp"
-#include "../lve/lve_game_object.hpp"
-#include "../lve/lve_pipeline_graphics.hpp"
+#include "lve/lve_device.hpp"
+#include "lve/lve_game_object.hpp"
+#include "lve/lve_pipeline_graphics.hpp"
 
 // std
 #include <memory>
@@ -12,10 +11,16 @@
 
 namespace lve
 {
-    void renderGameObjects(FrameInfo &frameInfo, VkPipelineLayout graphicPipelineLayout, LveGraphicPipeline *graphicPipeline);
+    void renderGameObjects(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        LveGameObject::Map &gameObjects,
+        VkPipelineLayout graphicPipelineLayout,
+        LveGraphicPipeline *graphicPipeline);
 
     void renderScreenTexture(
-        FrameInfo &frameInfo,
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
         VkPipelineLayout graphicPipelineLayout,
         LveGraphicPipeline *graphicPipeline,
         VkExtent2D extent);

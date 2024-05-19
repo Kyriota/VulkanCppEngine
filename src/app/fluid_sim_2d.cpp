@@ -1,4 +1,4 @@
-#include "my_app.hpp"
+#include "fluid_sim_2d.hpp"
 
 #include "keyboard_movement_controller.hpp"
 #include "lve/lve_buffer.hpp"
@@ -31,9 +31,9 @@ namespace lve
         alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
     };
 
-    const std::string MyApp::WINDOW_RESIZED_CALLBACK_NAME = "MyApp";
+    const std::string FluidSim2DApp::WINDOW_RESIZED_CALLBACK_NAME = "FluidSim2DApp";
 
-    MyApp::MyApp()
+    FluidSim2DApp::FluidSim2DApp()
     {
         globalPool =
             LveDescriptorPool::Builder(lveDevice)
@@ -43,7 +43,6 @@ namespace lve
                 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
-        loadGameObjects();
 
         // register callback functions for window resize
         lveRenderer.registerWindowResizedCallback(
@@ -55,12 +54,12 @@ namespace lve
             });
     }
 
-    MyApp::~MyApp()
+    FluidSim2DApp::~FluidSim2DApp()
     {
         LveSamplerManager::clearSamplers();
     }
 
-    void MyApp::run()
+    void FluidSim2DApp::run()
     {
         uboBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
         globalDescriptorSets.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -76,17 +75,17 @@ namespace lve
             uboBuffers[i]->map();
         }
 
-        ParticleBuffer particleBufferData = initParticleBuffer({300.f, 300.f}, 10.f, 105.f);
+        ParticleBuffer particleBufferData = initParticleBufferData({300.f, 300.f}, 10.f, 105.f);
         // particle buffer includes a int for the number of particles and a vec2 for position of each particle
-        particleBuffer = std::make_unique<LveBuffer>(
+        particlePosBuffer = std::make_unique<LveBuffer>(
             lveDevice,
             sizeof(int) * 2 + sizeof(glm::vec2) * particleBufferData.numParticles, // multiply by 2 for alignment
             1,
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        particleBuffer->map();
-        particleBuffer->writeToBuffer(&particleBufferData.numParticles, sizeof(int));
-        particleBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * particleBufferData.numParticles, sizeof(int) * 2);
+        particlePosBuffer->map();
+        particlePosBuffer->writeToBuffer(&particleBufferData.numParticles, sizeof(int));
+        particlePosBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * particleBufferData.numParticles, sizeof(int) * 2);
 
         globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)
@@ -126,8 +125,6 @@ namespace lve
             {globalSetLayout->getDescriptorSetLayout()},
             "build/shaders/my_compute_shader.comp.spv"};
 
-        LveCamera camera{};
-
         auto viewerObject = LveGameObject::createGameObject();
         viewerObject.transform.translation.z = -2.5f;
         KeyboardMovementController cameraController{};
@@ -142,41 +139,24 @@ namespace lve
                 std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
-            cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
-            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
-
-            float aspect = lveRenderer.getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
-
             if (auto commandBuffer = lveRenderer.beginFrame())
             {
                 int frameIndex = lveRenderer.getFrameIndex();
-                FrameInfo frameInfo{
-                    frameIndex,
-                    frameTime,
-                    commandBuffer,
-                    camera,
-                    globalDescriptorSets[frameIndex],
-                    gameObjects};
 
                 // update
-                GlobalUbo ubo{};
-                ubo.projectionView = camera.getProjection() * camera.getView();
-                uboBuffers[frameIndex]->writeToBuffer(&ubo);
-                uboBuffers[frameIndex]->flush();
-
                 VkExtent2D extent = lveWindow.getExtent();
                 simpleComputeSystem.dispatchComputePipeline(
-                    frameInfo,
+                    commandBuffer,
+                    &globalDescriptorSets[frameIndex],
                     static_cast<int>(std::ceil(extent.width / 8.f)),
                     static_cast<int>(std::ceil(extent.height / 8.f)));
 
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-                // renderGameObjects(frameInfo, simpleRenderSystem.getPipelineLayout(), simpleRenderSystem.getPipeline());
                 renderScreenTexture(
-                    frameInfo,
+                    commandBuffer,
+                    &globalDescriptorSets[frameIndex],
                     screenTextureRenderSystem.getPipelineLayout(),
                     screenTextureRenderSystem.getPipeline(),
                     extent);
@@ -189,36 +169,11 @@ namespace lve
         vkDeviceWaitIdle(lveDevice.device());
     }
 
-    void MyApp::loadGameObjects()
-    {
-        std::shared_ptr<LveModel> lveModel =
-            LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
-        auto flatVase = LveGameObject::createGameObject();
-        flatVase.model = lveModel;
-        flatVase.transform.translation = {-.5f, .5f, 0.f};
-        flatVase.transform.scale = {3.f, 1.5f, 3.f};
-        gameObjects.emplace(flatVase.getId(), std::move(flatVase));
-
-        lveModel = LveModel::createModelFromFile(lveDevice, "models/smooth_vase.obj");
-        auto smoothVase = LveGameObject::createGameObject();
-        smoothVase.model = lveModel;
-        smoothVase.transform.translation = {.5f, .5f, 0.f};
-        smoothVase.transform.scale = {3.f, 1.5f, 3.f};
-        gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
-
-        lveModel = LveModel::createModelFromFile(lveDevice, "models/quad.obj");
-        auto floor = LveGameObject::createGameObject();
-        floor.model = lveModel;
-        floor.transform.translation = {0.f, .5f, 0.f};
-        floor.transform.scale = {3.f, 1.f, 3.f};
-        gameObjects.emplace(floor.getId(), std::move(floor));
-    }
-
-    void MyApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
+    void FluidSim2DApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
     {
         VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
             0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
-        auto particleBufferInfo = particleBuffer->descriptorInfo();
+        auto particleBufferInfo = particlePosBuffer->descriptorInfo();
 
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
@@ -237,7 +192,7 @@ namespace lve
         }
     }
 
-    VkImageCreateInfo MyApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
+    VkImageCreateInfo FluidSim2DApp::createScreenTextureInfo(VkFormat format, VkExtent2D extent)
     {
         VkImageCreateInfo screenTextureInfo{};
         screenTextureInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -257,7 +212,7 @@ namespace lve
         return screenTextureInfo;
     }
 
-    void MyApp::createScreenTextureImageView()
+    void FluidSim2DApp::createScreenTextureImageView()
     {
         VkImageViewCreateInfo screenTextureViewInfo{};
         screenTextureViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -273,7 +228,7 @@ namespace lve
         screenTextureImage.createImageView(0, &screenTextureViewInfo);
     }
 
-    void MyApp::recreateScreenTextureImage(VkExtent2D extent)
+    void FluidSim2DApp::recreateScreenTextureImage(VkExtent2D extent)
     {
         screenTextureImage = LveImage(
             lveDevice,
@@ -283,23 +238,22 @@ namespace lve
         createScreenTextureImageView();
     }
 
-    ParticleBuffer MyApp::initParticleBuffer(glm::vec2 startPoint, float stride, float maxWidth)
+    ParticleBuffer FluidSim2DApp::initParticleBufferData(glm::vec2 startPoint, float stride, float maxWidth)
     {
-        ParticleBuffer particleBuffer{};
-        particleBuffer.numParticles = PARTICLE_COUNT;
-        particleBuffer.positions.resize(particleBuffer.numParticles);
+        ParticleBuffer particleBufferData{};
+        particleBufferData.numParticles = PARTICLE_COUNT;
+        particleBufferData.positions.resize(particleBufferData.numParticles);
 
         maxWidth -= std::fmod(maxWidth, stride);
         int cntPerRow = static_cast<int>(maxWidth / stride);
         int row, col;
-        for (int i = 0; i < particleBuffer.numParticles; i++)
+        for (int i = 0; i < particleBufferData.numParticles; i++)
         {
             row = static_cast<int>(i / cntPerRow);
             col = i % cntPerRow;
-            particleBuffer.positions[i] = startPoint + glm::vec2(col * stride, row * stride);
-            printf("particle %d: %f, %f\n", i, particleBuffer.positions[i].x, particleBuffer.positions[i].y);
+            particleBufferData.positions[i] = startPoint + glm::vec2(col * stride, row * stride);
         }
 
-        return particleBuffer;
+        return particleBufferData;
     }
 } // namespace lve

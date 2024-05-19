@@ -1,4 +1,5 @@
-#include "my_app.hpp"
+#include "app/fluid_sim_2d.hpp"
+#include "app/renderer.hpp"
 
 // std
 #include <cstdlib>
@@ -7,7 +8,7 @@
 
 int main()
 {
-    lve::MyApp app{};
+    lve::FluidSim2DApp app{};
 
     try
     {

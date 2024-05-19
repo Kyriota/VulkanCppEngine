@@ -11,7 +11,7 @@ layout(push_constant) uniform Push {
 } push;
 
 layout(binding = 3) buffer Particles {
-	int num_particles;
+	uint num_particles;
 	vec2 particle_positions[];
 };
 

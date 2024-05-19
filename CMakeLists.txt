@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(vulkan-compute-shader-raytracer)
+project(vulkan-cpp_engine)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -12,7 +12,7 @@ file(GLOB_RECURSE HEADERS "src/*.hpp")
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 # Add include directories
-target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 # Add external libraries
 target_include_directories(${PROJECT_NAME} PUBLIC external/include)

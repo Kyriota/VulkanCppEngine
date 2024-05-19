@@ -20,19 +20,22 @@ namespace lve
         vkDestroyPipelineLayout(lveDevice.device(), computePipelineLayout, nullptr);
     }
 
-    void ComputeSystem::dispatchComputePipeline(FrameInfo frameInfo, uint32_t width, uint32_t height)
+    void ComputeSystem::dispatchComputePipeline(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        uint32_t width, uint32_t height)
     {
-        vkCmdBindPipeline(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, lveComputePipeline->getPipeline());
+        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, lveComputePipeline->getPipeline());
         vkCmdBindDescriptorSets(
-            frameInfo.commandBuffer,
+            cmdBuffer,
             VK_PIPELINE_BIND_POINT_COMPUTE,
             computePipelineLayout,
             0,
             1,
-            &frameInfo.globalDescriptorSet,
+            pGlobalDescriptorSet,
             0,
             nullptr);
-        vkCmdDispatch(frameInfo.commandBuffer, width, height, 1);
+        vkCmdDispatch(cmdBuffer, width, height, 1);
     }
 
     void ComputeSystem::createComputePipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
