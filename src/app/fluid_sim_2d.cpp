@@ -75,17 +75,9 @@ namespace lve
             uboBuffers[i]->map();
         }
 
-        ParticleBuffer particleBufferData = initParticleBufferData({300.f, 300.f}, 10.f, 105.f);
-        // particle buffer includes a int for the number of particles and a vec2 for position of each particle
-        particlePosBuffer = std::make_unique<LveBuffer>(
-            lveDevice,
-            sizeof(int) * 2 + sizeof(glm::vec2) * particleBufferData.numParticles, // multiply by 2 for alignment
-            1,
-            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        particlePosBuffer->map();
-        particlePosBuffer->writeToBuffer(&particleBufferData.numParticles, sizeof(int));
-        particlePosBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * particleBufferData.numParticles, sizeof(int) * 2);
+        particleBufferData = initParticleBufferData({300.f, 300.f}, 10.f, 105.f);
+        initParticleBuffer();
+        writeParticleBuffer();
 
         globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)
@@ -151,6 +143,9 @@ namespace lve
                     static_cast<int>(std::ceil(extent.width / 8.f)),
                     static_cast<int>(std::ceil(extent.height / 8.f)));
 
+                updateParticleBufferData(frameTime);
+                writeParticleBuffer();
+
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
@@ -173,7 +168,7 @@ namespace lve
     {
         VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
             0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
-        auto particleBufferInfo = particlePosBuffer->descriptorInfo();
+        auto particleBufferInfo = particleBuffer->descriptorInfo();
 
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
@@ -242,18 +237,49 @@ namespace lve
     {
         ParticleBuffer particleBufferData{};
         particleBufferData.numParticles = PARTICLE_COUNT;
-        particleBufferData.positions.resize(particleBufferData.numParticles);
+        particleBufferData.positions.resize(PARTICLE_COUNT);
+        particleBufferData.velocities.resize(PARTICLE_COUNT);
 
         maxWidth -= std::fmod(maxWidth, stride);
         int cntPerRow = static_cast<int>(maxWidth / stride);
         int row, col;
-        for (int i = 0; i < particleBufferData.numParticles; i++)
+        for (int i = 0; i < PARTICLE_COUNT; i++)
         {
             row = static_cast<int>(i / cntPerRow);
             col = i % cntPerRow;
             particleBufferData.positions[i] = startPoint + glm::vec2(col * stride, row * stride);
+
+            // random velocity ranged from -1 to 1
+            particleBufferData.velocities[i] = glm::vec2(
+                static_cast<float>(rand() % 400) - 200.f,
+                static_cast<float>(rand() % 400) - 200.f);
         }
 
         return particleBufferData;
+    }
+
+    void FluidSim2DApp::initParticleBuffer()
+    {
+        particleBuffer = std::make_unique<LveBuffer>(
+            lveDevice,
+            sizeof(int) * 2 + sizeof(glm::vec2) * PARTICLE_COUNT, // multiply by 2 for alignment
+            1,
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        particleBuffer->map();
+        particleBuffer->writeToBuffer(&particleBufferData.numParticles, sizeof(int));
+    }
+
+    void FluidSim2DApp::writeParticleBuffer()
+    {
+        particleBuffer->writeToBuffer(particleBufferData.positions.data(), sizeof(glm::vec2) * PARTICLE_COUNT, sizeof(int) * 2);
+    }
+
+    void FluidSim2DApp::updateParticleBufferData(float deltaTime)
+    {
+        for (int i = 0; i < PARTICLE_COUNT; i++)
+        {
+            particleBufferData.positions[i] += particleBufferData.velocities[i] * deltaTime;
+        }
     }
 } // namespace lve

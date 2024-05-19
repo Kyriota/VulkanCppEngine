@@ -17,6 +17,7 @@ namespace lve
     {
         unsigned int numParticles;
         std::vector<glm::vec2> positions;
+        std::vector<glm::vec2> velocities;
     };
 
     class FluidSim2DApp
@@ -41,9 +42,11 @@ namespace lve
 
         std::unique_ptr<LveDescriptorPool> globalPool{};
         std::vector<std::unique_ptr<LveBuffer>> uboBuffers;
-        std::unique_ptr<LveBuffer> particlePosBuffer;
+        std::unique_ptr<LveBuffer> particleBuffer;
         std::unique_ptr<LveDescriptorSetLayout> globalSetLayout;
         std::vector<VkDescriptorSet> globalDescriptorSets;
+
+        ParticleBuffer particleBufferData;
 
         void updateGlobalDescriptorSets(bool build=false);
 
@@ -56,5 +59,8 @@ namespace lve
 
         const unsigned int PARTICLE_COUNT = 32;
         ParticleBuffer initParticleBufferData(glm::vec2 startPoint, float stride, float maxWidth);
+        void initParticleBuffer();
+        void writeParticleBuffer();
+        void updateParticleBufferData(float deltaTime);
     };
 } // namespace lve
