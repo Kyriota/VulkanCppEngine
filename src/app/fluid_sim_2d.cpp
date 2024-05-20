@@ -136,14 +136,15 @@ namespace lve
                 int frameIndex = lveRenderer.getFrameIndex();
 
                 // update
-                VkExtent2D extent = lveWindow.getExtent();
+                windowExtent = lveWindow.getExtent();
                 simpleComputeSystem.dispatchComputePipeline(
                     commandBuffer,
                     &globalDescriptorSets[frameIndex],
-                    static_cast<int>(std::ceil(extent.width / 8.f)),
-                    static_cast<int>(std::ceil(extent.height / 8.f)));
+                    static_cast<int>(std::ceil(windowExtent.width / 8.f)),
+                    static_cast<int>(std::ceil(windowExtent.height / 8.f)));
 
                 updateParticleBufferData(frameTime);
+                handleBoundaryCollision();
                 writeParticleBuffer();
 
                 // render
@@ -154,7 +155,7 @@ namespace lve
                     &globalDescriptorSets[frameIndex],
                     screenTextureRenderSystem.getPipelineLayout(),
                     screenTextureRenderSystem.getPipeline(),
-                    extent);
+                    windowExtent);
 
                 lveRenderer.endSwapChainRenderPass(commandBuffer);
                 lveRenderer.endFrame();
@@ -280,6 +281,23 @@ namespace lve
         for (int i = 0; i < PARTICLE_COUNT; i++)
         {
             particleBufferData.positions[i] += particleBufferData.velocities[i] * deltaTime;
+        }
+    }
+
+    void FluidSim2DApp::handleBoundaryCollision()
+    {
+        for (int i = 0; i < PARTICLE_COUNT; i++)
+        {
+            if (particleBufferData.positions[i].x < 0 || particleBufferData.positions[i].x > windowExtent.width)
+            {
+                particleBufferData.positions[i].x = std::clamp(particleBufferData.positions[i].x, 0.f, static_cast<float>(windowExtent.width));
+                particleBufferData.velocities[i].x *= -collisionDamping;
+            }
+            if (particleBufferData.positions[i].y < 0 || particleBufferData.positions[i].y > windowExtent.height)
+            {
+                particleBufferData.positions[i].y = std::clamp(particleBufferData.positions[i].y, 0.f, static_cast<float>(windowExtent.height));
+                particleBufferData.velocities[i].y *= -collisionDamping;
+            }
         }
     }
 } // namespace lve

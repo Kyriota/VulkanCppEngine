@@ -39,19 +39,25 @@ namespace lve
         LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "FluidSim2DApp"};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
+        VkExtent2D windowExtent = lveWindow.getExtent();
 
+        // GPU resources
         std::unique_ptr<LveDescriptorPool> globalPool{};
         std::vector<std::unique_ptr<LveBuffer>> uboBuffers;
         std::unique_ptr<LveBuffer> particleBuffer;
         std::unique_ptr<LveDescriptorSetLayout> globalSetLayout;
         std::vector<VkDescriptorSet> globalDescriptorSets;
 
+        // Fluid simulation data
         ParticleBuffer particleBufferData;
-
-        void updateGlobalDescriptorSets(bool build=false);
+        float smoothRadius = 2.0f;
+        float collisionDamping = 0.9f;
+        float targetDensity = 1.0f;
 
         LveImage screenTextureImage{lveDevice};
         VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
+
+        void updateGlobalDescriptorSets(bool build=false);
 
         VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
         void createScreenTextureImageView();
@@ -62,5 +68,6 @@ namespace lve
         void initParticleBuffer();
         void writeParticleBuffer();
         void updateParticleBufferData(float deltaTime);
+        void handleBoundaryCollision();
     };
 } // namespace lve
