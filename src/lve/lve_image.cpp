@@ -43,7 +43,7 @@ namespace lve
           extent{other.extent},
           imageViews{std::move(other.imageViews)},
           imageLayout{other.imageLayout},
-            initialized{other.initialized}
+          initialized{other.initialized}
     {
         other.image = nullptr;
         other.imageMemory = nullptr;
@@ -154,7 +154,7 @@ namespace lve
     }
 
     VkDescriptorImageInfo LveImage::getDescriptorImageInfo(int imageViewId, VkSampler sampler) const
-    {   
+    {
         return VkDescriptorImageInfo{
             .sampler = sampler,
             .imageView = getImageView(imageViewId),

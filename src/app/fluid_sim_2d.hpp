@@ -6,10 +6,13 @@
 #include "lve/lve_renderer.hpp"
 #include "lve/lve_window.hpp"
 #include "lve/lve_image.hpp"
+#include "system/render_system.hpp"
+#include "system/compute_system.hpp"
 
 // std
 #include <memory>
 #include <vector>
+#include <atomic>
 
 namespace lve
 {
@@ -47,11 +50,13 @@ namespace lve
         std::unique_ptr<LveBuffer> particleBuffer;
         std::unique_ptr<LveDescriptorSetLayout> globalSetLayout;
         std::vector<VkDescriptorSet> globalDescriptorSets;
+        RenderSystem screenTextureRenderSystem{lveDevice};
+        ComputeSystem fluidSimComputeSystem{lveDevice};
 
         // Fluid simulation data
         ParticleBuffer particleBufferData;
         float smoothRadius = 2.0f;
-        float collisionDamping = 0.9f;
+        float collisionDamping = 1.0f;
         float targetDensity = 1.0f;
 
         LveImage screenTextureImage{lveDevice};
@@ -69,5 +74,9 @@ namespace lve
         void writeParticleBuffer();
         void updateParticleBufferData(float deltaTime);
         void handleBoundaryCollision();
+
+        // Multi-threading
+        std::atomic<bool> isRunning = true;
+        void renderLoop();
     };
 } // namespace lve

@@ -4,8 +4,6 @@
 #include "lve/lve_buffer.hpp"
 #include "lve/lve_camera.hpp"
 #include "lve/lve_sampler_manager.hpp"
-#include "system/render_system.hpp"
-#include "system/compute_system.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -19,6 +17,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <cmath>
+#include <thread>
 
 namespace lve
 {
@@ -37,7 +36,7 @@ namespace lve
     {
         globalPool =
             LveDescriptorPool::Builder(lveDevice)
-                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT * 3)
+                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
                 .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
@@ -52,15 +51,7 @@ namespace lve
                 recreateScreenTextureImage(extent);
                 updateGlobalDescriptorSets();
             });
-    }
 
-    FluidSim2DApp::~FluidSim2DApp()
-    {
-        LveSamplerManager::clearSamplers();
-    }
-
-    void FluidSim2DApp::run()
-    {
         uboBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
         globalDescriptorSets.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
 
@@ -90,77 +81,38 @@ namespace lve
         recreateScreenTextureImage(lveWindow.getExtent());
         updateGlobalDescriptorSets(true);
 
-        GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
-        graphicPipelineConfigInfo.vertFilepath = "build/shaders/simple_shader.vert.spv";
-        graphicPipelineConfigInfo.fragFilepath = "build/shaders/simple_shader.frag.spv";
-        graphicPipelineConfigInfo.vertexBindingDescriptions = LveModel::Vertex::getBindingDescriptions();
-        graphicPipelineConfigInfo.vertexAttributeDescriptions = LveModel::Vertex::getAttributeDescriptions();
-
-        RenderSystem simpleRenderSystem{
-            lveDevice,
-            lveRenderer.getSwapChainRenderPass(),
-            {globalSetLayout->getDescriptorSetLayout()},
-            graphicPipelineConfigInfo};
-
         GraphicPipelineConfigInfo screenTexturePipelineConfigInfo{};
         screenTexturePipelineConfigInfo.vertFilepath = "build/shaders/screen_texture_shader.vert.spv";
         screenTexturePipelineConfigInfo.fragFilepath = "build/shaders/screen_texture_shader.frag.spv";
 
-        RenderSystem screenTextureRenderSystem{
+        screenTextureRenderSystem = RenderSystem(
             lveDevice,
             lveRenderer.getSwapChainRenderPass(),
             {globalSetLayout->getDescriptorSetLayout()},
-            screenTexturePipelineConfigInfo};
+            screenTexturePipelineConfigInfo);
 
-        ComputeSystem simpleComputeSystem{
+        fluidSimComputeSystem = ComputeSystem(
             lveDevice,
             {globalSetLayout->getDescriptorSetLayout()},
-            "build/shaders/my_compute_shader.comp.spv"};
+            "build/shaders/my_compute_shader.comp.spv");
+    }
 
-        auto viewerObject = LveGameObject::createGameObject();
-        viewerObject.transform.translation.z = -2.5f;
-        KeyboardMovementController cameraController{};
+    FluidSim2DApp::~FluidSim2DApp()
+    {
+        LveSamplerManager::clearSamplers();
+    }
 
-        auto currentTime = std::chrono::high_resolution_clock::now();
+    void FluidSim2DApp::run()
+    {
+        std::thread renderThread(&FluidSim2DApp::renderLoop, this);
+
         while (!lveWindow.shouldClose())
         {
             glfwPollEvents();
-
-            auto newTime = std::chrono::high_resolution_clock::now();
-            float frameTime =
-                std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-            currentTime = newTime;
-
-            if (auto commandBuffer = lveRenderer.beginFrame())
-            {
-                int frameIndex = lveRenderer.getFrameIndex();
-
-                // update
-                windowExtent = lveWindow.getExtent();
-                simpleComputeSystem.dispatchComputePipeline(
-                    commandBuffer,
-                    &globalDescriptorSets[frameIndex],
-                    static_cast<int>(std::ceil(windowExtent.width / 8.f)),
-                    static_cast<int>(std::ceil(windowExtent.height / 8.f)));
-
-                updateParticleBufferData(frameTime);
-                handleBoundaryCollision();
-                writeParticleBuffer();
-
-                // render
-                lveRenderer.beginSwapChainRenderPass(commandBuffer);
-
-                renderScreenTexture(
-                    commandBuffer,
-                    &globalDescriptorSets[frameIndex],
-                    screenTextureRenderSystem.getPipelineLayout(),
-                    screenTextureRenderSystem.getPipeline(),
-                    windowExtent);
-
-                lveRenderer.endSwapChainRenderPass(commandBuffer);
-                lveRenderer.endFrame();
-            }
         }
+
+        isRunning = false;
+        renderThread.join();
 
         vkDeviceWaitIdle(lveDevice.device());
     }
@@ -297,6 +249,48 @@ namespace lve
             {
                 particleBufferData.positions[i].y = std::clamp(particleBufferData.positions[i].y, 0.f, static_cast<float>(windowExtent.height));
                 particleBufferData.velocities[i].y *= -collisionDamping;
+            }
+        }
+    }
+
+    void FluidSim2DApp::renderLoop()
+    {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        while (isRunning)
+        {
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime =
+                std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            if (auto commandBuffer = lveRenderer.beginFrame())
+            {
+                int frameIndex = lveRenderer.getFrameIndex();
+
+                // update
+                windowExtent = lveWindow.getExtent();
+                fluidSimComputeSystem.dispatchComputePipeline(
+                    commandBuffer,
+                    &globalDescriptorSets[frameIndex],
+                    static_cast<int>(std::ceil(windowExtent.width / 8.f)),
+                    static_cast<int>(std::ceil(windowExtent.height / 8.f)));
+
+                updateParticleBufferData(frameTime);
+                handleBoundaryCollision();
+                writeParticleBuffer();
+
+                // render
+                lveRenderer.beginSwapChainRenderPass(commandBuffer);
+
+                renderScreenTexture(
+                    commandBuffer,
+                    &globalDescriptorSets[frameIndex],
+                    screenTextureRenderSystem.getPipelineLayout(),
+                    screenTextureRenderSystem.getPipeline(),
+                    windowExtent);
+
+                lveRenderer.endSwapChainRenderPass(commandBuffer);
+                lveRenderer.endFrame();
             }
         }
     }

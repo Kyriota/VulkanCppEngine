@@ -20,6 +20,38 @@ namespace lve
         vkDestroyPipelineLayout(lveDevice.device(), computePipelineLayout, nullptr);
     }
 
+    ComputeSystem::ComputeSystem(ComputeSystem &&other) noexcept
+        : lveDevice{other.lveDevice},
+          lveComputePipeline{std::move(other.lveComputePipeline)},
+          computePipelineLayout{other.computePipelineLayout},
+          initialized{other.initialized}
+    {
+        other.computePipelineLayout = nullptr;
+    }
+
+    ComputeSystem &ComputeSystem::operator=(ComputeSystem &&other)
+    {
+        if (this->lveDevice.device() != other.lveDevice.device())
+        {
+            throw std::runtime_error("Moved ComputeSystem objects must be on the same LveDevice");
+        }
+
+        if (this != &other)
+        {
+            // Clean up existing resources
+            cleanUp();
+
+            lveComputePipeline = std::move(other.lveComputePipeline);
+            computePipelineLayout = other.computePipelineLayout;
+            initialized = other.initialized;
+
+            // Reset other object
+            other.computePipelineLayout = nullptr;
+        }
+
+        return *this;
+    }
+
     void ComputeSystem::dispatchComputePipeline(
         VkCommandBuffer cmdBuffer,
         const VkDescriptorSet *pGlobalDescriptorSet,
@@ -36,6 +68,14 @@ namespace lve
             0,
             nullptr);
         vkCmdDispatch(cmdBuffer, width, height, 1);
+    }
+
+    void ComputeSystem::cleanUp()
+    {
+        if (initialized)
+        {
+            vkDestroyPipelineLayout(lveDevice.device(), computePipelineLayout, nullptr);
+        }
     }
 
     void ComputeSystem::createComputePipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)

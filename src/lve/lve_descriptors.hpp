@@ -62,7 +62,7 @@ namespace lve
         private:
             LveDevice &lveDevice;
             std::vector<VkDescriptorPoolSize> poolSizes{};
-            uint32_t maxSets = 1000;
+            uint32_t maxSets = 1024;
             VkDescriptorPoolCreateFlags poolFlags = 0;
         };
 

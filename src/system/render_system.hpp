@@ -33,20 +33,28 @@ namespace lve
             VkRenderPass renderPass,
             std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
             GraphicPipelineConfigInfo &graphicPipelineConfigInfo);
+        RenderSystem(LveDevice &device) : lveDevice(device) {}
         ~RenderSystem();
 
         RenderSystem(const RenderSystem &) = delete;
         RenderSystem &operator=(const RenderSystem &) = delete;
 
+        RenderSystem(RenderSystem &&other) noexcept;
+        RenderSystem &operator=(RenderSystem &&other);
+
         VkPipelineLayout getPipelineLayout() const { return graphicPipelineLayout; }
         LveGraphicPipeline *getPipeline() const { return lveGraphicPipeline.get(); }
 
     private:
+        void cleanUp();
+
         void createGraphicPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
         void createGraphicPipeline(VkRenderPass renderPass, GraphicPipelineConfigInfo &graphicPipelineConfigInfo);
 
         LveDevice &lveDevice;
         std::unique_ptr<LveGraphicPipeline> lveGraphicPipeline;
         VkPipelineLayout graphicPipelineLayout;
+        
+        bool initialized = false;
     };
 } // namespace lve

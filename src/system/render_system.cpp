@@ -109,11 +109,52 @@ namespace lve
     {
         createGraphicPipelineLayout(descriptorSetLayouts);
         createGraphicPipeline(renderPass, graphicPipelineConfigInfo);
+        initialized = true;
     }
 
     RenderSystem::~RenderSystem()
     {
-        vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
+        cleanUp();
+    }
+
+    RenderSystem::RenderSystem(RenderSystem &&other) noexcept
+        : lveDevice{other.lveDevice},
+          lveGraphicPipeline{std::move(other.lveGraphicPipeline)},
+          graphicPipelineLayout{other.graphicPipelineLayout},
+          initialized{other.initialized}
+    {
+        other.graphicPipelineLayout = nullptr;
+    }
+
+    RenderSystem &RenderSystem::operator=(RenderSystem &&other)
+    {
+        if (this->lveDevice.device() != other.lveDevice.device())
+        {
+            throw std::runtime_error("Moved RenderSystem objects must be on the same LveDevice");
+        }
+
+        if (this != &other)
+        {
+            // Clean up existing resources
+            cleanUp();
+
+            lveGraphicPipeline = std::move(other.lveGraphicPipeline);
+            graphicPipelineLayout = other.graphicPipelineLayout;
+            initialized = other.initialized;
+
+            // Reset other object
+            other.graphicPipelineLayout = nullptr;
+        }
+
+        return *this;
+    }
+
+    void RenderSystem::cleanUp()
+    {
+        if (initialized)
+        {
+            vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
+        }
     }
 
     void RenderSystem::createGraphicPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
