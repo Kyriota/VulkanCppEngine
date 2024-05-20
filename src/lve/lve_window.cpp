@@ -36,6 +36,19 @@ namespace lve
         }
     }
 
+    void LveWindow::mainThreadGlfwEventLoop()
+    {
+        while (!shouldClose())
+        {
+            glfwPollEvents();
+            if (shouldWaitEvents)
+            {
+                glfwWaitEvents();
+                shouldWaitEvents = false;
+            }
+        }
+    }
+
     void LveWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height)
     {
         auto lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));

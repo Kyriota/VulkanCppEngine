@@ -76,7 +76,7 @@ namespace lve
         void handleBoundaryCollision();
 
         // Multi-threading
-        std::atomic<bool> isRunning = true;
+        std::atomic<bool> isRunning{true};
         void renderLoop();
     };
 } // namespace lve

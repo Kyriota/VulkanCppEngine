@@ -106,10 +106,7 @@ namespace lve
     {
         std::thread renderThread(&FluidSim2DApp::renderLoop, this);
 
-        while (!lveWindow.shouldClose())
-        {
-            glfwPollEvents();
-        }
+        lveWindow.mainThreadGlfwEventLoop();
 
         isRunning = false;
         renderThread.join();

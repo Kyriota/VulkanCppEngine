@@ -5,6 +5,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 namespace lve
 {
@@ -20,22 +22,32 @@ namespace lve
 
     void LveRenderer::recreateSwapChain()
     {
-        auto extent = lveWindow.getExtent();
-        while (extent.width == 0 || extent.height == 0)
+        VkExtent2D windowExtent = lveWindow.getExtent();
+        if (lveSwapChain != nullptr) // swap chain already exists
         {
-            extent = lveWindow.getExtent();
-            glfwWaitEvents();
+            VkExtent2D swapchainExtent = lveSwapChain->getSwapChainExtent();
+            if (swapchainExtent.width == windowExtent.width && swapchainExtent.height == windowExtent.height)
+            {
+                return; // trying to recreate swap chain with the same extent, no need to recreate
+            }
         }
+        while (windowExtent.width == 0 || windowExtent.height == 0) // window minimized
+        {
+            lveWindow.waitEvents();
+            windowExtent = lveWindow.getExtent();
+        }
+
         vkDeviceWaitIdle(lveDevice.device());
 
         if (lveSwapChain == nullptr)
         {
-            lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, extent);
+            lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, windowExtent);
         }
         else
         {
+            printf(" >>> window extent: %d, %d\n", windowExtent.width, windowExtent.height);
             std::shared_ptr<LveSwapChain> oldSwapChain = std::move(lveSwapChain);
-            lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, extent, oldSwapChain);
+            lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, windowExtent, oldSwapChain);
 
             if (!oldSwapChain->compareSwapFormats(*lveSwapChain.get()))
             {

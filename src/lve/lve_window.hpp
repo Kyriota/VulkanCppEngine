@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
+#include <atomic>
+
 namespace lve
 {
 
@@ -23,6 +25,8 @@ namespace lve
         GLFWwindow *getGLFWwindow() const { return window; }
 
         void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+        void mainThreadGlfwEventLoop();
+        void waitEvents() { shouldWaitEvents = true; }
 
     private:
         static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
@@ -34,5 +38,7 @@ namespace lve
 
         std::string windowName;
         GLFWwindow *window;
+
+        std::atomic<bool> shouldWaitEvents{false};
     };
 } // namespace lve
