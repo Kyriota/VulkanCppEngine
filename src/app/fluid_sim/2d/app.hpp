@@ -1,5 +1,6 @@
 #pragma once
 
+#include "fluid_particle_system.hpp"
 #include "lve/lve_descriptors.hpp"
 #include "lve/lve_device.hpp"
 #include "lve/lve_game_object.hpp"
@@ -16,13 +17,6 @@
 
 namespace lve
 {
-    struct ParticleBuffer
-    {
-        unsigned int numParticles;
-        std::vector<glm::vec2> positions;
-        std::vector<glm::vec2> velocities;
-    };
-
     class FluidSim2DApp
     {
     public:
@@ -53,27 +47,22 @@ namespace lve
         RenderSystem screenTextureRenderSystem{lveDevice};
         ComputeSystem fluidSimComputeSystem{lveDevice};
 
-        // Fluid simulation data
-        ParticleBuffer particleBufferData;
-        float smoothRadius = 2.0f;
-        float collisionDamping = 1.0f;
-        float targetDensity = 1.0f;
-
         LveImage screenTextureImage{lveDevice};
         VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
-        void updateGlobalDescriptorSets(bool build=false);
+        FluidParticleSystem fluidParticleSys{
+            FluidParticleSystem::ParticleSysInitData{
+                .particleCount = 32,
+                .windowExtent = lveWindow.getExtent()}};
+
+        void updateGlobalDescriptorSets(bool build = false);
 
         VkImageCreateInfo createScreenTextureInfo(VkFormat format, VkExtent2D extent);
         void createScreenTextureImageView();
         void recreateScreenTextureImage(VkExtent2D extent);
 
-        const unsigned int PARTICLE_COUNT = 32;
-        ParticleBuffer initParticleBufferData(glm::vec2 startPoint, float stride, float maxWidth);
-        void initParticleBuffer();
-        void writeParticleBuffer();
-        void updateParticleBufferData(float deltaTime);
-        void handleBoundaryCollision();
+        void initParticleBuffer(unsigned int particleCount);
+        void writeParticleBuffer(FluidParticleSystem::ParticleData &particleData);
 
         // Multi-threading
         std::atomic<bool> isRunning{true};

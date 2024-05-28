@@ -1,4 +1,4 @@
-#include "app/fluid_sim_2d.hpp"
+#include "app/fluid_sim/2d/app.hpp"
 #include "app/renderer.hpp"
 
 // std
