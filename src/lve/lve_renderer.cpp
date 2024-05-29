@@ -20,22 +20,16 @@ namespace lve
 
     LveRenderer::~LveRenderer() { freeCommandBuffers(); }
 
-    void LveRenderer::recreateSwapChain()
+    bool LveRenderer::recreateSwapChain()
     {
+        if (lveWindow.isWindowMinimized())
+        {
+            std::unique_lock<std::mutex> renderLock(lveWindow.renderMutex);
+            lveWindow.renderCondVar.wait(renderLock, [this] { return !lveWindow.isWindowMinimized(); });
+            return false;
+        }
+
         VkExtent2D windowExtent = lveWindow.getExtent();
-        if (lveSwapChain != nullptr) // swap chain already exists
-        {
-            VkExtent2D swapchainExtent = lveSwapChain->getSwapChainExtent();
-            if (swapchainExtent.width == windowExtent.width && swapchainExtent.height == windowExtent.height)
-            {
-                return; // trying to recreate swap chain with the same extent, no need to recreate
-            }
-        }
-        while (windowExtent.width == 0 || windowExtent.height == 0) // window minimized
-        {
-            lveWindow.waitEvents();
-            windowExtent = lveWindow.getExtent();
-        }
 
         vkDeviceWaitIdle(lveDevice.device());
 
@@ -54,6 +48,8 @@ namespace lve
                 throw std::runtime_error("Swap chain image(or depth) format has changed!");
             }
         }
+
+        return true;
     }
 
     void LveRenderer::createCommandBuffers()
@@ -122,12 +118,9 @@ namespace lve
         }
 
         auto result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-            lveWindow.wasWindowResized())
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) // window resized
         {
-            lveWindow.resetWindowResizedFlag();
             recreateSwapChain();
-            
             for (const auto &callback : windowResizedCallbacks)
             {
                 callback.second(lveSwapChain->getSwapChainExtent());

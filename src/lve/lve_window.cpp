@@ -6,9 +6,9 @@
 namespace lve
 {
 
-    LveWindow::LveWindow(int w, int h, std::string name) : width{w}, height{h}, windowName{name}
+    LveWindow::LveWindow(int w, int h, std::string name) : windowName{name}
     {
-        initWindow();
+        initWindow(w, h);
     }
 
     LveWindow::~LveWindow()
@@ -17,7 +17,7 @@ namespace lve
         glfwTerminate();
     }
 
-    void LveWindow::initWindow()
+    void LveWindow::initWindow(int width, int height)
     {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -41,20 +41,41 @@ namespace lve
         while (!shouldClose())
         {
             glfwPollEvents();
-            if (shouldWaitEvents)
-            {
+
+            if (isWindowMinimized()) {
+                printf(" >>> window minimized detected in main\n");
                 glfwWaitEvents();
-                shouldWaitEvents = false;
+                printf(" >>> glfwWaitEvents() ends\n");
+                renderCondVar.notify_one(); // notify render thread to resume
             }
         }
+    }
+
+    VkExtent2D LveWindow::getExtent()
+    {
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+    }
+
+    bool LveWindow::isWindowMinimized()
+    {
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        return width == 0 || height == 0;
     }
 
     void LveWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height)
     {
         auto lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
-        lveWindow->framebufferResized = true;
-        lveWindow->width = width;
-        lveWindow->height = height;
+        if (width == 0 || height == 0)
+        {
+            return;
+        }
+        else
+        {
+            printf(" >>> window resized detected in callback\n");
+        }
     }
 
 } // namespace lve

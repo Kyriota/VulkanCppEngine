@@ -50,7 +50,7 @@ namespace lve
     private:
         void createCommandBuffers();
         void freeCommandBuffers();
-        void recreateSwapChain();
+        bool recreateSwapChain();
 
         LveWindow &lveWindow;
         LveDevice &lveDevice;

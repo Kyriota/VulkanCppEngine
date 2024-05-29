@@ -1,10 +1,13 @@
 #pragma once
 
+// libs
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+// std
 #include <string>
-#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 namespace lve
 {
@@ -18,27 +21,22 @@ namespace lve
         LveWindow(const LveWindow &) = delete;
         LveWindow &operator=(const LveWindow &) = delete;
 
+        std::mutex renderMutex;
+        std::condition_variable renderCondVar;
+
         bool shouldClose() { return glfwWindowShouldClose(window); }
-        VkExtent2D getExtent() { return {static_cast<uint32_t>(width), static_cast<uint32_t>(height)}; }
-        bool wasWindowResized() { return framebufferResized; }
-        void resetWindowResizedFlag() { framebufferResized = false; }
+        VkExtent2D getExtent();
+        bool isWindowMinimized();
         GLFWwindow *getGLFWwindow() const { return window; }
 
         void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
         void mainThreadGlfwEventLoop();
-        void waitEvents() { shouldWaitEvents = true; }
 
     private:
         static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
-        void initWindow();
-
-        int width;
-        int height;
-        bool framebufferResized = false;
+        void initWindow(int width, int height);
 
         std::string windowName;
         GLFWwindow *window;
-
-        std::atomic<bool> shouldWaitEvents{false};
     };
 } // namespace lve
