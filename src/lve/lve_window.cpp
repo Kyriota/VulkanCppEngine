@@ -38,16 +38,25 @@ namespace lve
 
     void LveWindow::mainThreadGlfwEventLoop()
     {
+        bool wasMinimized = false;
+
         while (!shouldClose())
         {
             glfwPollEvents();
 
-            if (isWindowMinimized()) {
-                printf(" >>> window minimized detected in main\n");
+            bool isMinimized = isWindowMinimized();
+            if (isMinimized)
+            {
                 glfwWaitEvents();
-                printf(" >>> glfwWaitEvents() ends\n");
+            }
+
+            if (wasMinimized && !isMinimized)
+            {
+                std::lock_guard<std::mutex> lock(renderMutex);
                 renderCondVar.notify_one(); // notify render thread to resume
             }
+
+            wasMinimized = isMinimized;
         }
     }
 
@@ -68,14 +77,7 @@ namespace lve
     void LveWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height)
     {
         auto lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
-        if (width == 0 || height == 0)
-        {
-            return;
-        }
-        else
-        {
-            printf(" >>> window resized detected in callback\n");
-        }
+        // maybe useful in the future
     }
 
 } // namespace lve

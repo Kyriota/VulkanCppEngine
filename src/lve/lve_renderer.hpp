@@ -43,9 +43,9 @@ namespace lve
         void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
         void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
-        using WindowResizedCallback = std::function<void(VkExtent2D)>;
-        void registerWindowResizedCallback(const std::string &name, WindowResizedCallback callback) { windowResizedCallbacks[name] = callback; }
-        void unregisterWindowResizedCallback(const std::string &name) { windowResizedCallbacks.erase(name); }
+        using SwapChainResizedCallback = std::function<void(VkExtent2D)>;
+        void registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback) { swapChainResizedCallbacks[name] = callback; }
+        void unregisterSwapChainResizedCallback(const std::string &name) { swapChainResizedCallbacks.erase(name); }
 
     private:
         void createCommandBuffers();
@@ -61,6 +61,6 @@ namespace lve
         int currentFrameIndex{0};
         bool isFrameStarted{false};
 
-        std::unordered_map<std::string, WindowResizedCallback> windowResizedCallbacks;
+        std::unordered_map<std::string, SwapChainResizedCallback> swapChainResizedCallbacks;
     };
 } // namespace lve

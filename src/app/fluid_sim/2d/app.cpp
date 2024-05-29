@@ -42,7 +42,7 @@ namespace lve
                 .build();
 
         // register callback functions for window resize
-        lveRenderer.registerWindowResizedCallback(
+        lveRenderer.registerSwapChainResizedCallback(
             WINDOW_RESIZED_CALLBACK_NAME,
             [this](VkExtent2D extent)
             {

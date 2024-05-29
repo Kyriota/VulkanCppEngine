@@ -30,6 +30,7 @@ namespace lve
         }
 
         VkExtent2D windowExtent = lveWindow.getExtent();
+        VkExtent2D swapChainExtent = lveSwapChain == nullptr ? VkExtent2D{0, 0} : lveSwapChain->getSwapChainExtent();
 
         vkDeviceWaitIdle(lveDevice.device());
 
@@ -39,7 +40,7 @@ namespace lve
         }
         else
         {
-            printf(" >>> window extent: %d, %d\n", windowExtent.width, windowExtent.height);
+            printf(" >>> recreating swap chain with window extent: %d, %d\n", windowExtent.width, windowExtent.height);
             std::shared_ptr<LveSwapChain> oldSwapChain = std::move(lveSwapChain);
             lveSwapChain = std::make_unique<LveSwapChain>(lveDevice, windowExtent, oldSwapChain);
 
@@ -118,14 +119,28 @@ namespace lve
         }
 
         auto result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) // window resized
+
+        if (
+            result == VK_ERROR_OUT_OF_DATE_KHR || // The swap chain has become incompatible with
+                                                  // the surface and can no longer be used for rendering.
+                                                  // Usually happens after a window resize.
+
+            result == VK_SUBOPTIMAL_KHR // The swap chain can still be used to
+                                        // successfully present to the surface,
+                                        // but the surface properties are no longer matched exactly.
+        )
         {
-            recreateSwapChain();
-            for (const auto &callback : windowResizedCallbacks)
+            // This branch is usually entered when the window is resized or minimized
+            bool isSwapChainRecreated = recreateSwapChain();
+            if (isSwapChainRecreated)
             {
-                callback.second(lveSwapChain->getSwapChainExtent());
+                for (const auto &callback : swapChainResizedCallbacks)
+                {
+                    callback.second(lveSwapChain->getSwapChainExtent());
+                }
             }
         }
+
         else if (result != VK_SUCCESS)
         {
             throw std::runtime_error("failed to present swap chain image!");

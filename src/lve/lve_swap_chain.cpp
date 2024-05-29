@@ -415,7 +415,7 @@ namespace lve
         {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
             {
-                std::cout << "Present mode: Mailbox" << std::endl;
+                // std::cout << "Present mode: Mailbox" << std::endl;
                 return availablePresentMode;
             }
         }
@@ -427,7 +427,7 @@ namespace lve
         //   }
         // }
 
-        std::cout << "Present mode: V-Sync" << std::endl;
+        // std::cout << "Present mode: V-Sync" << std::endl;
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
