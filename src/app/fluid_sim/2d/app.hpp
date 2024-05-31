@@ -52,7 +52,7 @@ namespace lve
 
         FluidParticleSystem fluidParticleSys{
             FluidParticleSystem::ParticleSysInitData{
-                .particleCount = 32,
+                .particleCount = 128,
                 .windowExtent = lveWindow.getExtent()}};
 
         void updateGlobalDescriptorSets(bool build = false);
@@ -61,7 +61,7 @@ namespace lve
         void createScreenTextureImageView();
         void recreateScreenTextureImage(VkExtent2D extent);
 
-        void initParticleBuffer(unsigned int particleCount);
+        void initParticleBuffer(FluidParticleSystem::ParticleData &particleData);
         void writeParticleBuffer(FluidParticleSystem::ParticleData &particleData);
 
         // Multi-threading

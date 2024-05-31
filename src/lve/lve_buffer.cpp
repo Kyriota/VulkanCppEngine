@@ -221,6 +221,21 @@ namespace lve
     }
 
     /**
+     * Copies data to the buffer and increments the recorded offset
+     *
+     * @param data Pointer to the data to copy
+     * @param size Size of the data to copy
+     *
+     */
+    void LveBuffer::writeToBufferOrdered(void *data, VkDeviceSize size)
+    {
+        assert (recordedOffset + size <= bufferSize && "Buffer overflow");
+
+        writeToBuffer(data, size, recordedOffset);
+        recordedOffset += size;
+    }
+
+    /**
      * Copies "instanceSize" bytes of data to the mapped buffer at an offset of index * alignmentSize
      *
      * @param data Pointer to the data to copy

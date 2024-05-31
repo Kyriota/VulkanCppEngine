@@ -36,6 +36,9 @@ namespace lve
         VkDescriptorBufferInfo descriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
+        void writeToBufferOrdered(void *data, VkDeviceSize size);
+        void setRecordedOffset(uint64_t offset) { recordedOffset = offset; }
+
         void writeToIndex(void *data, int index);
         VkResult flushIndex(int index);
         VkDescriptorBufferInfo descriptorInfoForIndex(int index);
@@ -57,6 +60,8 @@ namespace lve
         void *mapped = nullptr;
         VkBuffer buffer = VK_NULL_HANDLE;
         VkDeviceMemory memory = VK_NULL_HANDLE;
+
+        uint64_t recordedOffset = 0;
 
         VkDeviceSize bufferSize;
         uint32_t instanceCount;

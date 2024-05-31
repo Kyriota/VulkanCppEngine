@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <cmath>
 #include <thread>
+#include <iostream>
 
 namespace lve
 {
@@ -64,7 +65,7 @@ namespace lve
             uboBuffers[i]->map();
         }
 
-        initParticleBuffer(fluidParticleSys.getParticleCount());
+        initParticleBuffer(fluidParticleSys.getParticleData());
         writeParticleBuffer(fluidParticleSys.getParticleData());
 
         globalSetLayout =
@@ -180,21 +181,34 @@ namespace lve
         createScreenTextureImageView();
     }
 
-    void FluidSim2DApp::initParticleBuffer(unsigned int particleCount)
+    void FluidSim2DApp::initParticleBuffer(FluidParticleSystem::ParticleData &particleData)
     {
+        int particleCount = particleData.numParticles;
+        float smoothingRadius = particleData.smoothingRadius;
+
         particleBuffer = std::make_unique<LveBuffer>(
             lveDevice,
-            sizeof(int) * 2 + sizeof(glm::vec2) * particleCount, // multiply by 2 for alignment
+            sizeof(int) +                           // particle count
+                sizeof(float) +                     // smoothing radius
+                sizeof(glm::vec2) * particleCount + // positions
+                sizeof(glm::vec2) * particleCount,  // velocities
             1,
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         particleBuffer->map();
-        particleBuffer->writeToBuffer(&particleCount, sizeof(int));
+        particleBuffer->setRecordedOffset(0);
+        particleBuffer->writeToBufferOrdered(&particleCount, sizeof(int));
+        particleBuffer->writeToBufferOrdered(&smoothingRadius, sizeof(float));
+        // print smoothing radius and size of float
+        std::cout << "smoothing radius: " << smoothingRadius << std::endl;
+        std::cout << "size of float: " << sizeof(float) << std::endl;
     }
 
     void FluidSim2DApp::writeParticleBuffer(FluidParticleSystem::ParticleData &particleData)
     {
-        particleBuffer->writeToBuffer(particleData.positions.data(), sizeof(glm::vec2) * particleData.numParticles, sizeof(int) * 2);
+        particleBuffer->setRecordedOffset(sizeof(int) + sizeof(float));
+        particleBuffer->writeToBufferOrdered(particleData.positions.data(), sizeof(glm::vec2) * particleData.numParticles);
+        particleBuffer->writeToBufferOrdered(particleData.velocities.data(), sizeof(glm::vec2) * particleData.numParticles);
     }
 
     void FluidSim2DApp::renderLoop()
@@ -219,6 +233,7 @@ namespace lve
                     static_cast<int>(std::ceil(windowExtent.width / 8.f)),
                     static_cast<int>(std::ceil(windowExtent.height / 8.f)));
 
+                fluidParticleSys.updateWindowExtent(windowExtent);
                 fluidParticleSys.updateParticleData(frameTime);
                 writeParticleBuffer(fluidParticleSys.getParticleData());
 

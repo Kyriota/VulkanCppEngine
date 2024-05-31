@@ -15,6 +15,7 @@ namespace lve
         struct ParticleData
         {
             unsigned int numParticles;
+            float smoothingRadius;
             std::vector<glm::vec2> positions;
             std::vector<glm::vec2> velocities;
         };
@@ -24,7 +25,7 @@ namespace lve
             unsigned int particleCount;
 
             // fluid parameters
-            float smoothRadius = 2.0f;
+            float smoothRadius = 50.0f;
             float collisionDamping = 0.9f;
             float targetDensity = 1.0f;
 
@@ -35,18 +36,12 @@ namespace lve
             VkExtent2D windowExtent;
         };
 
-        FluidParticleSystem(ParticleSysInitData initData)
-            : particleCount(initData.particleCount),
-              smoothRadius(initData.smoothRadius),
-              collisionDamping(initData.collisionDamping),
-              targetDensity(initData.targetDensity),
-              windowExtent(initData.windowExtent),
-              particleData(initParticleData(initData.startPoint, initData.stride, initData.maxWidth)) {}
+        FluidParticleSystem(ParticleSysInitData initData);
 
-        unsigned int getParticleCount() { return particleCount; }
         ParticleData &getParticleData() { return particleData; }
 
         void updateParticleData(float deltaTime);
+        void updateWindowExtent(VkExtent2D newExtent) { windowExtent = newExtent; }
 
     private:
         unsigned int particleCount;
@@ -58,5 +53,11 @@ namespace lve
         float targetDensity;
 
         ParticleData initParticleData(glm::vec2 startPoint, float stride, float maxWidth);
+
+        // update rules
+        float kernelPoly6(float radius, float distance);
+        float kernelSpiky(float radius, float distance);
+        float calculateDensity(glm::vec2 samplePos);
+        void handleBoundaryCollision();
     };
 } // namespace lve
