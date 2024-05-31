@@ -73,10 +73,10 @@ void main() {
 			outColor = particleColor;
 			return;
 		}
-
-		// calculate density
-		float density = calculateDensity(fragTexCoord);
-		density = min(density, maxDisplayDensity);
-		outColor = mix(bgColorLowDensity, bgColorHighDensity, density / maxDisplayDensity);
 	}
+
+	// calculate density
+	float density = calculateDensity(fragTexCoord);
+	density = min(density, maxDisplayDensity);
+	outColor = mix(bgColorLowDensity, bgColorHighDensity, density / maxDisplayDensity);
 }
