@@ -3,10 +3,10 @@
 #include "lve_device.hpp"
 #include "lve_image.hpp"
 
-// vulkan headers
+// libs
 #include <vulkan/vulkan.h>
 
-// std lib headers
+// std
 #include <memory>
 #include <string>
 #include <vector>

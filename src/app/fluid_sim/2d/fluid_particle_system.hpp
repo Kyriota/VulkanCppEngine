@@ -3,7 +3,7 @@
 #include "lve/lve_math.hpp"
 
 // libs
-#include <glm/glm.hpp>
+#include "include/glm.hpp"
 #include <vulkan/vulkan.h>
 
 // std

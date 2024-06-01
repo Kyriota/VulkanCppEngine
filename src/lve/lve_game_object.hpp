@@ -3,7 +3,7 @@
 #include "lve_model.hpp"
 
 // libs
-#include <glm/gtc/matrix_transform.hpp>
+#include "include/glm.hpp"
 
 // std
 #include <memory>

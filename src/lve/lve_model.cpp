@@ -2,10 +2,8 @@
 #include "lve_hash.hpp"
 
 // libs
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+#include "include/tiny_obj_loader.hpp"
+#include "include/glm.hpp"
 
 // std
 #include <cassert>
