@@ -126,21 +126,21 @@ namespace lve
     void RendererApp::loadGameObjects()
     {
         std::shared_ptr<LveModel> lveModel =
-            LveModel::createModelFromFile(lveDevice, "models/flat_vase.obj");
+            LveModel::createModelFromFile(lveDevice, "assets/models/flat_vase.obj");
         auto flatVase = LveGameObject::createGameObject();
         flatVase.model = lveModel;
         flatVase.transform.translation = {-.5f, .5f, 0.f};
         flatVase.transform.scale = {3.f, 1.5f, 3.f};
         gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 
-        lveModel = LveModel::createModelFromFile(lveDevice, "models/smooth_vase.obj");
+        lveModel = LveModel::createModelFromFile(lveDevice, "assets/models/smooth_vase.obj");
         auto smoothVase = LveGameObject::createGameObject();
         smoothVase.model = lveModel;
         smoothVase.transform.translation = {.5f, .5f, 0.f};
         smoothVase.transform.scale = {3.f, 1.5f, 3.f};
         gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
-        lveModel = LveModel::createModelFromFile(lveDevice, "models/quad.obj");
+        lveModel = LveModel::createModelFromFile(lveDevice, "assets/models/quad.obj");
         auto floor = LveGameObject::createGameObject();
         floor.model = lveModel;
         floor.transform.translation = {0.f, .5f, 0.f};

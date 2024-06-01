@@ -1,5 +1,5 @@
 *.spv
-*.obj
 external/*
 build/*
 .vscode/*
+assets/models/*
