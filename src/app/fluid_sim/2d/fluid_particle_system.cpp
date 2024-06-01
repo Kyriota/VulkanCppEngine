@@ -1,4 +1,5 @@
 #include "fluid_particle_system.hpp"
+#include "lve/lve_math.hpp"
 
 // std
 #include <algorithm>
@@ -9,19 +10,19 @@ namespace lve
         : particleCount(initData.particleCount),
           windowExtent(initData.windowExtent),
           smoothRadius(initData.smoothRadius),
-          collisionDamping(initData.collisionDamping),
-          targetDensity(initData.targetDensity)
+          targetDensity(initData.targetDensity),
+          collisionDamping(initData.collisionDamping)
     {
-        particleData = initParticleData(initData.startPoint, initData.stride, initData.maxWidth);
+        initParticleData(initData.startPoint, initData.stride, initData.maxWidth);
+        updateDensities();
     }
 
-    FluidParticleSystem::ParticleData FluidParticleSystem::initParticleData(glm::vec2 startPoint, float stride, float maxWidth)
+    void FluidParticleSystem::initParticleData(glm::vec2 startPoint, float stride, float maxWidth)
     {
-        ParticleData particleBufferData{};
-        particleBufferData.numParticles = particleCount;
-        particleBufferData.smoothingRadius = smoothRadius;
-        particleBufferData.positions.resize(particleCount);
-        particleBufferData.velocities.resize(particleCount);
+        dataPosition.resize(particleCount);
+        dataVelocity.resize(particleCount);
+        dataDensity.resize(particleCount);
+        dataMass.resize(particleCount);
 
         maxWidth -= std::fmod(maxWidth, stride);
         int cntPerRow = static_cast<int>(maxWidth / stride);
@@ -32,21 +33,21 @@ namespace lve
             col = i % cntPerRow;
 
             // random position inside window
-            particleBufferData.positions[i] = glm::vec2(
+            dataPosition[i] = glm::vec2(
                 static_cast<float>(rand() % static_cast<int>(windowExtent.width)),
                 static_cast<float>(rand() % static_cast<int>(windowExtent.height)));
 
-            // particleBufferData.positions[i] = startPoint + glm::vec2(col * stride, row * stride);
+            // dataPosition[i] = startPoint + glm::vec2(col * stride, row * stride);
 
             // random velocity
-            // particleBufferData.velocities[i] = glm::vec2(
+            // dataVelocity[i] = glm::vec2(
             //     static_cast<float>(rand() % 400) - 200.f,
             //     static_cast<float>(rand() % 400) - 200.f);
 
-            particleBufferData.velocities[i] = glm::vec2(0.f, 0.f);
-        }
+            dataVelocity[i] = glm::vec2(0.f, 0.f);
 
-        return particleBufferData;
+            dataMass[i] = 1.f;
+        }
     }
 
     void FluidParticleSystem::updateParticleData(float deltaTime)
@@ -54,43 +55,100 @@ namespace lve
         // particle update rule
         for (int i = 0; i < particleCount; i++)
         {
-            particleData.positions[i] += particleData.velocities[i] * deltaTime;
+            dataPosition[i] += dataVelocity[i] * deltaTime;
         }
 
         handleBoundaryCollision();
     }
 
-    float FluidParticleSystem::kernelPoly6(float radius, float distance)
+    float FluidParticleSystem::kernelPoly6_2D(float distance)
     {
-        if (distance >= radius)
-        {
+        if (distance >= smoothRadius)
             return 0.f;
-        }
-        return 315.f / (64.f * M_PI * std::pow(radius, 9)) * std::pow(radius * radius - distance * distance, 3);
+        float v = smoothRadius * smoothRadius - distance * distance;
+        return scalingFactorPoly6_2D * v * v * v;
     }
 
-    float FluidParticleSystem::kernelSpiky(float radius, float distance)
+    float FluidParticleSystem::kernelSpikyPow3_2D(float distance)
     {
-        if (distance >= radius)
-        {
+        if (distance >= smoothRadius)
             return 0.f;
+        float v = smoothRadius - distance;
+        return scalingFactorSpikyPow3_2D * v * v * v;
+    }
+
+    float FluidParticleSystem::derivativeSpikyPow3_2D(float distance)
+    {
+        if (distance >= smoothRadius)
+            return 0.f;
+        float v = smoothRadius - distance;
+        return -3.f * scalingFactorSpikyPow3_2D * v * v;
+    }
+
+    float FluidParticleSystem::kernelSpikyPow2_2D(float distance)
+    {
+        if (distance >= smoothRadius)
+            return 0.f;
+        float v = smoothRadius - distance;
+        return scalingFactorSpikyPow2_2D * v * v;
+    }
+
+    float FluidParticleSystem::derivativeSpikyPow2_2D(float distance)
+    {
+        if (distance >= smoothRadius)
+            return 0.f;
+        float v = smoothRadius - distance;
+        return -2.f * scalingFactorSpikyPow2_2D * v;
+    }
+
+    void FluidParticleSystem::updateDensities()
+    {
+        for (int i = 0; i < particleCount; i++)
+        {
+            dataDensity[i] = calculateDensity(dataPosition[i]);
         }
-        return -45.f / (M_PI * std::pow(radius, 6)) * (radius - distance) * (radius - distance);
+    }
+
+    float FluidParticleSystem::calculateDensity(glm::vec2 samplePos)
+    {
+        float density = 0.f;
+        for (int i = 0; i < particleCount; i++)
+        {
+            float distance = glm::distance(samplePos, dataPosition[i]);
+            float influence = kernelPoly6_2D(distance);
+            density += dataMass[i] * influence;
+        }
+        return density;
+    }
+    
+    glm::vec2 FluidParticleSystem::calculateDensityGradient(glm::vec2 samplePos)
+    {
+        glm::vec2 gradient = glm::vec2(0.f, 0.f);
+
+        for (int i = 0; i < particleCount; i++)
+        {
+            float distance = glm::distance(samplePos, dataPosition[i]);
+            glm::vec2 dir = glm::normalize(samplePos - dataPosition[i]);
+            float derivative = derivativeSpikyPow3_2D(distance);
+            gradient += dataMass[i] * derivative * dir;
+        }
+
+        return gradient;
     }
 
     void FluidParticleSystem::handleBoundaryCollision()
     {
         for (int i = 0; i < particleCount; i++)
         {
-            if (particleData.positions[i].x < 0 || particleData.positions[i].x > windowExtent.width)
+            if (dataPosition[i].x < 0 || dataPosition[i].x > windowExtent.width)
             {
-                particleData.positions[i].x = std::clamp(particleData.positions[i].x, 0.f, static_cast<float>(windowExtent.width));
-                particleData.velocities[i].x *= -collisionDamping;
+                dataPosition[i].x = std::clamp(dataPosition[i].x, 0.f, static_cast<float>(windowExtent.width));
+                dataVelocity[i].x *= -collisionDamping;
             }
-            if (particleData.positions[i].y < 0 || particleData.positions[i].y > windowExtent.height)
+            if (dataPosition[i].y < 0 || dataPosition[i].y > windowExtent.height)
             {
-                particleData.positions[i].y = std::clamp(particleData.positions[i].y, 0.f, static_cast<float>(windowExtent.height));
-                particleData.velocities[i].y *= -collisionDamping;
+                dataPosition[i].y = std::clamp(dataPosition[i].y, 0.f, static_cast<float>(windowExtent.height));
+                dataVelocity[i].y *= -collisionDamping;
             }
         }
     }

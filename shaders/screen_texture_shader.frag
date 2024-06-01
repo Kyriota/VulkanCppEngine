@@ -14,7 +14,8 @@ layout(push_constant) uniform Push {
 
 layout(binding = 3) buffer Particles {
 	uint numParticles;
-	float smoothingRadius;
+	float smoothRadius;
+	float targetDensity;
 	vec2 data[];
 };
 
@@ -27,16 +28,15 @@ layout(binding = 3) buffer Particles {
 
 const float particleRadiusSqr = 4.0 * 4.0;
 
-const vec4 particleColorSlow = vec4(0.0, 0.0, 1.0, 1.0);
-const vec4 particleColorFast = vec4(1.0, 0.0, 0.0, 1.0);
+const vec4 particleColorSlow = vec4(0.0, 0.0, 0.0, 1.0);
+const vec4 particleColorFast = vec4(0.0, 1.0, 0.0, 1.0);
 const float maxDisplayvelocityMagSqr = 200.0 * 200.0 + 200.0 * 200.0;
 
-const vec4 bgColorLowDensity = vec4(0.0, 0.0, 0.0, 1.0);
-const vec4 bgColorTargetDensity = vec4(0.0, 1.0, 0.0, 1.0);
-const vec4 bgColorHighDensity = vec4(1.0, 1.0, 1.0, 1.0);
-const float maxDisplayDensity = 0.002;
+const vec4 bgColorLowDensity = vec4(0.0, 0.0, 1.0, 1.0);
+const vec4 bgColorTargetDensity = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 bgColorHighDensity = vec4(1.0, 0.0, 0.0, 1.0);
 
-float smoothingKernel(float radius, float dist) {
+float smoothKernel(float radius, float dist) {
 	float radiusSqr = radius * radius;
 	float radius8 = radiusSqr * radiusSqr * radiusSqr * radiusSqr;
 	float volume = M_PI * radius8 / 4.0;
@@ -51,7 +51,7 @@ float calculateDensity(vec2 samplePointPos) {
 	for (int i = 0; i < numParticles; i++) {
 		vec2 particlePos = data[i];
 		float dist = distance(samplePointPos, particlePos);
-		float influence = smoothingKernel(smoothingRadius, dist);
+		float influence = smoothKernel(smoothRadius, dist);
 		density += mass * influence;
 	}
 
@@ -77,6 +77,12 @@ void main() {
 
 	// calculate density
 	float density = calculateDensity(fragTexCoord);
+	float maxDisplayDensity = targetDensity * 2.0;
 	density = min(density, maxDisplayDensity);
-	outColor = mix(bgColorLowDensity, bgColorHighDensity, density / maxDisplayDensity);
+	// outColor = mix(bgColorLowDensity, bgColorHighDensity, density / maxDisplayDensity);
+	if (density < targetDensity) {
+		outColor = mix(bgColorLowDensity, bgColorTargetDensity, density / targetDensity);
+	} else {
+		outColor = mix(bgColorTargetDensity, bgColorHighDensity, (density - targetDensity) / targetDensity);
+	}
 }

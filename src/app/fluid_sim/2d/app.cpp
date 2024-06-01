@@ -2,6 +2,7 @@
 
 #include "lve/lve_buffer.hpp"
 #include "lve/lve_sampler_manager.hpp"
+#include "lve/lve_math.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -16,7 +17,6 @@
 #include <stdexcept>
 #include <cmath>
 #include <thread>
-#include <iostream>
 
 namespace lve
 {
@@ -28,8 +28,6 @@ namespace lve
         glm::vec3 lightPosition{-1.f};
         alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
     };
-
-    const std::string FluidSim2DApp::WINDOW_RESIZED_CALLBACK_NAME = "FluidSim2DApp";
 
     FluidSim2DApp::FluidSim2DApp()
     {
@@ -65,8 +63,8 @@ namespace lve
             uboBuffers[i]->map();
         }
 
-        initParticleBuffer(fluidParticleSys.getParticleData());
-        writeParticleBuffer(fluidParticleSys.getParticleData());
+        initParticleBuffer();
+        writeParticleBuffer();
 
         globalSetLayout =
             LveDescriptorSetLayout::Builder(lveDevice)
@@ -181,39 +179,47 @@ namespace lve
         createScreenTextureImageView();
     }
 
-    void FluidSim2DApp::initParticleBuffer(FluidParticleSystem::ParticleData &particleData)
+    void FluidSim2DApp::initParticleBuffer()
     {
-        int particleCount = particleData.numParticles;
-        float smoothingRadius = particleData.smoothingRadius;
+        int particleCount = fluidParticleSys.getParticleCount();
+        float smoothRadius = fluidParticleSys.getSmoothRadius();
+        float targetDensity = fluidParticleSys.getTargetDensity();
 
         particleBuffer = std::make_unique<LveBuffer>(
             lveDevice,
             sizeof(int) +                           // particle count
                 sizeof(float) +                     // smoothing radius
-                sizeof(glm::vec2) * particleCount + // positions
-                sizeof(glm::vec2) * particleCount,  // velocities
+                sizeof(float) +                     // target density
+                4 +                                 // padding
+                sizeof(glm::vec2) * particleCount + // position
+                sizeof(glm::vec2) * particleCount,  // velocity
             1,
             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         particleBuffer->map();
         particleBuffer->setRecordedOffset(0);
         particleBuffer->writeToBufferOrdered(&particleCount, sizeof(int));
-        particleBuffer->writeToBufferOrdered(&smoothingRadius, sizeof(float));
-        // print smoothing radius and size of float
-        std::cout << "smoothing radius: " << smoothingRadius << std::endl;
-        std::cout << "size of float: " << sizeof(float) << std::endl;
+        particleBuffer->writeToBufferOrdered(&smoothRadius, sizeof(float));
+        particleBuffer->writeToBufferOrdered(&targetDensity, sizeof(float));
     }
 
-    void FluidSim2DApp::writeParticleBuffer(FluidParticleSystem::ParticleData &particleData)
+    void FluidSim2DApp::writeParticleBuffer()
     {
-        particleBuffer->setRecordedOffset(sizeof(int) + sizeof(float));
-        particleBuffer->writeToBufferOrdered(particleData.positions.data(), sizeof(glm::vec2) * particleData.numParticles);
-        particleBuffer->writeToBufferOrdered(particleData.velocities.data(), sizeof(glm::vec2) * particleData.numParticles);
+        int particleCount = fluidParticleSys.getParticleCount();
+        float smoothRadius = fluidParticleSys.getSmoothRadius();
+        float targetDensity = fluidParticleSys.getTargetDensity();
+        particleBuffer->setRecordedOffset(sizeof(int));
+        particleBuffer->writeToBufferOrdered(&smoothRadius, sizeof(float));
+        particleBuffer->writeToBufferOrdered(&targetDensity, sizeof(float));
+        particleBuffer->addRecordedOffset(4); // padding
+        particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount);
+        particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount);
     }
 
     void FluidSim2DApp::renderLoop()
     {
         auto currentTime = std::chrono::high_resolution_clock::now();
+        auto now = currentTime;
         while (isRunning)
         {
             auto newTime = std::chrono::high_resolution_clock::now();
@@ -235,7 +241,7 @@ namespace lve
 
                 fluidParticleSys.updateWindowExtent(windowExtent);
                 fluidParticleSys.updateParticleData(frameTime);
-                writeParticleBuffer(fluidParticleSys.getParticleData());
+                writeParticleBuffer();
 
                 // render
                 lveRenderer.beginSwapChainRenderPass(commandBuffer);

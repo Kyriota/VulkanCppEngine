@@ -232,7 +232,7 @@ namespace lve
         assert (recordedOffset + size <= bufferSize && "Buffer overflow");
 
         writeToBuffer(data, size, recordedOffset);
-        recordedOffset += size;
+        addRecordedOffset(size);
     }
 
     /**

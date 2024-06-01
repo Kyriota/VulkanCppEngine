@@ -20,9 +20,7 @@ namespace lve
     class FluidSim2DApp
     {
     public:
-        static const std::string WINDOW_RESIZED_CALLBACK_NAME;
-        static constexpr int INIT_WIDTH = 800;
-        static constexpr int INIT_HEIGHT = 600;
+        const std::string WINDOW_RESIZED_CALLBACK_NAME = "FluidSim2DApp";
 
         FluidSim2DApp();
         ~FluidSim2DApp();
@@ -33,7 +31,7 @@ namespace lve
         void run();
 
     private:
-        LveWindow lveWindow{INIT_WIDTH, INIT_HEIGHT, "FluidSim2DApp"};
+        LveWindow lveWindow{800, 600, "FluidSim2DApp"};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
         VkExtent2D windowExtent = lveWindow.getExtent();
@@ -61,8 +59,8 @@ namespace lve
         void createScreenTextureImageView();
         void recreateScreenTextureImage(VkExtent2D extent);
 
-        void initParticleBuffer(FluidParticleSystem::ParticleData &particleData);
-        void writeParticleBuffer(FluidParticleSystem::ParticleData &particleData);
+        void initParticleBuffer();
+        void writeParticleBuffer();
 
         // Multi-threading
         std::atomic<bool> isRunning{true};

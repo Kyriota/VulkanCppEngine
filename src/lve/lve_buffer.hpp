@@ -38,6 +38,7 @@ namespace lve
 
         void writeToBufferOrdered(void *data, VkDeviceSize size);
         void setRecordedOffset(uint64_t offset) { recordedOffset = offset; }
+        void addRecordedOffset(uint64_t offset) { recordedOffset += offset; }
 
         void writeToIndex(void *data, int index);
         VkResult flushIndex(int index);
