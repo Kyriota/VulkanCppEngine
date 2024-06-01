@@ -1,1 +1,0 @@
-A vulkan compute shader raytracer WIP
