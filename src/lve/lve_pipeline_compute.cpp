@@ -29,7 +29,7 @@ namespace lve
             configInfo.pipelineLayout != VK_NULL_HANDLE &&
             "Cannot create compute pipeline: no pipelineLayout provided in configInfo");
 
-        auto compCode = readFile(compFilepath);
+        std::vector<char> compCode = readBinaryFile(compFilepath);
         createShaderModule(lveDevice, compCode, &compShaderModule);
 
         VkPipelineShaderStageCreateInfo shaderStageInfo{};

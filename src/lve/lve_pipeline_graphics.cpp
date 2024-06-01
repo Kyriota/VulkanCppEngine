@@ -131,8 +131,8 @@ namespace lve
             configInfo.renderPass != VK_NULL_HANDLE &&
             "Cannot create graphics pipeline: no renderPass provided in configInfo");
 
-        auto vertCode = readFile(configInfo.vertFilepath);
-        auto fragCode = readFile(configInfo.fragFilepath);
+        std::vector<char> vertCode = readBinaryFile(configInfo.vertFilepath);
+        std::vector<char> fragCode = readBinaryFile(configInfo.fragFilepath);
 
         createShaderModule(lveDevice, vertCode, &vertShaderModule);
         createShaderModule(lveDevice, fragCode, &fragShaderModule);

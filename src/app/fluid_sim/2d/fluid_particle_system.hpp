@@ -1,5 +1,7 @@
 #pragma once
 
+#define M_PI 3.14159265358979323846
+
 #include "lve/lve_math.hpp"
 
 // libs
@@ -36,12 +38,11 @@ namespace lve
         void updateParticleData(float deltaTime);
         void updateWindowExtent(VkExtent2D newExtent) { windowExtent = newExtent; }
 
-        // getters
-        const float getParticleCount() { return particleCount; }
-        const float getSmoothRadius() { return smoothRadius; }
-        const float getTargetDensity() { return targetDensity; }
-        const std::vector<glm::vec2> &getPositionData() { return dataPosition; }
-        const std::vector<glm::vec2> &getVelocityData() { return dataVelocity; }
+        float getParticleCount() const { return particleCount; }
+        float getSmoothRadius() const { return smoothRadius; }
+        float getTargetDensity() const { return targetDensity; }
+        std::vector<glm::vec2> &getPositionData() { return dataPosition; }
+        std::vector<glm::vec2> &getVelocityData() { return dataVelocity; }
 
     private:
         unsigned int particleCount;

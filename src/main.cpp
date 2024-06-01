@@ -22,3 +22,29 @@ int main()
 
     return EXIT_SUCCESS;
 }
+
+// test yaml cpp
+
+// #include "include/yaml.hpp"
+
+// #include <cstdlib>
+// #include <iostream>
+// #include <stdexcept>
+
+// int main()
+// {
+//     // read config.yaml and print it
+//     YAML::Node config = YAML::LoadFile("config.yaml");
+//     /*
+//     name: "Barack Obama"
+//     children:
+//     - Sasha
+//     - Malia
+//     */
+//     std::cout << "name: " << config["name"].as<std::string>() << std::endl;
+//     std::cout << "children: " << std::endl;
+//     for (const auto &child : config["children"])
+//     {
+//         std::cout << "- " << child.as<std::string>() << std::endl;
+//     }
+// }
