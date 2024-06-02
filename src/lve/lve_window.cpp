@@ -2,10 +2,50 @@
 
 // std
 #include <stdexcept>
+#include <iostream>
 
 namespace lve
 {
+    // LveInput Implementation
+    LveInput::LveInput()
+    {
+        for (int i = 0; i < GLFW_KEY_LAST; i++)
+            keyState[i] = KeyState::RELEASE;
+        
+        for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
+            mouseButtonState[i] = KeyState::RELEASE;
+    }
 
+    void LveInput::handleKeyEvent(int key, int action)
+    {
+        if (key == GLFW_KEY_UNKNOWN)
+            return;
+        
+        if (action == GLFW_REPEAT)
+            keyState[key] = KeyState::REPEAT;
+        else if (action == GLFW_RELEASE)
+            keyState[key] = KeyState::RELEASE;
+        else
+            keyState[key] = KeyState::PRESS;
+    }
+
+    void LveInput::handleMouseButtonEvent(int button, int action)
+    {
+        if (action == GLFW_PRESS)
+            mouseButtonState[button] = KeyState::PRESS;
+        else
+            mouseButtonState[button] = KeyState::RELEASE;
+    }
+
+    void LveInput::handleCursorPositionEvent(double xpos, double ypos)
+    {
+        mouseDeltaX = xpos - mouseX;
+        mouseDeltaY = ypos - mouseY;
+        mouseX = xpos;
+        mouseY = ypos;
+    }
+
+    // LveWindow Implementation
     LveWindow::LveWindow(int w, int h, std::string name) : windowName{name}
     {
         initWindow(w, h);
@@ -25,7 +65,31 @@ namespace lve
 
         window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
         glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+
+        // set callbacks
+        glfwSetKeyCallback(
+            window,
+            [](GLFWwindow *window, int key, int scancode, int action, int mods)
+            {
+                LveWindow *lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
+                lveWindow->lveInput.handleKeyEvent(key, action);
+            });
+
+        glfwSetMouseButtonCallback(
+            window,
+            [](GLFWwindow *window, int button, int action, int mods)
+            {
+                LveWindow *lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
+                lveWindow->lveInput.handleMouseButtonEvent(button, action);
+            });
+
+        glfwSetCursorPosCallback(
+            window,
+            [](GLFWwindow *window, double xpos, double ypos)
+            {
+                LveWindow *lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
+                lveWindow->lveInput.handleCursorPositionEvent(xpos, ypos);
+            });
     }
 
     void LveWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
@@ -73,11 +137,4 @@ namespace lve
         glfwGetFramebufferSize(window, &width, &height);
         return width == 0 || height == 0;
     }
-
-    void LveWindow::framebufferResizeCallback(GLFWwindow *window, int width, int height)
-    {
-        auto lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
-        // maybe useful in the future
-    }
-
 } // namespace lve
