@@ -1,19 +1,27 @@
 #include "fluid_particle_system.hpp"
 #include "lve/lve_math.hpp"
+#include "lve/lve_file_io.hpp"
 
 // std
 #include <algorithm>
 
 namespace lve
 {
-    FluidParticleSystem::FluidParticleSystem(ParticleSysInitData initData)
-        : particleCount(initData.particleCount),
-          windowExtent(initData.windowExtent),
-          smoothRadius(initData.smoothRadius),
-          targetDensity(initData.targetDensity),
-          collisionDamping(initData.collisionDamping)
+    FluidParticleSystem::FluidParticleSystem(const std::string &configFilePath, VkExtent2D windowExtent) : windowExtent(windowExtent)
     {
-        initParticleData(initData.startPoint, initData.stride, initData.maxWidth);
+        LveYamlConfig config{configFilePath};
+
+        particleCount = config.get<unsigned int>("particleCount");
+        smoothRadius = config.get<float>("smoothRadius");
+        collisionDamping = config.get<float>("collisionDamping");
+        targetDensity = config.get<float>("targetDensity");
+        pressureMultiplier = config.get<float>("pressureMultiplier");
+
+        std::vector<float> startPoint = config.get<std::vector<float>>("startPoint");
+        float stride = config.get<float>("stride");
+        float maxWidth = config.get<float>("maxWidth");
+
+        initParticleData(glm::vec2(startPoint[0], startPoint[1]), stride, maxWidth);
         updateDensities();
     }
 

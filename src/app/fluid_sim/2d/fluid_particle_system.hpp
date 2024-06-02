@@ -9,6 +9,7 @@
 #include <vulkan/vulkan.h>
 
 // std
+#include <string>
 #include <vector>
 
 namespace lve
@@ -16,24 +17,7 @@ namespace lve
     class FluidParticleSystem
     {
     public:
-        struct ParticleSysInitData
-        {
-            unsigned int particleCount;
-
-            // fluid parameters
-            float smoothRadius = 50.0f;
-            float collisionDamping = 0.9f;
-            float targetDensity = 0.001f;
-            float pressureMultiplier = 1.0f;
-
-            // particle initialization parameters
-            glm::vec2 startPoint = glm::vec2(300.f, 300.f);
-            float stride = 10.f;
-            float maxWidth = 105.f;
-            VkExtent2D windowExtent;
-        };
-
-        FluidParticleSystem(ParticleSysInitData initData);
+        FluidParticleSystem(const std::string &configFilePath, VkExtent2D windowExtent);
 
         void updateParticleData(float deltaTime);
         void updateWindowExtent(VkExtent2D newExtent) { windowExtent = newExtent; }
@@ -51,6 +35,7 @@ namespace lve
         float smoothRadius;
         float collisionDamping;
         float targetDensity;
+        float pressureMultiplier;
 
         // particle data
         std::vector<glm::vec2> dataPosition;

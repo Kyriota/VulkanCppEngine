@@ -48,10 +48,7 @@ namespace lve
         LveImage screenTextureImage{lveDevice};
         VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
-        FluidParticleSystem fluidParticleSys{
-            FluidParticleSystem::ParticleSysInitData{
-                .particleCount = 128,
-                .windowExtent = lveWindow.getExtent()}};
+        FluidParticleSystem fluidParticleSys{"config/fluidSim2D.yaml", lveWindow.getExtent()};
 
         void updateGlobalDescriptorSets(bool build = false);
 
