@@ -11,7 +11,7 @@
 
 namespace lve
 {
-    class LveInput
+    class Input
     {
     public:
         enum KeyState
@@ -21,8 +21,8 @@ namespace lve
             REPEAT
         };
 
-        LveInput(const LveInput &) = delete;
-        LveInput &operator=(const LveInput &) = delete;
+        Input(const Input &) = delete;
+        Input &operator=(const Input &) = delete;
 
         bool isKeyPressed(int keyCode) const { return keyState.at(keyCode); }
         bool isMouseButtonPressed(int button) const { return mouseButtonState.at(button); }
@@ -30,7 +30,7 @@ namespace lve
         void getMousePositionDelta(double &dx, double &dy) const { dx = mouseDeltaX; dy = mouseDeltaY; }
 
     private:
-        LveInput();
+        Input();
 
         double mouseX;
         double mouseY;
@@ -67,12 +67,12 @@ namespace lve
         void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
         void mainThreadGlfwEventLoop();
 
+        Input input;
+        
     private:
         void initWindow(int width, int height);
 
         std::string windowName;
         GLFWwindow *window;
-
-        LveInput lveInput;
     };
 } // namespace lve

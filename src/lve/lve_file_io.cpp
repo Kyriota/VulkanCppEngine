@@ -48,6 +48,15 @@ namespace lve
         file.close();
     }
 
+    void writeFile(const std::string &filepath, const std::string &data)
+    {
+        std::ofstream file{filepath};
+        checkFileOpen(file, filepath);
+
+        file << data;
+        file.close();
+    }
+
     bool fileExists(const std::string &filepath)
     {
         std::ifstream file{filepath};
@@ -73,6 +82,7 @@ namespace lve
     void LveYamlConfig::saveConfig(const std::string &yamlFilePath)
     {
         checkConfigDefined();
+        writeFile(yamlFilePath, YAML::Dump(config));
     }
 
     void LveYamlConfig::checkKeyDefined(const std::string &key) const

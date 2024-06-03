@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Add source files cpp and header files hpp
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 file(GLOB_RECURSE HEADERS "src/*.hpp")
+file(GLOB_RECURSE TEMPLATES "src/*.tpp")
 
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})

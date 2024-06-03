@@ -31,10 +31,11 @@ namespace lve
         void run();
 
     private:
-        LveWindow lveWindow{800, 600, "FluidSim2DApp"};
+        LveWindow lveWindow{1200, 800, "FluidSim2DApp"};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
         VkExtent2D windowExtent = lveWindow.getExtent();
+        float maxFrameTime = 1.0 / 30.0;
 
         // GPU resources
         std::unique_ptr<LveDescriptorPool> globalPool{};

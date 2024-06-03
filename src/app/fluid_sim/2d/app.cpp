@@ -222,6 +222,7 @@ namespace lve
             auto newTime = std::chrono::high_resolution_clock::now();
             float frameTime =
                 std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            frameTime = std::min(frameTime, maxFrameTime);
             currentTime = newTime;
 
             if (auto commandBuffer = lveRenderer.beginFrame())
@@ -236,6 +237,7 @@ namespace lve
                     static_cast<int>(std::ceil(windowExtent.width / 8.f)),
                     static_cast<int>(std::ceil(windowExtent.height / 8.f)));
 
+                fluidParticleSys.reloadConfigParam();
                 fluidParticleSys.updateWindowExtent(windowExtent);
                 fluidParticleSys.updateParticleData(frameTime);
                 writeParticleBuffer();

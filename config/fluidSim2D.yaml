@@ -1,11 +1,14 @@
 ---
-particleCount: 128
-smoothRadius: 50
-collisionDamping: 0.9
-targetDensity: 0.001
-pressureMultiplier: 1
+particleCount: 512
+smoothRadius: 20
+collisionDamping: 0.95
+targetDensity: 0.01
+pressureMultiplier: 100000
+gravityAccValue: 2.0
+
 startPoint:
-  - 300
-  - 300
+  - 400
+  - 200
 stride: 10
-maxWidth: 105
+maxWidth: 400
+randomize: no

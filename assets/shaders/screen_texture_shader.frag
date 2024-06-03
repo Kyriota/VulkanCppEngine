@@ -28,13 +28,20 @@ layout(binding = 3) buffer Particles {
 
 const float particleRadiusSqr = 4.0 * 4.0;
 
-const vec4 particleColorSlow = vec4(0.0, 0.0, 0.0, 1.0);
-const vec4 particleColorFast = vec4(0.0, 1.0, 0.0, 1.0);
-const float maxDisplayvelocityMagSqr = 200.0 * 200.0 + 200.0 * 200.0;
+const vec4 particleColorSlow = vec4(0.078, 0.282, 0.627, 1.0);
+const vec4 particleColorMedium = vec4(0.322, 0.984, 0.576, 1.0);
+const vec4 particleColorMedHigh = vec4(0.980, 0.925, 0.027, 1.0);
+const vec4 particleColorFast = vec4(0.941, 0.290, 0.047, 1.0);
+
+const float maxDisplayVelocityMagSqr = 100.0 * 100.0;
+const float medHighVelocityMagSqr = maxDisplayVelocityMagSqr / 4.0 * 3.0;
+const float medVelocityMagSqr = maxDisplayVelocityMagSqr / 2.0;
+
 
 const vec4 bgColorLowDensity = vec4(0.0, 0.0, 1.0, 1.0);
 const vec4 bgColorTargetDensity = vec4(1.0, 1.0, 1.0, 1.0);
 const vec4 bgColorHighDensity = vec4(1.0, 0.0, 0.0, 1.0);
+const vec4 bgColorDefault = vec4(0.0, 0.0, 0.0, 1.0);
 
 float smoothKernel(float radius, float dist) {
 	float radiusSqr = radius * radius;
@@ -68,13 +75,22 @@ void main() {
 		if (distanceSqr < particleRadiusSqr) { // If the pixel is inside the particle
 			vec2 particleVelocity = data[i + numParticles];
 			float velocityMagSqr = dot(particleVelocity, particleVelocity);
-			velocityMagSqr = min(velocityMagSqr, maxDisplayvelocityMagSqr);
-			vec4 particleColor = mix(particleColorSlow, particleColorFast, velocityMagSqr / maxDisplayvelocityMagSqr);
+			velocityMagSqr = min(velocityMagSqr, maxDisplayVelocityMagSqr);
+			// find the color based on the velocity
+			vec4 particleColor;
+			if (velocityMagSqr < medVelocityMagSqr) {
+				particleColor = mix(particleColorSlow, particleColorMedium, velocityMagSqr / medVelocityMagSqr);
+			} else if (velocityMagSqr < medHighVelocityMagSqr) {
+				particleColor = mix(particleColorMedium, particleColorMedHigh, (velocityMagSqr - medVelocityMagSqr) / (medHighVelocityMagSqr - medVelocityMagSqr));
+			} else {
+				particleColor = mix(particleColorMedHigh, particleColorFast, (velocityMagSqr - medHighVelocityMagSqr) / (maxDisplayVelocityMagSqr - medHighVelocityMagSqr));
+			}
 			outColor = particleColor;
 			return;
 		}
 	}
 
+#ifdef SHOW_DENSITY
 	// calculate density
 	float density = calculateDensity(fragTexCoord);
 	float maxDisplayDensity = targetDensity * 2.0;
@@ -85,4 +101,7 @@ void main() {
 	} else {
 		outColor = mix(bgColorTargetDensity, bgColorHighDensity, (density - targetDensity) / targetDensity);
 	}
+#else
+	outColor = bgColorDefault;
+#endif
 }

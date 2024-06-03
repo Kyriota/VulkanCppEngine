@@ -2,12 +2,11 @@
 
 // std
 #include <stdexcept>
-#include <iostream>
 
 namespace lve
 {
-    // LveInput Implementation
-    LveInput::LveInput()
+    // Input Implementation
+    Input::Input()
     {
         for (int i = 0; i < GLFW_KEY_LAST; i++)
             keyState[i] = KeyState::RELEASE;
@@ -16,7 +15,7 @@ namespace lve
             mouseButtonState[i] = KeyState::RELEASE;
     }
 
-    void LveInput::handleKeyEvent(int key, int action)
+    void Input::handleKeyEvent(int key, int action)
     {
         if (key == GLFW_KEY_UNKNOWN)
             return;
@@ -29,7 +28,7 @@ namespace lve
             keyState[key] = KeyState::PRESS;
     }
 
-    void LveInput::handleMouseButtonEvent(int button, int action)
+    void Input::handleMouseButtonEvent(int button, int action)
     {
         if (action == GLFW_PRESS)
             mouseButtonState[button] = KeyState::PRESS;
@@ -37,7 +36,7 @@ namespace lve
             mouseButtonState[button] = KeyState::RELEASE;
     }
 
-    void LveInput::handleCursorPositionEvent(double xpos, double ypos)
+    void Input::handleCursorPositionEvent(double xpos, double ypos)
     {
         mouseDeltaX = xpos - mouseX;
         mouseDeltaY = ypos - mouseY;
@@ -72,7 +71,7 @@ namespace lve
             [](GLFWwindow *window, int key, int scancode, int action, int mods)
             {
                 LveWindow *lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
-                lveWindow->lveInput.handleKeyEvent(key, action);
+                lveWindow->input.handleKeyEvent(key, action);
             });
 
         glfwSetMouseButtonCallback(
@@ -80,7 +79,7 @@ namespace lve
             [](GLFWwindow *window, int button, int action, int mods)
             {
                 LveWindow *lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
-                lveWindow->lveInput.handleMouseButtonEvent(button, action);
+                lveWindow->input.handleMouseButtonEvent(button, action);
             });
 
         glfwSetCursorPosCallback(
@@ -88,7 +87,7 @@ namespace lve
             [](GLFWwindow *window, double xpos, double ypos)
             {
                 LveWindow *lveWindow = reinterpret_cast<LveWindow *>(glfwGetWindowUserPointer(window));
-                lveWindow->lveInput.handleCursorPositionEvent(xpos, ypos);
+                lveWindow->input.handleCursorPositionEvent(xpos, ypos);
             });
     }
 
