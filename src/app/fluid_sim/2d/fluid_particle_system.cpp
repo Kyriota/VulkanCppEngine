@@ -1,7 +1,6 @@
-#include "fluid_particle_system.hpp"
-#include "lve/lve_math.hpp"
-#include "lve/lve_file_io.hpp"
-#include "lve/lve_math.hpp"
+#include "app/fluid_sim/2d/fluid_particle_system.hpp"
+#include "lve/util/math.hpp"
+#include "lve/util/file_io.hpp"
 
 // std
 #include <algorithm>
@@ -12,7 +11,7 @@ namespace lve
     FluidParticleSystem::FluidParticleSystem(const std::string &configFilePath, VkExtent2D windowExtent) : windowExtent(windowExtent)
     {
         this->configFilePath = configFilePath;
-        LveYamlConfig config{configFilePath};
+        io::YamlConfig config{configFilePath};
         particleCount = config.get<unsigned int>("particleCount");
 
         initSimParams(config);
@@ -27,7 +26,7 @@ namespace lve
 
     void FluidParticleSystem::reloadConfigParam()
     {
-        LveYamlConfig config{configFilePath};
+        io::YamlConfig config{configFilePath};
         initSimParams(config);
     }
 
@@ -70,7 +69,7 @@ namespace lve
         }
     }
 
-    void FluidParticleSystem::initSimParams(LveYamlConfig &config)
+    void FluidParticleSystem::initSimParams(io::YamlConfig &config)
     {
         smoothRadius = config.get<float>("smoothRadius");
         collisionDamping = config.get<float>("collisionDamping");
@@ -82,9 +81,9 @@ namespace lve
         externalForceRadius = config.get<float>("externalForceRadius");
 
         // init kernel constants
-        scalingFactorPoly6_2D = 4.f / (M_PI * LveMath::intPow(smoothRadius, 8));
-        scalingFactorSpikyPow3_2D = 10.f / (M_PI * LveMath::intPow(smoothRadius, 5));
-        scalingFactorSpikyPow2_2D = 6.f / (M_PI * LveMath::intPow(smoothRadius, 4));
+        scalingFactorPoly6_2D = 4.f / (M_PI * math::intPow(smoothRadius, 8));
+        scalingFactorSpikyPow3_2D = 10.f / (M_PI * math::intPow(smoothRadius, 5));
+        scalingFactorSpikyPow2_2D = 6.f / (M_PI * math::intPow(smoothRadius, 4));
     }
 
     void FluidParticleSystem::updateParticleData(float deltaTime)
@@ -259,7 +258,7 @@ namespace lve
         for (int i = 0; i < particleCount; i++)
         {
             int hashValue = hashGridCoord2D(pos2gridCoord(nextPositionData[i], static_cast<int>(smoothRadius)));
-            unsigned int hashKey = LveMath::positiveMod(hashValue, particleCount);
+            unsigned int hashKey = math::positiveMod(hashValue, particleCount);
             spacialLookup[i].particleIndex = i;
             spacialLookup[i].spatialHashKey = hashKey;
         }
@@ -293,7 +292,7 @@ namespace lve
         for (int i = 0; i < 9; i++)
         {
             glm::int2 offsetGridPos = gridPos + offset2D[i];
-            unsigned int hashKey = LveMath::positiveMod(hashGridCoord2D(offsetGridPos), particleCount);
+            unsigned int hashKey = math::positiveMod(hashGridCoord2D(offsetGridPos), particleCount);
             int startIndex = spacialLookupEntry[hashKey];
 
             for (int j = startIndex; j < particleCount; j++)

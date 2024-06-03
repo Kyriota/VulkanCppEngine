@@ -2,8 +2,8 @@
 
 #define M_PI 3.14159265358979323846
 
-#include "lve/lve_math.hpp"
-#include "lve/lve_file_io.hpp"
+#include "lve/util/math.hpp"
+#include "lve/util/file_io.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -63,7 +63,7 @@ namespace lve
         std::vector<float> densityData;
         std::vector<float> massData;
         void initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize);
-        void initSimParams(LveYamlConfig &config);
+        void initSimParams(io::YamlConfig &config);
 
         // kernels
         float kernelPoly6_2D(float distance, float radius) const;

@@ -1,8 +1,8 @@
-#include "app.hpp"
+#include "app/fluid_sim/2d/app.hpp"
 
-#include "lve/lve_buffer.hpp"
-#include "lve/lve_sampler_manager.hpp"
-#include "lve/lve_math.hpp"
+#include "lve/core/resource/buffer.hpp"
+#include "lve/core/resource/sampler_manager.hpp"
+#include "lve/util/math.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -29,12 +29,12 @@ namespace lve
     FluidSim2DApp::FluidSim2DApp()
     {
         globalPool =
-            LveDescriptorPool::Builder(lveDevice)
-                .setMaxSets(LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-                .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-                .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-                .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
-                .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, LveSwapChain::MAX_FRAMES_IN_FLIGHT)
+            DescriptorPool::Builder(lveDevice)
+                .setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+                .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+                .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+                .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, SwapChain::MAX_FRAMES_IN_FLIGHT)
+                .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
                 .build();
 
         // register callback functions for window resize
@@ -46,12 +46,12 @@ namespace lve
                 updateGlobalDescriptorSets();
             });
 
-        uboBuffers.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
-        globalDescriptorSets.resize(LveSwapChain::MAX_FRAMES_IN_FLIGHT);
+        uboBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
+        globalDescriptorSets.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
         for (int i = 0; i < uboBuffers.size(); i++)
         {
-            uboBuffers[i] = std::make_unique<LveBuffer>(
+            uboBuffers[i] = std::make_unique<Buffer>(
                 lveDevice,
                 sizeof(GlobalUbo),
                 1,
@@ -64,7 +64,7 @@ namespace lve
         writeParticleBuffer();
 
         globalSetLayout =
-            LveDescriptorSetLayout::Builder(lveDevice)
+            DescriptorSetLayout::Builder(lveDevice)
                 .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
                 .addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT) // Frag shader input texture
                 .addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)           // Compute shader output texture
@@ -92,7 +92,7 @@ namespace lve
 
     FluidSim2DApp::~FluidSim2DApp()
     {
-        LveSamplerManager::clearSamplers();
+        SamplerManager::clearSamplers();
     }
 
     void FluidSim2DApp::run()
@@ -110,13 +110,13 @@ namespace lve
     void FluidSim2DApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
     {
         VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
-            0, LveSamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
+            0, SamplerManager::getSampler({SamplerType::DEFAULT, lveDevice.device()}));
         auto particleBufferInfo = particleBuffer->descriptorInfo();
 
         for (int i = 0; i < globalDescriptorSets.size(); i++)
         {
             auto uboBufferInfo = uboBuffers[i]->descriptorInfo();
-            LveDescriptorWriter writer{*globalSetLayout, *globalPool};
+            DescriptorWriter writer{*globalSetLayout, *globalPool};
             writer.writeBuffer(0, &uboBufferInfo)
                 .writeImage(1, &screenTextureDescriptorInfo) // combined image sampler
                 .writeImage(2, &screenTextureDescriptorInfo) // storage image
@@ -168,7 +168,7 @@ namespace lve
 
     void FluidSim2DApp::recreateScreenTextureImage(VkExtent2D extent)
     {
-        screenTextureImage = LveImage(
+        screenTextureImage = Image(
             lveDevice,
             createScreenTextureInfo(screenTextureFormat, extent),
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -183,7 +183,7 @@ namespace lve
         float targetDensity = fluidParticleSys.getTargetDensity();
         float dataScale = fluidParticleSys.getDataScale();
 
-        particleBuffer = std::make_unique<LveBuffer>(
+        particleBuffer = std::make_unique<Buffer>(
             lveDevice,
             sizeof(int) +                           // particle count
                 sizeof(float) +                     // smoothing radius

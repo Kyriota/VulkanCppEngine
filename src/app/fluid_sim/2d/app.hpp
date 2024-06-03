@@ -1,14 +1,14 @@
 #pragma once
 
-#include "fluid_particle_system.hpp"
-#include "lve/lve_descriptors.hpp"
-#include "lve/lve_device.hpp"
-#include "lve/lve_game_object.hpp"
-#include "lve/lve_renderer.hpp"
-#include "lve/lve_window.hpp"
-#include "lve/lve_image.hpp"
-#include "system/render_system.hpp"
-#include "system/compute_system.hpp"
+#include "app/fluid_sim/2d/fluid_particle_system.hpp"
+#include "lve/core/resource/descriptors.hpp"
+#include "lve/core/resource/image.hpp"
+#include "lve/core/device.hpp"
+#include "lve/core/game_object.hpp"
+#include "lve/core/frame_manager.hpp"
+#include "lve/core/window.hpp"
+#include "lve/core/system/render_system.hpp"
+#include "lve/core/system/compute_system.hpp"
 
 // std
 #include <memory>
@@ -42,22 +42,22 @@ namespace lve
 #else
         const std::string APP_NAME = "FluidSim2DApp (debug)";
 #endif
-        LveWindow lveWindow{1200, 800, APP_NAME};
-        LveDevice lveDevice{lveWindow};
-        LveRenderer lveRenderer{lveWindow, lveDevice};
+        Window lveWindow{1200, 800, APP_NAME};
+        Device lveDevice{lveWindow};
+        FrameManager lveRenderer{lveWindow, lveDevice};
         VkExtent2D windowExtent = lveWindow.getExtent();
         float maxFrameTime = 1.0 / 30.0;
 
         // GPU resources
-        std::unique_ptr<LveDescriptorPool> globalPool{};
-        std::vector<std::unique_ptr<LveBuffer>> uboBuffers;
-        std::unique_ptr<LveBuffer> particleBuffer;
-        std::unique_ptr<LveDescriptorSetLayout> globalSetLayout;
+        std::unique_ptr<DescriptorPool> globalPool{};
+        std::vector<std::unique_ptr<Buffer>> uboBuffers;
+        std::unique_ptr<Buffer> particleBuffer;
+        std::unique_ptr<DescriptorSetLayout> globalSetLayout;
         std::vector<VkDescriptorSet> globalDescriptorSets;
         RenderSystem screenTextureRenderSystem{lveDevice};
         ComputeSystem fluidSimComputeSystem{lveDevice};
 
-        LveImage screenTextureImage{lveDevice};
+        Image screenTextureImage{lveDevice};
         VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
         FluidParticleSystem fluidParticleSys{"config/fluidSim2D.yaml", lveWindow.getExtent()};
