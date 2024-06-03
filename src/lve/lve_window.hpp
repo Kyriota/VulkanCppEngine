@@ -64,6 +64,7 @@ namespace lve
         VkExtent2D getExtent();
         bool isWindowMinimized();
         GLFWwindow *getGLFWwindow() const { return window; }
+        void setTitle(const std::string &title);
 
         void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
         void mainThreadGlfwEventLoop();

@@ -6,8 +6,8 @@ targetDensity: 10
 pressureMultiplier: 50
 gravityAccValue: 12
 dataScale: 0.01
-externalForceScale: 250.0
-externalForceRadius: 2
+externalForceScale: 1000.0
+externalForceRadius: 1.5
 
 startPoint:
   - 400
@@ -15,19 +15,3 @@ startPoint:
 stride: 10
 maxWidth: 400
 randomize: no
-
-# ---
-# particleCount: 512
-# smoothRadius: 0.35
-# collisionDamping: 0.95
-# targetDensity: 55
-# pressureMultiplier: 500
-# gravityAccValue: 9.8
-# dataScale: 1.0
-
-# startPoint:
-#   - 400
-#   - 200
-# stride: 10
-# maxWidth: 400
-# randomize: no

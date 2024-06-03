@@ -33,6 +33,12 @@ namespace lve
     private:
 #ifdef NDEBUG
         const std::string APP_NAME = "FluidSim2DApp";
+        struct FpsCounter
+        {
+            int frameCount = 0;
+            std::chrono::_V2::system_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+        };
+        FpsCounter fpsCounter;
 #else
         const std::string APP_NAME = "FluidSim2DApp (debug)";
 #endif

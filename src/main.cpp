@@ -17,6 +17,8 @@ int main()
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
+        // pause to see error message
+        std::cin.get();
         return EXIT_FAILURE;
     }
 

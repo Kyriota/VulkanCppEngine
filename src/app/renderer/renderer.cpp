@@ -3,6 +3,7 @@
 #include "keyboard_movement_controller.hpp"
 #include "lve/lve_buffer.hpp"
 #include "lve/lve_camera.hpp"
+#include "lve/lve_file_io.hpp"
 #include "lve/lve_sampler_manager.hpp"
 #include "system/render_system.hpp"
 #include "system/compute_system.hpp"
@@ -16,6 +17,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <cmath>
+#include <string>
 
 namespace lve
 {
@@ -62,8 +64,8 @@ namespace lve
         updateGlobalDescriptorSets();
 
         GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
-        graphicPipelineConfigInfo.vertFilepath = "build/shaders/simple_shader.vert.spv";
-        graphicPipelineConfigInfo.fragFilepath = "build/shaders/simple_shader.frag.spv";
+        graphicPipelineConfigInfo.vertFilepath = "simple_shader.vert.spv";
+        graphicPipelineConfigInfo.fragFilepath = "simple_shader.frag.spv";
         graphicPipelineConfigInfo.vertexBindingDescriptions = LveModel::Vertex::getBindingDescriptions();
         graphicPipelineConfigInfo.vertexAttributeDescriptions = LveModel::Vertex::getAttributeDescriptions();
 
@@ -125,22 +127,25 @@ namespace lve
 
     void RendererApp::loadGameObjects()
     {
+        LveYamlConfig generalConfig{"config/general.yaml"};
+        std::string modelRoot = generalConfig.get<std::string>("modelRoot") + "/";
+
         std::shared_ptr<LveModel> lveModel =
-            LveModel::createModelFromFile(lveDevice, "assets/models/flat_vase.obj");
+            LveModel::createModelFromFile(lveDevice, modelRoot + "flat_vase.obj");
         auto flatVase = LveGameObject::createGameObject();
         flatVase.model = lveModel;
         flatVase.transform.translation = {-.5f, .5f, 0.f};
         flatVase.transform.scale = {3.f, 1.5f, 3.f};
         gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 
-        lveModel = LveModel::createModelFromFile(lveDevice, "assets/models/smooth_vase.obj");
+        lveModel = LveModel::createModelFromFile(lveDevice, modelRoot + "smooth_vase.obj");
         auto smoothVase = LveGameObject::createGameObject();
         smoothVase.model = lveModel;
         smoothVase.transform.translation = {.5f, .5f, 0.f};
         smoothVase.transform.scale = {3.f, 1.5f, 3.f};
         gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
-        lveModel = LveModel::createModelFromFile(lveDevice, "assets/models/quad.obj");
+        lveModel = LveModel::createModelFromFile(lveDevice, modelRoot + "quad.obj");
         auto floor = LveGameObject::createGameObject();
         floor.model = lveModel;
         floor.transform.translation = {0.f, .5f, 0.f};

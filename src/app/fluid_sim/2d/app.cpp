@@ -75,8 +75,8 @@ namespace lve
         updateGlobalDescriptorSets(true);
 
         GraphicPipelineConfigInfo screenTexturePipelineConfigInfo{};
-        screenTexturePipelineConfigInfo.vertFilepath = "build/shaders/screen_texture_shader.vert.spv";
-        screenTexturePipelineConfigInfo.fragFilepath = "build/shaders/screen_texture_shader.frag.spv";
+        screenTexturePipelineConfigInfo.vertFilepath = "screen_texture_shader.vert.spv";
+        screenTexturePipelineConfigInfo.fragFilepath = "screen_texture_shader.frag.spv";
 
         screenTextureRenderSystem = RenderSystem(
             lveDevice,
@@ -87,7 +87,7 @@ namespace lve
         fluidSimComputeSystem = ComputeSystem(
             lveDevice,
             {globalSetLayout->getDescriptorSetLayout()},
-            "build/shaders/my_compute_shader.comp.spv");
+            "my_compute_shader.comp.spv");
     }
 
     FluidSim2DApp::~FluidSim2DApp()
@@ -227,6 +227,16 @@ namespace lve
                 std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
             frameTime = std::min(frameTime, maxFrameTime);
             currentTime = newTime;
+
+#ifdef NDEBUG
+            fpsCounter.frameCount++;
+            if (std::chrono::duration<float, std::chrono::seconds::period>(currentTime - fpsCounter.startTime).count() >= 1.0f)
+            {
+                lveWindow.setTitle(APP_NAME + " (FPS: " + std::to_string(fpsCounter.frameCount) + ")");
+                fpsCounter.frameCount = 0;
+                fpsCounter.startTime = currentTime;
+            }
+#endif
 
             if (auto commandBuffer = lveRenderer.beginFrame())
             {

@@ -136,4 +136,10 @@ namespace lve
         glfwGetFramebufferSize(window, &width, &height);
         return width == 0 || height == 0;
     }
+
+    void LveWindow::setTitle(const std::string &title)
+    {
+        windowName = title;
+        glfwSetWindowTitle(window, title.c_str());
+    }
 } // namespace lve

@@ -1,6 +1,5 @@
 #include "lve_pipeline_graphics.hpp"
 #include "lve_pipeline_op.hpp"
-
 #include "lve_model.hpp"
 #include "lve_file_io.hpp"
 
@@ -131,8 +130,10 @@ namespace lve
             configInfo.renderPass != VK_NULL_HANDLE &&
             "Cannot create graphics pipeline: no renderPass provided in configInfo");
 
-        std::vector<char> vertCode = readBinaryFile(configInfo.vertFilepath);
-        std::vector<char> fragCode = readBinaryFile(configInfo.fragFilepath);
+        LveYamlConfig generalConfig{"config/general.yaml"};
+        std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
+        std::vector<char> vertCode = readBinaryFile(shaderRoot + configInfo.vertFilepath);
+        std::vector<char> fragCode = readBinaryFile(shaderRoot + configInfo.fragFilepath);
 
         createShaderModule(lveDevice, vertCode, &vertShaderModule);
         createShaderModule(lveDevice, fragCode, &fragShaderModule);

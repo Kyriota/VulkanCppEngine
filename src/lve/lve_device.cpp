@@ -113,9 +113,7 @@ namespace lve
         }
         else
         {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(releaseLayers.size());
-            createInfo.ppEnabledLayerNames = releaseLayers.data();
-
+            createInfo.enabledLayerCount = 0;
             createInfo.pNext = nullptr;
         }
 
