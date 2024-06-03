@@ -181,13 +181,14 @@ namespace lve
         int particleCount = fluidParticleSys.getParticleCount();
         float smoothRadius = fluidParticleSys.getSmoothRadius();
         float targetDensity = fluidParticleSys.getTargetDensity();
+        float dataScale = fluidParticleSys.getDataScale();
 
         particleBuffer = std::make_unique<LveBuffer>(
             lveDevice,
             sizeof(int) +                           // particle count
                 sizeof(float) +                     // smoothing radius
                 sizeof(float) +                     // target density
-                4 +                                 // padding
+                sizeof(float) +                     // data scale
                 sizeof(glm::vec2) * particleCount + // position
                 sizeof(glm::vec2) * particleCount,  // velocity
             1,
@@ -198,6 +199,7 @@ namespace lve
         particleBuffer->writeToBufferOrdered(&particleCount, sizeof(int));
         particleBuffer->writeToBufferOrdered(&smoothRadius, sizeof(float));
         particleBuffer->writeToBufferOrdered(&targetDensity, sizeof(float));
+        particleBuffer->writeToBufferOrdered(&dataScale, sizeof(float));
     }
 
     void FluidSim2DApp::writeParticleBuffer()
@@ -205,10 +207,11 @@ namespace lve
         int particleCount = fluidParticleSys.getParticleCount();
         float smoothRadius = fluidParticleSys.getSmoothRadius();
         float targetDensity = fluidParticleSys.getTargetDensity();
+        float dataScale = fluidParticleSys.getDataScale();
         particleBuffer->setRecordedOffset(sizeof(int));
         particleBuffer->writeToBufferOrdered(&smoothRadius, sizeof(float));
         particleBuffer->writeToBufferOrdered(&targetDensity, sizeof(float));
-        particleBuffer->addRecordedOffset(4); // padding
+        particleBuffer->writeToBufferOrdered(&dataScale, sizeof(float));
         particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount);
         particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount);
     }
@@ -237,6 +240,14 @@ namespace lve
                     static_cast<int>(std::ceil(windowExtent.width / 8.f)),
                     static_cast<int>(std::ceil(windowExtent.height / 8.f)));
 
+                // fluid particle system
+                if (lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) || lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
+                {
+                    double mouseX, mouseY;
+                    lveWindow.input.getMousePosition(mouseX, mouseY);
+                    glm::vec2 mousePos = {static_cast<float>(mouseX), static_cast<float>(mouseY)};
+                    fluidParticleSys.setExternalForcePos(lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT), mousePos);
+                }
                 fluidParticleSys.reloadConfigParam();
                 fluidParticleSys.updateWindowExtent(windowExtent);
                 fluidParticleSys.updateParticleData(frameTime);

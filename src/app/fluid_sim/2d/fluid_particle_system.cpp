@@ -13,23 +13,14 @@ namespace lve
     {
         this->configFilePath = configFilePath;
         LveYamlConfig config{configFilePath};
-
         particleCount = config.get<unsigned int>("particleCount");
-        smoothRadius = config.get<float>("smoothRadius");
-        collisionDamping = config.get<float>("collisionDamping");
-        targetDensity = config.get<float>("targetDensity");
-        pressureMultiplier = config.get<float>("pressureMultiplier");
-        gravityAccValue = config.get<float>("gravityAccValue");
+
+        initSimParams(config);
 
         std::vector<float> startPoint = config.get<std::vector<float>>("startPoint");
         float stride = config.get<float>("stride");
         float maxWidth = config.get<float>("maxWidth");
         bool randomize = config.get<bool>("randomize");
-
-        // constants
-        scalingFactorPoly6_2D = 4.f / (M_PI * LveMath::intPow(smoothRadius, 8));
-        scalingFactorSpikyPow3_2D = 10.f / (M_PI * LveMath::intPow(smoothRadius, 5));
-        scalingFactorSpikyPow2_2D = 6.f / (M_PI * LveMath::intPow(smoothRadius, 4));
 
         initParticleData(glm::vec2(startPoint[0], startPoint[1]), stride, maxWidth, randomize);
     }
@@ -37,17 +28,7 @@ namespace lve
     void FluidParticleSystem::reloadConfigParam()
     {
         LveYamlConfig config{configFilePath};
-
-        smoothRadius = config.get<float>("smoothRadius");
-        collisionDamping = config.get<float>("collisionDamping");
-        targetDensity = config.get<float>("targetDensity");
-        pressureMultiplier = config.get<float>("pressureMultiplier");
-        gravityAccValue = config.get<float>("gravityAccValue");
-
-        // constants
-        scalingFactorPoly6_2D = 4.f / (M_PI * LveMath::intPow(smoothRadius, 8));
-        scalingFactorSpikyPow3_2D = 10.f / (M_PI * LveMath::intPow(smoothRadius, 5));
-        scalingFactorSpikyPow2_2D = 6.f / (M_PI * LveMath::intPow(smoothRadius, 4));
+        initSimParams(config);
     }
 
     void FluidParticleSystem::initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize)
@@ -78,8 +59,32 @@ namespace lve
 
             velocityData[i] = glm::vec2(0.f, 0.f);
 
-            massData[i] = 100.f;
+            massData[i] = 1.f;
         }
+
+        // data scaling
+        for (int i = 0; i < particleCount; i++)
+        {
+            positionData[i] *= dataScale;
+            velocityData[i] *= dataScale;
+        }
+    }
+
+    void FluidParticleSystem::initSimParams(LveYamlConfig &config)
+    {
+        smoothRadius = config.get<float>("smoothRadius");
+        collisionDamping = config.get<float>("collisionDamping");
+        targetDensity = config.get<float>("targetDensity");
+        pressureMultiplier = config.get<float>("pressureMultiplier");
+        gravityAccValue = config.get<float>("gravityAccValue");
+        dataScale = config.get<float>("dataScale");
+        externalForceScale = config.get<float>("externalForceScale");
+        externalForceRadius = config.get<float>("externalForceRadius");
+
+        // init kernel constants
+        scalingFactorPoly6_2D = 4.f / (M_PI * LveMath::intPow(smoothRadius, 8));
+        scalingFactorSpikyPow3_2D = 10.f / (M_PI * LveMath::intPow(smoothRadius, 5));
+        scalingFactorSpikyPow2_2D = 6.f / (M_PI * LveMath::intPow(smoothRadius, 4));
     }
 
     void FluidParticleSystem::updateParticleData(float deltaTime)
@@ -98,9 +103,10 @@ namespace lve
         for (int i = 0; i < particleCount; i++)
         {
             glm::vec2 pressureForce = calculatePressureForce(i);
-            glm::vec2 gravityAcc = glm::vec2(0.f, gravityAccValue * massData[i]);
+            glm::vec2 externalForce = calculateExternalForce(i);
+            glm::vec2 gravityAcc = glm::vec2(0.f, gravityAccValue * massData[i]); // positive gravity is down due to screen coordinates
 
-            glm::vec2 acceleration = pressureForce / densityData[i] + gravityAcc;
+            glm::vec2 acceleration = (pressureForce + externalForce) / densityData[i] + gravityAcc;
             velocityData[i] += acceleration * deltaTime;
         }
 
@@ -109,6 +115,15 @@ namespace lve
             positionData[i] += velocityData[i] * deltaTime;
 
         handleBoundaryCollision();
+
+        externalForceInfo.active = false;
+    }
+
+    void FluidParticleSystem::setExternalForcePos(bool sign, glm::vec2 position)
+    {
+        externalForceInfo.active = true;
+        externalForceInfo.sign = sign;
+        externalForceInfo.position = position * dataScale;
     }
 
     float FluidParticleSystem::kernelPoly6_2D(float distance, float radius) const
@@ -192,18 +207,36 @@ namespace lve
         return pressureForce;
     }
 
+    glm::vec2 FluidParticleSystem::calculateExternalForce(unsigned int particleIndex)
+    {
+        if (!externalForceInfo.active)
+            return glm::vec2(0.f, 0.f);
+
+        glm::vec2 externalForce = glm::vec2(0.f, 0.f);
+        glm::vec2 particleNextPos = nextPositionData[particleIndex];
+        float distance = glm::distance(particleNextPos, externalForceInfo.position);
+        if (distance < externalForceRadius)
+        {
+            glm::vec2 dir = glm::normalize(externalForceInfo.position - particleNextPos);
+            if (externalForceInfo.sign)
+                dir *= -1.f;
+            externalForce = externalForceScale * dir;
+        }
+        return externalForce;
+    }
+
     void FluidParticleSystem::handleBoundaryCollision()
     {
         for (int i = 0; i < particleCount; i++)
         {
-            if (positionData[i].x < 0 || positionData[i].x > windowExtent.width)
+            if (positionData[i].x < 0 || positionData[i].x > windowExtent.width * dataScale)
             {
-                positionData[i].x = std::clamp(positionData[i].x, 0.f, static_cast<float>(windowExtent.width));
+                positionData[i].x = std::clamp(positionData[i].x, 0.f, static_cast<float>(windowExtent.width) * dataScale);
                 velocityData[i].x *= -collisionDamping;
             }
-            if (positionData[i].y < 0 || positionData[i].y > windowExtent.height)
+            if (positionData[i].y < 0 || positionData[i].y > windowExtent.height * dataScale)
             {
-                positionData[i].y = std::clamp(positionData[i].y, 0.f, static_cast<float>(windowExtent.height));
+                positionData[i].y = std::clamp(positionData[i].y, 0.f, static_cast<float>(windowExtent.height) * dataScale);
                 velocityData[i].y *= -collisionDamping;
             }
         }

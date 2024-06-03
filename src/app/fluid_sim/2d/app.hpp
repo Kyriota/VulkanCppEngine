@@ -31,7 +31,12 @@ namespace lve
         void run();
 
     private:
-        LveWindow lveWindow{1200, 800, "FluidSim2DApp"};
+#ifdef NDEBUG
+        const std::string APP_NAME = "FluidSim2DApp";
+#else
+        const std::string APP_NAME = "FluidSim2DApp (debug)";
+#endif
+        LveWindow lveWindow{1200, 800, APP_NAME};
         LveDevice lveDevice{lveWindow};
         LveRenderer lveRenderer{lveWindow, lveDevice};
         VkExtent2D windowExtent = lveWindow.getExtent();

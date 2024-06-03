@@ -102,18 +102,20 @@ namespace lve
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
         if (enableDebugLayers)
         {
             createInfo.enabledLayerCount = static_cast<uint32_t>(debugLayers.size());
             createInfo.ppEnabledLayerNames = debugLayers.data();
 
+            VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
             populateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
         }
         else
         {
-            createInfo.enabledLayerCount = 0;
+            createInfo.enabledLayerCount = static_cast<uint32_t>(releaseLayers.size());
+            createInfo.ppEnabledLayerNames = releaseLayers.data();
+
             createInfo.pNext = nullptr;
         }
 

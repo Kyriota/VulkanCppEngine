@@ -28,6 +28,7 @@ namespace lve
         bool isMouseButtonPressed(int button) const { return mouseButtonState.at(button); }
         void getMousePosition(double &x, double &y) const { x = mouseX; y = mouseY; }
         void getMousePositionDelta(double &dx, double &dy) const { dx = mouseDeltaX; dy = mouseDeltaY; }
+        bool isMouseMoved() const { return mouseDeltaX != 0 || mouseDeltaY != 0; }
 
     private:
         Input();

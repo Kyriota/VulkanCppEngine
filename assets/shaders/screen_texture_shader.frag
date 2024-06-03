@@ -1,6 +1,7 @@
 #version 450
 
 #define M_PI 3.1415926535897932384626433832795
+// #define SHOW_DENSITY
 
 layout(location = 0) in vec2 fragTexCoord;
 
@@ -16,6 +17,7 @@ layout(binding = 3) buffer Particles {
 	uint numParticles;
 	float smoothRadius;
 	float targetDensity;
+	float dataScale;
 	vec2 data[];
 };
 
@@ -54,6 +56,7 @@ float smoothKernel(float radius, float dist) {
 float calculateDensity(vec2 samplePointPos) {
 	float density = 0.0;
 	const float mass = 1.0;
+	samplePointPos *= dataScale;
 
 	for (int i = 0; i < numParticles; i++) {
 		vec2 particlePos = data[i];
@@ -68,12 +71,12 @@ float calculateDensity(vec2 samplePointPos) {
 void main() {
 	// Draw all particles
 	for (int i = 0; i < numParticles; i++) {
-		vec2 particlePosition = data[i];
+		vec2 particlePosition = data[i] / dataScale;
 		vec2 diff = fragTexCoord - particlePosition;
 		float distanceSqr = dot(diff, diff);
 
 		if (distanceSqr < particleRadiusSqr) { // If the pixel is inside the particle
-			vec2 particleVelocity = data[i + numParticles];
+			vec2 particleVelocity = data[i + numParticles] / dataScale;
 			float velocityMagSqr = dot(particleVelocity, particleVelocity);
 			velocityMagSqr = min(velocityMagSqr, maxDisplayVelocityMagSqr);
 			// find the color based on the velocity

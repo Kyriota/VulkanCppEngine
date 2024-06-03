@@ -3,6 +3,7 @@
 #define M_PI 3.14159265358979323846
 
 #include "lve/lve_math.hpp"
+#include "lve/lve_file_io.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -27,8 +28,11 @@ namespace lve
         float getParticleCount() const { return particleCount; }
         float getSmoothRadius() const { return smoothRadius; }
         float getTargetDensity() const { return targetDensity; }
+        float getDataScale() const { return dataScale; }
         std::vector<glm::vec2> &getPositionData() { return positionData; }
         std::vector<glm::vec2> &getVelocityData() { return velocityData; }
+
+        void setExternalForcePos(bool sign, glm::vec2 position);
 
     private:
         struct SpatialHashEntry
@@ -47,6 +51,9 @@ namespace lve
         float targetDensity;
         float pressureMultiplier;
         float gravityAccValue;
+        float dataScale;
+        float externalForceScale;
+        float externalForceRadius;
         float lookAheadTime = 1.0 / 120.0;
 
         // particle data
@@ -56,6 +63,7 @@ namespace lve
         std::vector<float> densityData;
         std::vector<float> massData;
         void initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize);
+        void initSimParams(LveYamlConfig &config);
 
         // kernels
         float kernelPoly6_2D(float distance, float radius) const;
@@ -70,6 +78,7 @@ namespace lve
         // update rules
         float calculateDensity(glm::vec2 samplePos);
         glm::vec2 calculatePressureForce(unsigned int particleIndex);
+        glm::vec2 calculateExternalForce(unsigned int particleIndex);
         void handleBoundaryCollision();
 
         // hash grid
@@ -80,5 +89,14 @@ namespace lve
         void updateSpatialLookup();
         void foreachNeighbor(unsigned int particleIndex, std::function<void(int)> callback);
         const glm::int2 offset2D[9] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {0, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+
+        // external force
+        struct ExternalForceInfo
+        {
+            bool active;
+            bool sign;
+            glm::vec2 position;
+        };
+        ExternalForceInfo externalForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};
     };
 } // namespace lve
