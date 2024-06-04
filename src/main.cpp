@@ -1,5 +1,6 @@
 #include "app/fluid_sim/2d/app.hpp"
 #include "app/renderer/app.hpp"
+#include "lve/util/file_io.hpp"
 
 // std
 #include <cstdlib>
@@ -8,18 +9,16 @@
 
 int main()
 {
-    FluidSim2DApp app{};
-    // RendererApp app{};
-
     try
     {
+        FluidSim2DApp app{};
+        // RendererApp app{};
+
         app.run();
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << '\n';
-        // pause to see error message
-        std::cin.get();
+        lve::io::writeFile("error.log", e.what());
         return EXIT_FAILURE;
     }
 
