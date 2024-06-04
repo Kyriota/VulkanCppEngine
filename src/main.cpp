@@ -8,8 +8,8 @@
 
 int main()
 {
-    // lve::FluidSim2DApp app{};
-    lve::RendererApp app{};
+    FluidSim2DApp app{};
+    // RendererApp app{};
 
     try
     {

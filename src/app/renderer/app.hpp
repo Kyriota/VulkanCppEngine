@@ -11,35 +11,32 @@
 #include <memory>
 #include <vector>
 
-namespace lve
+class RendererApp
 {
-    class RendererApp
-    {
-    public:
-        static constexpr int INIT_WIDTH = 800;
-        static constexpr int INIT_HEIGHT = 600;
+public:
+    static constexpr int INIT_WIDTH = 800;
+    static constexpr int INIT_HEIGHT = 600;
 
-        RendererApp();
+    RendererApp();
 
-        RendererApp(const RendererApp &) = delete;
-        RendererApp &operator=(const RendererApp &) = delete;
+    RendererApp(const RendererApp &) = delete;
+    RendererApp &operator=(const RendererApp &) = delete;
 
-        void run();
+    void run();
 
-    private:
-        void loadGameObjects();
+private:
+    void loadGameObjects();
 
-        Window lveWindow{INIT_WIDTH, INIT_HEIGHT, "RendererApp"};
-        Device lveDevice{lveWindow};
-        FrameManager lveRenderer{lveWindow, lveDevice};
+    lve::Window lveWindow{INIT_WIDTH, INIT_HEIGHT, "RendererApp"};
+    lve::Device lveDevice{lveWindow};
+    lve::FrameManager lveRenderer{lveWindow, lveDevice};
 
-        // note: order of declarations matters because of destruction order
-        std::unique_ptr<DescriptorPool> globalPool{};
-        std::vector<std::unique_ptr<Buffer>> uboBuffers;
-        std::unique_ptr<DescriptorSetLayout> globalSetLayout;
-        std::vector<VkDescriptorSet> globalDescriptorSets;
-        GameObject::Map gameObjects;
+    // note: order of declarations matters because of destruction order
+    std::unique_ptr<lve::DescriptorPool> globalPool{};
+    std::vector<std::unique_ptr<lve::Buffer>> uboBuffers;
+    std::unique_ptr<lve::DescriptorSetLayout> globalSetLayout;
+    std::vector<VkDescriptorSet> globalDescriptorSets;
+    lve::GameObject::Map gameObjects;
 
-        void updateGlobalDescriptorSets();
-    };
-} // namespace lve
+    void updateGlobalDescriptorSets();
+};
