@@ -74,7 +74,7 @@ private:
     float scalingFactorSpikyPow2_2D;
 
     // update rules
-    float calculateDensity(glm::vec2 samplePos);
+    float calculateDensity(unsigned int particleIndex);
     glm::vec2 calculatePressureForce(unsigned int particleIndex);
     glm::vec2 calculateExternalForce(unsigned int particleIndex);
     void handleBoundaryCollision();

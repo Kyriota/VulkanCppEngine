@@ -86,15 +86,14 @@ void FluidParticleSystem::initSimParams(lve::io::YamlConfig &config)
 
 void FluidParticleSystem::updateParticleData(float deltaTime)
 {
-    // predict position
-    for (int i = 0; i < particleCount; i++)
+    for (int i = 0; i < particleCount; i++) // predict position
         nextPositionData[i] = positionData[i] + velocityData[i] * lookAheadTime;
 
     updateSpatialLookup();
 
     // calculate density using predicted position
     for (int i = 0; i < particleCount; i++)
-        densityData[i] = calculateDensity(nextPositionData[i]);
+        densityData[i] = calculateDensity(i);
 
     // update velocity
     for (int i = 0; i < particleCount; i++)
@@ -163,15 +162,17 @@ float FluidParticleSystem::derivativeSpikyPow2_2D(float distance, float radius) 
     return -2.f * scalingFactorSpikyPow2_2D * v;
 }
 
-float FluidParticleSystem::calculateDensity(glm::vec2 samplePos)
+float FluidParticleSystem::calculateDensity(unsigned int particleIndex)
 {
-    float density = 0.f;
-    for (int i = 0; i < particleCount; i++)
-    {
-        float distance = glm::distance(samplePos, positionData[i]);
-        float influence = kernelPoly6_2D(distance, smoothRadius);
-        density += massData[i] * influence;
-    }
+    float density = massData[particleIndex] * kernelPoly6_2D(0.f, smoothRadius); // self density
+    glm::vec2 particleNextPos = nextPositionData[particleIndex];
+    foreachNeighbor(
+        particleIndex,
+        [&](int neighborIndex)
+        {
+            float distance = glm::distance(particleNextPos, nextPositionData[neighborIndex]);
+            density += massData[neighborIndex] * kernelPoly6_2D(distance, smoothRadius);
+        });
     return density;
 }
 

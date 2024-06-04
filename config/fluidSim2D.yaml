@@ -1,5 +1,5 @@
 ---
-particleCount: 1024
+particleCount: 512
 smoothRadius: 0.35
 collisionDamping: 0.5
 targetDensity: 10
