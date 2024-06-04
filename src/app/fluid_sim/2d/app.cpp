@@ -225,7 +225,6 @@ void FluidSim2DApp::renderLoop()
         frameTime = std::min(frameTime, maxFrameTime);
         currentTime = newTime;
 
-#ifdef NDEBUG
         fpsCounter.frameCount++;
         if (std::chrono::duration<float, std::chrono::seconds::period>(currentTime - fpsCounter.startTime).count() >= 1.0f)
         {
@@ -233,7 +232,6 @@ void FluidSim2DApp::renderLoop()
             fpsCounter.frameCount = 0;
             fpsCounter.startTime = currentTime;
         }
-#endif
 
         if (auto commandBuffer = lveRenderer.beginFrame())
         {

@@ -31,12 +31,6 @@ public:
 private:
 #ifdef NDEBUG
     const std::string APP_NAME = "FluidSim2DApp";
-    struct FpsCounter
-    {
-        int frameCount = 0;
-        std::chrono::_V2::system_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-    };
-    FpsCounter fpsCounter;
 #else
     const std::string APP_NAME = "FluidSim2DApp (debug)";
 #endif
@@ -44,7 +38,15 @@ private:
     lve::Device lveDevice{lveWindow};
     lve::FrameManager lveRenderer{lveWindow, lveDevice};
     VkExtent2D windowExtent = lveWindow.getExtent();
+
+    // Frame rate
+    struct FpsCounter
+    {
+        int frameCount = 0;
+        std::chrono::_V2::system_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+    };
     float maxFrameTime = 1.0 / 30.0;
+    FpsCounter fpsCounter;
 
     // GPU resources
     std::unique_ptr<lve::DescriptorPool> globalPool{};
