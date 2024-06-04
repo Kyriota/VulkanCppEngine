@@ -16,7 +16,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-call %~dp0\MakeScripts\win32\copy_dlls.bat %RUNTIME_OUTPUT_DIRECTORY%
+call %~dp0\MakeScripts\win32\copy_dlls.bat %RUNTIME_OUTPUT_DIRECTORY% %~dp0\external\dll
 if errorlevel 1 (
     echo Error occured when copying dlls
     exit /b 1

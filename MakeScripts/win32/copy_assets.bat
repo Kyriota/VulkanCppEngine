@@ -12,7 +12,7 @@ if not exist "%ASSET_OUTPUT_DIR%" (
 )
 
 REM Copy %ASSET_DIR%\Models to %ASSET_OUTPUT_DIR%\Models
-xcopy /s /i /y "%ASSET_DIR%\Models" "%ASSET_OUTPUT_DIR%\Models"
+xcopy /s /i /y "%ASSET_DIR%\Models" "%ASSET_OUTPUT_DIR%\Models" >nul
 
 echo All assets copied successfully.
 exit /b 0

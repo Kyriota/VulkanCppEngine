@@ -1,16 +1,20 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(vulkan-cpp-engine)
 
+# Engine
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/lve)
+
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 
-# Add source files cpp and header files hpp
-file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "src/*.hpp")
-file(GLOB_RECURSE TEMPLATES "src/*.tpp")
+# Add source files
+file(GLOB_RECURSE APP_SRC ${CMAKE_SOURCE_DIR}/src/app/*.cpp)
+file(GLOB_RECURSE APP_HDR ${CMAKE_SOURCE_DIR}/src/app/*.hpp)
+set(SOURCE ${APP_SRC} ${CMAKE_SOURCE_DIR}/src/main.cpp)
+set(HEADER ${APP_HDR})
 
 # Add executable
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCE} ${HEADER})
 
 # Set output directory
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -24,37 +28,21 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CONFIGURATION "RELEASE")
 else()
-    # Handle other build types if necessary
+    message(FATAL_ERROR "Unsupported configuration")
 endif()
 
 # Set RUNTIME_OUTPUT_DIRECTORY
 set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/${CONFIGURATION})
 
 # Add include directories
-target_include_directories(${PROJECT_NAME} PUBLIC src)
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
-# Add external libraries
-target_include_directories(${PROJECT_NAME} PUBLIC external/include)
+# Link Engine
+target_link_libraries(${PROJECT_NAME} Engine)
 
-# ==================== Link libraries ====================
-# Set library directories
-set(LIBRARY_DIR ${CMAKE_SOURCE_DIR}/external/lib)
-# Link vulkan lib
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_DIR}/vulkan-1.lib)
-# Link yaml-cpp lib
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_DIR}/libyaml-cpp.a)
-# Link glfw lib
-target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_DIR}/libglfw3.a)
 
-# Link OpenMP
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
-else()
-    message(FATAL_ERROR "OpenMP not found")
-endif()
 
-# Other scripts
+# ==================== Other scripts ====================
 if(WIN32)
     set(SCRIPT_SUFFIX .bat)
 else()

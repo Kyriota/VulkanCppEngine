@@ -8,7 +8,7 @@ if not exist "%CONFIG_DIR%" (
 )
 
 REM Copy %CONFIG_DIR% to %RUNTIME_OUTPUT_DIR%\Configs
-xcopy /s /i /y "%CONFIG_DIR%" "%RUNTIME_OUTPUT_DIR%\config"
+xcopy /s /i /y "%CONFIG_DIR%" "%RUNTIME_OUTPUT_DIR%\config" >nul
 
 echo All configs copied successfully.
 exit /b 0
