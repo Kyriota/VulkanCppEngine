@@ -14,4 +14,4 @@ startPoint:
   - 200
 stride: 10
 maxWidth: 400
-randomize: no
+randomize: yes

@@ -240,10 +240,10 @@ void FluidParticleSystem::handleBoundaryCollision()
     }
 }
 
-glm::int2 FluidParticleSystem::pos2gridCoord(glm::vec2 position, int gridWidth) const
+glm::int2 FluidParticleSystem::pos2gridCoord(glm::vec2 position, float gridWidth) const
 {
-    int x = position.x / gridWidth;
-    int y = position.y / gridWidth;
+    int x = static_cast<int>(position.x / gridWidth);
+    int y = static_cast<int>(position.y / gridWidth);
     return {x, y};
 }
 
@@ -256,7 +256,7 @@ void FluidParticleSystem::updateSpatialLookup()
 {
     for (int i = 0; i < particleCount; i++)
     {
-        int hashValue = hashGridCoord2D(pos2gridCoord(nextPositionData[i], static_cast<int>(smoothRadius)));
+        int hashValue = hashGridCoord2D(pos2gridCoord(nextPositionData[i], smoothRadius));
         unsigned int hashKey = lve::math::positiveMod(hashValue, particleCount);
         spacialLookup[i].particleIndex = i;
         spacialLookup[i].spatialHashKey = hashKey;
@@ -269,6 +269,9 @@ void FluidParticleSystem::updateSpatialLookup()
         {
             return a.spatialHashKey < b.spatialHashKey;
         });
+    
+    // init spacial lookup entry
+    std::fill(spacialLookupEntry.begin(), spacialLookupEntry.end(), -1);
 
     for (int i = 0; i < particleCount; i++)
     {
@@ -293,6 +296,8 @@ void FluidParticleSystem::foreachNeighbor(unsigned int particleIndex, std::funct
         glm::int2 offsetGridPos = gridPos + offset2D[i];
         unsigned int hashKey = lve::math::positiveMod(hashGridCoord2D(offsetGridPos), particleCount);
         int startIndex = spacialLookupEntry[hashKey];
+        if (startIndex == -1)
+            continue;
 
         for (int j = startIndex; j < particleCount; j++)
         {

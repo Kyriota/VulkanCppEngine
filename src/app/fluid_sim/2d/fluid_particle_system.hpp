@@ -82,7 +82,7 @@ private:
     // hash grid
     std::vector<SpatialHashEntry> spacialLookup;
     std::vector<int> spacialLookupEntry;
-    glm::int2 pos2gridCoord(glm::vec2 position, int gridWidth) const;
+    glm::int2 pos2gridCoord(glm::vec2 position, float gridWidth) const;
     int hashGridCoord2D(glm::int2 gridCoord) const;
     void updateSpatialLookup();
     void foreachNeighbor(unsigned int particleIndex, std::function<void(int)> callback);
