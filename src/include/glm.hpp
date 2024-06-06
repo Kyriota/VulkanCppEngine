@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/compatibility.hpp>
+#include <glm/gtx/norm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>

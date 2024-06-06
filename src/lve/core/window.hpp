@@ -24,10 +24,20 @@ namespace lve
         Input(const Input &) = delete;
         Input &operator=(const Input &) = delete;
 
-        bool isKeyPressed(int keyCode) const { return keyState.at(keyCode); }
-        bool isMouseButtonPressed(int button) const { return mouseButtonState.at(button); }
+        KeyState getKeyState(int keyCode) const { return keyState.at(keyCode); }
+        bool isKeyPressed(int keyCode) const { return keyState.at(keyCode) == KeyState::PRESS; }
+        bool isKeyReleased(int keyCode) const { return keyState.at(keyCode) == KeyState::RELEASE; }
+        bool isKeyRepeated(int keyCode) const { return keyState.at(keyCode) == KeyState::REPEAT; }
+        bool isKeyUpdated(int keyCode) const { return keyUpdated.at(keyCode); }
+        void clearKeyUpdate(int keyCode) { keyUpdated[keyCode] = false; }
+        
+        KeyState getMouseButtonState(int button) const { return mouseButtonState.at(button); }
         void getMousePosition(double &x, double &y) const { x = mouseX; y = mouseY; }
         void getMousePositionDelta(double &dx, double &dy) const { dx = mouseDeltaX; dy = mouseDeltaY; }
+        bool isMouseButtonPressed(int button) const { return mouseButtonState.at(button) == KeyState::PRESS; }
+        bool isMouseButtonReleased(int button) const { return mouseButtonState.at(button) == KeyState::RELEASE; }
+        bool isMouseButtonUpdated(int button) const { return mouseButtonUpdated.at(button); }
+        void clearMouseButtonUpdate(int button) { mouseButtonUpdated[button] = false; }
         bool isMouseMoved() const { return mouseDeltaX != 0 || mouseDeltaY != 0; }
 
     private:
@@ -40,6 +50,9 @@ namespace lve
 
         std::unordered_map<int, KeyState> keyState;
         std::unordered_map<int, KeyState> mouseButtonState;
+
+        std::unordered_map<int, bool> keyUpdated;
+        std::unordered_map<int, bool> mouseButtonUpdated;
 
         void handleKeyEvent(int key, int action);
         void handleMouseButtonEvent(int button, int action);

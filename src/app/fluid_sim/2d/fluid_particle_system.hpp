@@ -1,7 +1,5 @@
 #pragma once
 
-#define M_PI 3.14159265358979323846
-
 #include "lve/util/math.hpp"
 #include "lve/util/file_io.hpp"
 
@@ -20,8 +18,8 @@ public:
 
     void reloadConfigParam();
 
+    void updateWindowExtent(VkExtent2D newExtent);
     void updateParticleData(float deltaTime);
-    void updateWindowExtent(VkExtent2D newExtent) { windowExtent = newExtent; }
 
     float getParticleCount() const { return particleCount; }
     float getSmoothRadius() const { return smoothRadius; }
@@ -30,7 +28,13 @@ public:
     std::vector<glm::vec2> &getPositionData() { return positionData; }
     std::vector<glm::vec2> &getVelocityData() { return velocityData; }
 
-    void setExternalForcePos(bool sign, glm::vec2 position);
+    void setRangeForcePos(bool sign, glm::vec2 screenPosition);
+
+    // control and debug
+    void togglePause() { isPaused = !isPaused; }
+    void printDensity(glm::vec2 screenPposition);
+    void printPressureForce(glm::vec2 screenPposition);
+    std::vector<int> &getFirstParticleNeighborIndex() { return firstParticleNeighborIndex; }
 
 private:
     struct SpatialHashEntry
@@ -42,17 +46,27 @@ private:
     std::string configFilePath;
     unsigned int particleCount;
     VkExtent2D windowExtent;
+    glm::vec2 scaledWindowExtent;
+
+    // control and debug
+    std::vector<int> firstParticleNeighborIndex;
+    bool isPaused = false;
+    unsigned int getClosetParticleIndex(glm::vec2 screenPposition);
 
     // simulation parameters
     float smoothRadius;
-    float collisionDamping;
+    float boundaryMultipler;
     float targetDensity;
     float pressureMultiplier;
+    float nearPressureMultiplier;
+    float viscosityMultiplier;
     float gravityAccValue;
     float dataScale;
-    float externalForceScale;
-    float externalForceRadius;
+    float rangeForceScale;
+    float rangeForceRadius;
     float lookAheadTime = 1.0 / 120.0;
+    float maxDeltaTime = 1.0 / 120.0;
+    float boundaryMargin = 0.5;
 
     // particle data
     std::vector<glm::vec2> positionData;
@@ -66,18 +80,22 @@ private:
     // kernels
     float kernelPoly6_2D(float distance, float radius) const;
     float scalingFactorPoly6_2D;
+    float scalingFactorPoly6_2D_atZero;
     float kernelSpikyPow3_2D(float distance, float radius) const;
     float derivativeSpikyPow3_2D(float distance, float radius) const;
     float scalingFactorSpikyPow3_2D;
+    float scalingFactorSpikyPow3_2D_atZero;
     float kernelSpikyPow2_2D(float distance, float radius) const;
     float derivativeSpikyPow2_2D(float distance, float radius) const;
     float scalingFactorSpikyPow2_2D;
+    float scalingFactorSpikyPow2_2D_atZero;
 
     // update rules
     float calculateDensity(unsigned int particleIndex);
     glm::vec2 calculatePressureForce(unsigned int particleIndex);
     glm::vec2 calculateExternalForce(unsigned int particleIndex);
-    void handleBoundaryCollision();
+    glm::vec2 calculateViscosityForce(unsigned int particleIndex);
+    glm::vec2 calculateNearPressureForce(unsigned int particleIndex);
 
     // hash grid
     std::vector<SpatialHashEntry> spacialLookup;
@@ -89,11 +107,11 @@ private:
     const glm::int2 offset2D[9] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {0, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
     // external force
-    struct ExternalForceInfo
+    struct RangeForceInfo
     {
         bool active;
         bool sign;
         glm::vec2 position;
     };
-    ExternalForceInfo externalForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};
+    RangeForceInfo rangeForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};
 };

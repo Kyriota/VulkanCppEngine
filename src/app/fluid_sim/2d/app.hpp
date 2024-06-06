@@ -52,6 +52,7 @@ private:
     std::unique_ptr<lve::DescriptorPool> globalPool{};
     std::vector<std::unique_ptr<lve::Buffer>> uboBuffers;
     std::unique_ptr<lve::Buffer> particleBuffer;
+    std::unique_ptr<lve::Buffer> neighborBuffer;
     std::unique_ptr<lve::DescriptorSetLayout> globalSetLayout;
     std::vector<VkDescriptorSet> globalDescriptorSets;
     lve::RenderSystem screenTextureRenderSystem{lveDevice};

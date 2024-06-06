@@ -1,17 +1,19 @@
 ---
-particleCount: 512
+particleCount: 2000
 smoothRadius: 0.35
-collisionDamping: 0.5
-targetDensity: 10
-pressureMultiplier: 50
-gravityAccValue: 12
+targetDensity: 55
+pressureMultiplier: 500
+nearPressureMultiplier: 0
+viscosityMultiplier: 0.06
+boundaryMultipler: 50000.0
+gravityAccValue: 9.8
 dataScale: 0.01
-externalForceScale: 1000.0
-externalForceRadius: 1.5
+rangeForceScale: 5000
+rangeForceRadius: 2.0
 
 startPoint:
-  - 400
-  - 200
-stride: 10
-maxWidth: 400
-randomize: yes
+  - 4
+  - 1
+stride: 0.1
+maxWidth: 4
+randomize: no

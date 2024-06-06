@@ -9,10 +9,16 @@ namespace lve
     Input::Input()
     {
         for (int i = 0; i < GLFW_KEY_LAST; i++)
+        {
             keyState[i] = KeyState::RELEASE;
+            keyUpdated[i] = false;
+        }
         
         for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
+        {
             mouseButtonState[i] = KeyState::RELEASE;
+            mouseButtonUpdated[i] = false;
+        }
     }
 
     void Input::handleKeyEvent(int key, int action)
@@ -26,6 +32,8 @@ namespace lve
             keyState[key] = KeyState::RELEASE;
         else
             keyState[key] = KeyState::PRESS;
+
+        keyUpdated[key] = true;
     }
 
     void Input::handleMouseButtonEvent(int button, int action)
@@ -34,6 +42,8 @@ namespace lve
             mouseButtonState[button] = KeyState::PRESS;
         else
             mouseButtonState[button] = KeyState::RELEASE;
+
+        mouseButtonUpdated[button] = true;
     }
 
     void Input::handleCursorPositionEvent(double xpos, double ypos)
