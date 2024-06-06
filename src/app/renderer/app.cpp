@@ -2,7 +2,7 @@
 #include "app/renderer/controller.hpp"
 
 #include "lve/core/resource/buffer.hpp"
-#include "lve/component/camera.hpp"
+#include "lve/go/comp/camera.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/system/render_system.hpp"
@@ -12,7 +12,6 @@
 #include "include/glm.hpp"
 
 // std
-#include <array>
 #include <cassert>
 #include <chrono>
 #include <stdexcept>

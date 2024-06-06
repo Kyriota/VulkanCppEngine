@@ -8,7 +8,6 @@
 #include "include/glm.hpp"
 
 // std
-#include <array>
 #include <cassert>
 #include <chrono>
 #include <stdexcept>
@@ -32,7 +31,7 @@ FluidSim2DApp::FluidSim2DApp()
             .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
             .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2) // particle buffer, neighbor buffer
             .build();
 
     // register callback functions for window resize
@@ -78,11 +77,24 @@ FluidSim2DApp::FluidSim2DApp()
     screenTexturePipelineConfigInfo.vertFilepath = "screen_texture_shader.vert.spv";
     screenTexturePipelineConfigInfo.fragFilepath = "screen_texture_shader.frag.spv";
 
+    lve::GraphicPipelineConfigInfo linePipelineConfigInfo{};
+    linePipelineConfigInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+    linePipelineConfigInfo.vertFilepath = "line_shader.vert.spv";
+    linePipelineConfigInfo.fragFilepath = "line_shader.frag.spv";
+    linePipelineConfigInfo.vertexBindingDescriptions = lve::Line::Vertex::getBindingDescriptions();
+    linePipelineConfigInfo.vertexAttributeDescriptions = lve::Line::Vertex::getAttributeDescriptions();
+
     screenTextureRenderSystem = lve::RenderSystem(
         lveDevice,
         lveRenderer.getSwapChainRenderPass(),
         {globalSetLayout->getDescriptorSetLayout()},
         screenTexturePipelineConfigInfo);
+
+    lineRenderSystem = lve::RenderSystem(
+        lveDevice,
+        lveRenderer.getSwapChainRenderPass(),
+        {globalSetLayout->getDescriptorSetLayout()},
+        linePipelineConfigInfo);
 
     fluidSimComputeSystem = lve::ComputeSystem(
         lveDevice,
@@ -227,6 +239,18 @@ void FluidSim2DApp::writeParticleBuffer()
     neighborBuffer->writeToBuffer((void *)fluidParticleSys.getFirstParticleNeighborIndex().data());
 }
 
+void FluidSim2DApp::drawDebugLines(VkCommandBuffer cmdBuffer)
+{
+    lineCollection.clearLines();
+    lineCollection.addLines(fluidParticleSys.getDebugLines());
+    lve::renderLines(
+        cmdBuffer,
+        &globalDescriptorSets[lveRenderer.getFrameIndex()],
+        lineRenderSystem.getPipelineLayout(),
+        lineRenderSystem.getPipeline(),
+        lineCollection);
+}
+
 void FluidSim2DApp::renderLoop()
 {
     // key settings
@@ -307,6 +331,8 @@ void FluidSim2DApp::renderLoop()
                 screenTextureRenderSystem.getPipeline(),
                 windowExtent);
 
+            drawDebugLines(commandBuffer);
+
             lveRenderer.endSwapChainRenderPass(commandBuffer);
             lveRenderer.endFrame();
         }
@@ -315,6 +341,5 @@ void FluidSim2DApp::renderLoop()
 
 // TODO:
 //  - 简化bingding流程
-//  - unsigned int -> uint32_t，并将可以换成uint32_t的数组index换成uint32_t
+//  - unsigned int -> size_t，并将可以换成size_t的数组index换成size_t
 //  - 优先选择独显
-//  - 默认参数启动后流体中间部分有一个莫名其妙的湍流，将显示第0个粒子的neighbor的代码拓展成鼠标选择粒子后debug看看

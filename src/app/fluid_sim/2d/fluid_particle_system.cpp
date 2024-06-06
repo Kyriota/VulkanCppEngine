@@ -35,11 +35,23 @@ void FluidParticleSystem::initParticleData(glm::vec2 startPoint, float stride, f
     velocityData.resize(particleCount);
     densityData.resize(particleCount);
     massData.resize(particleCount);
-    firstParticleNeighborIndex.resize(particleCount);
 
     spacialLookup.resize(particleCount);
     spacialLookupEntry.resize(particleCount);
 
+    // debug
+    pressureForceData.resize(particleCount);
+    externalForceData.resize(particleCount);
+    viscosityForceData.resize(particleCount);
+    firstParticleNeighborIndex.resize(particleCount);
+    debugLines.resize(particleCount);
+    for (int i = 0; i < particleCount; i++)
+    {
+        debugLines[i].start.color = glm::vec4(1.f, 0.f, 0.f, 1.f);
+        debugLines[i].end.color = glm::vec4(0.f, 1.f, 0.f, 1.f);
+    }
+
+    // init particle data
     int cntPerRow = static_cast<int>(maxWidth / stride);
     maxWidth -= std::fmod(maxWidth, stride);
     int row, col;
@@ -85,6 +97,11 @@ void FluidParticleSystem::initSimParams(lve::io::YamlConfig &config)
     scalingFactorSpikyPow2_2D_atZero = kernelSpikyPow2_2D(0.f, smoothRadius);
 }
 
+glm::vec2 FluidParticleSystem::scaledPos2ScreenPos(glm::vec2 scaledPos) const
+{
+    return 2.f * scaledPos / scaledWindowExtent - glm::vec2(1.f, 1.f);
+}
+
 void FluidParticleSystem::updateWindowExtent(VkExtent2D newExtent)
 {
     windowExtent = newExtent;
@@ -116,41 +133,52 @@ void FluidParticleSystem::updateParticleData(float deltaTime)
 
     for (int i = 0; i < particleCount; i++) // update velocity and position
     {
-        glm::vec2 pressureForce = calculatePressureForce(i);
-        glm::vec2 externalForce = calculateExternalForce(i);
-        glm::vec2 viscosityForce = calculateViscosityForce(i);
+        pressureForceData[i] = calculatePressureForce(i);
+        externalForceData[i] = calculateExternalForce(i);
+        viscosityForceData[i] = calculateViscosityForce(i);
 
-        glm::vec2 acceleration = (pressureForce + viscosityForce + externalForce) / densityData[i];
+        glm::vec2 acceleration = (pressureForceData[i] + viscosityForceData[i] + externalForceData[i]) / densityData[i];
         velocityData[i] += acceleration * deltaTime;
         positionData[i] += velocityData[i] * deltaTime;
     }
 
     rangeForceInfo.active = false;
+
+    // update debug lines
+    for (int i = 0; i < particleCount; i++)
+    {
+        glm::vec2 particlePos = positionData[i];
+        debugLines[i].start.position = glm::vec3(scaledPos2ScreenPos(particlePos), 0.f);
+        // draw velocity
+        // debugLines[i].end.position = glm::vec3(scaledPos2ScreenPos(particlePos + velocityData[i] * 0.1f), 0.f);
+        // draw pressure force
+        debugLines[i].end.position = glm::vec3(scaledPos2ScreenPos(particlePos + pressureForceData[i] / pressureMultiplier * 0.1f), 0.f);
+    }
 }
 
-void FluidParticleSystem::setRangeForcePos(bool sign, glm::vec2 screenPosition)
+void FluidParticleSystem::setRangeForcePos(bool sign, glm::vec2 mousePosition)
 {
     rangeForceInfo.active = true;
     rangeForceInfo.sign = sign;
-    rangeForceInfo.position = screenPosition * dataScale;
+    rangeForceInfo.position = mousePosition * dataScale;
 }
 
-void FluidParticleSystem::printDensity(glm::vec2 screenPposition)
+void FluidParticleSystem::printDensity(glm::vec2 mousePosition)
 {
-    unsigned int minIndex = getClosetParticleIndex(screenPposition);
+    unsigned int minIndex = getClosetParticleIndex(mousePosition);
     std::cout << "Density[" << minIndex << "]: " << densityData[minIndex] << std::endl;
 }
 
-void FluidParticleSystem::printPressureForce(glm::vec2 screenPposition)
+void FluidParticleSystem::printPressureForce(glm::vec2 mousePosition)
 {
-    unsigned int minIndex = getClosetParticleIndex(screenPposition);
+    unsigned int minIndex = getClosetParticleIndex(mousePosition);
     glm::vec2 pressureForce = calculatePressureForce(minIndex);
     std::cout << "Pressure[" << minIndex << "]: (" << pressureForce.x << ", " << pressureForce.y << "), \t magnitude: " << glm::length(pressureForce) << std::endl;
 }
 
-unsigned int FluidParticleSystem::getClosetParticleIndex(glm::vec2 screenPposition)
+unsigned int FluidParticleSystem::getClosetParticleIndex(glm::vec2 mousePosition)
 {
-    glm::vec2 position = screenPposition * dataScale;
+    glm::vec2 position = mousePosition * dataScale;
     float minDistance = std::numeric_limits<float>::max();
     int minIndex = -1;
     for (int i = 0; i < particleCount; i++)
@@ -316,7 +344,7 @@ glm::int2 FluidParticleSystem::pos2gridCoord(glm::vec2 position, float gridWidth
 
 int FluidParticleSystem::hashGridCoord2D(glm::int2 gridCoord) const
 {
-    return gridCoord.x * 73856093 ^ gridCoord.y * 83492791;
+    return static_cast<uint32_t>(gridCoord.x) * 15823 + static_cast<uint32_t>(gridCoord.y) * 9737333;
 }
 
 void FluidParticleSystem::updateSpatialLookup()

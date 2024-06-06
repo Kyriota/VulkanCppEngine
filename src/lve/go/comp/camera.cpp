@@ -1,4 +1,4 @@
-#include "lve/component/camera.hpp"
+#include "lve/go/comp/camera.hpp"
 
 // std
 #include <cassert>

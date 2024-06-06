@@ -4,11 +4,11 @@
 #include "lve/core/resource/descriptors.hpp"
 #include "lve/core/resource/image.hpp"
 #include "lve/core/device.hpp"
-#include "lve/core/game_object.hpp"
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/window.hpp"
 #include "lve/core/system/render_system.hpp"
 #include "lve/core/system/compute_system.hpp"
+#include "lve/go/geo/line.hpp"
 
 // std
 #include <memory>
@@ -56,12 +56,14 @@ private:
     std::unique_ptr<lve::DescriptorSetLayout> globalSetLayout;
     std::vector<VkDescriptorSet> globalDescriptorSets;
     lve::RenderSystem screenTextureRenderSystem{lveDevice};
+    lve::RenderSystem lineRenderSystem{lveDevice};
     lve::ComputeSystem fluidSimComputeSystem{lveDevice};
 
     lve::Image screenTextureImage{lveDevice};
     VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
     FluidParticleSystem fluidParticleSys{"config/fluidSim2D.yaml", lveWindow.getExtent()};
+    lve::LineCollection lineCollection{lveDevice, fluidParticleSys.getParticleCount()};
 
     void updateGlobalDescriptorSets(bool build = false);
 
@@ -71,6 +73,7 @@ private:
 
     void initParticleBuffer();
     void writeParticleBuffer();
+    void drawDebugLines(VkCommandBuffer cmdBuffer);
 
     // Multi-threading
     std::atomic<bool> isRunning{true};

@@ -17,6 +17,6 @@ layout(push_constant) uniform Push {
 
 void main() {
 	vec2 pos = screen_corners[gl_VertexIndex];
-	gl_Position = vec4(pos, 0.0, 1.0);
+	gl_Position = vec4(pos, 0.5, 1.0);
 	fragTexCoord = 0.5 * (vec2(1.0) + pos) * push.screen_extent;
 }

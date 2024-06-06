@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lve/go/geo/line.hpp"
 #include "lve/util/math.hpp"
 #include "lve/util/file_io.hpp"
 
@@ -21,20 +22,21 @@ public:
     void updateWindowExtent(VkExtent2D newExtent);
     void updateParticleData(float deltaTime);
 
-    float getParticleCount() const { return particleCount; }
+    unsigned int getParticleCount() const { return particleCount; }
     float getSmoothRadius() const { return smoothRadius; }
     float getTargetDensity() const { return targetDensity; }
     float getDataScale() const { return dataScale; }
     std::vector<glm::vec2> &getPositionData() { return positionData; }
     std::vector<glm::vec2> &getVelocityData() { return velocityData; }
 
-    void setRangeForcePos(bool sign, glm::vec2 screenPosition);
+    void setRangeForcePos(bool sign, glm::vec2 mousePosition);
 
     // control and debug
     void togglePause() { isPaused = !isPaused; }
-    void printDensity(glm::vec2 screenPposition);
-    void printPressureForce(glm::vec2 screenPposition);
+    void printDensity(glm::vec2 mousePosition);
+    void printPressureForce(glm::vec2 mousePosition);
     std::vector<int> &getFirstParticleNeighborIndex() { return firstParticleNeighborIndex; }
+    std::vector<lve::Line> &getDebugLines() { return debugLines; }
 
 private:
     struct SpatialHashEntry
@@ -50,8 +52,12 @@ private:
 
     // control and debug
     std::vector<int> firstParticleNeighborIndex;
+    std::vector<lve::Line> debugLines;
     bool isPaused = false;
-    unsigned int getClosetParticleIndex(glm::vec2 screenPposition);
+    unsigned int getClosetParticleIndex(glm::vec2 mousePosition);
+    std::vector<glm::vec2> pressureForceData;
+    std::vector<glm::vec2> externalForceData;
+    std::vector<glm::vec2> viscosityForceData;
 
     // simulation parameters
     float smoothRadius;
@@ -76,6 +82,7 @@ private:
     std::vector<float> massData;
     void initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize);
     void initSimParams(lve::io::YamlConfig &config);
+    glm::vec2 scaledPos2ScreenPos(glm::vec2 scaledPos) const;
 
     // kernels
     float kernelPoly6_2D(float distance, float radius) const;

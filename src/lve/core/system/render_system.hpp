@@ -1,8 +1,9 @@
 #pragma once
 
 #include "lve/core/device.hpp"
-#include "lve/core/game_object.hpp"
 #include "lve/core/pipeline/graphics_pipeline.hpp"
+#include "lve/go/game_object.hpp"
+#include "lve/go/geo/line.hpp"
 
 // std
 #include <memory>
@@ -24,6 +25,13 @@ namespace lve
         VkPipelineLayout graphicPipelineLayout,
         GraphicPipeline *graphicPipeline,
         VkExtent2D extent);
+
+    void renderLines(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        VkPipelineLayout graphicPipelineLayout,
+        GraphicPipeline *graphicPipeline,
+        LineCollection &lineCollection);
 
     class RenderSystem
     {

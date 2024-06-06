@@ -1,4 +1,4 @@
-#include "lve/core/model.hpp"
+#include "lve/go/geo/model.hpp"
 #include "lve/util/math.hpp"
 
 // libs
@@ -29,11 +29,9 @@ namespace lve
 
     Model::Model(Device &device, const Model::Builder &builder) : lveDevice{device}
     {
-        createVertexBuffers(builder.vertices);
-        createIndexBuffers(builder.indices);
+        createVertexBuffer(builder.vertices);
+        createIndexBuffer(builder.indices);
     }
-
-    Model::~Model() {}
 
     std::unique_ptr<Model> Model::createModelFromFile(
         Device &device, const std::string &filepath)
@@ -43,7 +41,7 @@ namespace lve
         return std::make_unique<Model>(device, builder);
     }
 
-    void Model::createVertexBuffers(const std::vector<Vertex> &vertices)
+    void Model::createVertexBuffer(const std::vector<Vertex> &vertices)
     {
         vertexCount = static_cast<uint32_t>(vertices.size());
         assert(vertexCount >= 3 && "Vertex count must be at least 3");
@@ -71,7 +69,7 @@ namespace lve
         vertexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
     }
 
-    void Model::createIndexBuffers(const std::vector<uint32_t> &indices)
+    void Model::createIndexBuffer(const std::vector<uint32_t> &indices)
     {
         indexCount = static_cast<uint32_t>(indices.size());
         hasIndexBuffer = indexCount > 0;

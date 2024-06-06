@@ -5,10 +5,11 @@
 #include "include/glm.hpp"
 
 // std
-#include <array>
 #include <cassert>
 #include <stdexcept>
 #include <string>
+#include <vector>
+#include <iostream>
 
 namespace lve
 {
@@ -95,6 +96,29 @@ namespace lve
             &push);
 
         vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
+    }
+
+    void renderLines(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        VkPipelineLayout graphicPipelineLayout,
+        GraphicPipeline *graphicPipeline,
+        LineCollection &lineCollection)
+    {
+        bind(cmdBuffer, graphicPipeline->getPipeline());
+
+        vkCmdBindDescriptorSets(
+            cmdBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            graphicPipelineLayout,
+            0,
+            1,
+            pGlobalDescriptorSet,
+            0,
+            nullptr);
+
+        lineCollection.bind(cmdBuffer);
+        lineCollection.draw(cmdBuffer);
     }
 
     RenderSystem::RenderSystem(

@@ -41,7 +41,6 @@ namespace lve
         };
 
         Model(Device &device, const Model::Builder &builder);
-        ~Model();
 
         Model(const Model &) = delete;
         Model &operator=(const Model &) = delete;
@@ -53,8 +52,8 @@ namespace lve
         void draw(VkCommandBuffer commandBuffer);
 
     private:
-        void createVertexBuffers(const std::vector<Vertex> &vertices);
-        void createIndexBuffers(const std::vector<uint32_t> &indices);
+        void createVertexBuffer(const std::vector<Vertex> &vertices);
+        void createIndexBuffer(const std::vector<uint32_t> &indices);
 
         Device &lveDevice;
 
