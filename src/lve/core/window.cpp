@@ -21,6 +21,15 @@ namespace lve
         }
     }
 
+    void Input::oneTimeKeyUse(int keyCode, std::function<void()> callback, KeyState targetState)
+    {
+        if (keyUpdated[keyCode] && keyState[keyCode] == targetState)
+        {
+            callback();
+            keyUpdated[keyCode] = false;
+        }
+    }
+
     void Input::handleKeyEvent(int key, int action)
     {
         if (key == GLFW_KEY_UNKNOWN)
@@ -151,5 +160,10 @@ namespace lve
     {
         windowName = title;
         glfwSetWindowTitle(window, title.c_str());
+    }
+
+    void Window::resize(int width, int height)
+    {
+        glfwSetWindowSize(window, width, height);
     }
 } // namespace lve

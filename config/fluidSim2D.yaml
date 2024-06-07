@@ -1,14 +1,14 @@
 ---
-particleCount: 2000
+particleCount: 512 # Change as needed
 smoothRadius: 0.35
 targetDensity: 55
-pressureMultiplier: 500
-nearPressureMultiplier: 0
+pressureMultiplier: 150
+nearPressureMultiplier: 10
 viscosityMultiplier: 0.06
 boundaryMultipler: 50000.0
-gravityAccValue: 9.8
+gravityAccValue: 25
 dataScale: 0.01
-rangeForceScale: 5000
+rangeForceScale: 75
 rangeForceRadius: 2.0
 
 startPoint:
@@ -16,4 +16,8 @@ startPoint:
   - 1
 stride: 0.1
 maxWidth: 4
-randomize: no
+randomize: yes # Change as needed
+
+windowSize:
+  - 600 # Change as needed
+  - 600 # Change as needed

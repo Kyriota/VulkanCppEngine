@@ -3,6 +3,7 @@
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/util/math.hpp"
+#include "lve/util/file_io.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -25,14 +26,10 @@ struct GlobalUbo
 
 FluidSim2DApp::FluidSim2DApp()
 {
-    globalPool =
-        lve::DescriptorPool::Builder(lveDevice)
-            .setMaxSets(lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2) // particle buffer, neighbor buffer
-            .build();
+    // resize window according to config
+    lve::io::YamlConfig config("config/fluidSim2D.yaml");
+    std::vector<int> windowSize = config.get<std::vector<int>>("windowSize");
+    lveWindow.resize(windowSize[0], windowSize[1]);
 
     // register callback functions for window resize
     lveRenderer.registerSwapChainResizedCallback(
@@ -43,6 +40,15 @@ FluidSim2DApp::FluidSim2DApp()
             updateGlobalDescriptorSets();
             fluidParticleSys.updateWindowExtent(extent);
         });
+
+    globalPool =
+        lve::DescriptorPool::Builder(lveDevice)
+            .setMaxSets(lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2) // particle buffer, neighbor buffer
+            .build();
 
     uboBuffers.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
     globalDescriptorSets.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -79,8 +85,8 @@ FluidSim2DApp::FluidSim2DApp()
 
     lve::GraphicPipelineConfigInfo linePipelineConfigInfo{};
     linePipelineConfigInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    linePipelineConfigInfo.vertFilepath = "line_shader.vert.spv";
-    linePipelineConfigInfo.fragFilepath = "line_shader.frag.spv";
+    linePipelineConfigInfo.vertFilepath = "line_2d.vert.spv";
+    linePipelineConfigInfo.fragFilepath = "line_2d.frag.spv";
     linePipelineConfigInfo.vertexBindingDescriptions = lve::Line::Vertex::getBindingDescriptions();
     linePipelineConfigInfo.vertexAttributeDescriptions = lve::Line::Vertex::getAttributeDescriptions();
 
@@ -193,9 +199,6 @@ void FluidSim2DApp::recreateScreenTextureImage(VkExtent2D extent)
 void FluidSim2DApp::initParticleBuffer()
 {
     int particleCount = fluidParticleSys.getParticleCount();
-    float smoothRadius = fluidParticleSys.getSmoothRadius();
-    float targetDensity = fluidParticleSys.getTargetDensity();
-    float dataScale = fluidParticleSys.getDataScale();
 
     particleBuffer = std::make_unique<lve::Buffer>(
         lveDevice,
@@ -203,16 +206,15 @@ void FluidSim2DApp::initParticleBuffer()
             sizeof(float) +                     // smoothing radius
             sizeof(float) +                     // target density
             sizeof(float) +                     // data scale
+            sizeof(uint32_t) +                  // isNeighborViewActive
+            sizeof(uint32_t) +                  // isDensityViewActive
             sizeof(glm::vec2) * particleCount + // position
             sizeof(glm::vec2) * particleCount,  // velocity
         1,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     particleBuffer->map();
-    particleBuffer->setRecordedOffset(0);
-    particleBuffer->writeToBufferOrdered(&particleCount, sizeof(int));
-    particleBuffer->writeToBufferOrdered(&smoothRadius, sizeof(float));
-    particleBuffer->writeToBufferOrdered(&targetDensity, sizeof(float));
+    particleBuffer->writeToBuffer(&particleCount, sizeof(int));
 
     neighborBuffer = std::make_unique<lve::Buffer>(
         lveDevice,
@@ -229,10 +231,15 @@ void FluidSim2DApp::writeParticleBuffer()
     float smoothRadius = fluidParticleSys.getSmoothRadius();
     float targetDensity = fluidParticleSys.getTargetDensity();
     float dataScale = fluidParticleSys.getDataScale();
+    uint32_t isNeighborViewActive = static_cast<uint32_t>(fluidParticleSys.isNeighborViewOn());
+    uint32_t isDensityViewActive = static_cast<uint32_t>(fluidParticleSys.isDensityViewOn());
+
     particleBuffer->setRecordedOffset(sizeof(int));
     particleBuffer->writeToBufferOrdered(&smoothRadius, sizeof(float));
     particleBuffer->writeToBufferOrdered(&targetDensity, sizeof(float));
     particleBuffer->writeToBufferOrdered(&dataScale, sizeof(float));
+    particleBuffer->writeToBufferOrdered(&isNeighborViewActive, sizeof(uint32_t));
+    particleBuffer->writeToBufferOrdered(&isDensityViewActive, sizeof(uint32_t));
     particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount);
     particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount);
 
@@ -241,6 +248,9 @@ void FluidSim2DApp::writeParticleBuffer()
 
 void FluidSim2DApp::drawDebugLines(VkCommandBuffer cmdBuffer)
 {
+    if (!fluidParticleSys.isDebugLineOn())
+        return;
+
     lineCollection.clearLines();
     lineCollection.addLines(fluidParticleSys.getDebugLines());
     lve::renderLines(
@@ -251,12 +261,41 @@ void FluidSim2DApp::drawDebugLines(VkCommandBuffer cmdBuffer)
         lineCollection);
 }
 
+void FluidSim2DApp::handleInput()
+{
+    if (lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) || lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
+    {
+        double mouseX, mouseY;
+        lveWindow.input.getMousePosition(mouseX, mouseY);
+        glm::vec2 mousePos = {static_cast<float>(mouseX), static_cast<float>(mouseY)};
+        fluidParticleSys.setRangeForcePos(lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT), mousePos);
+    }
+
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_R, [this]
+                                  {fluidParticleSys.reloadConfigParam();
+                                  std::cout << "Reloaded config parameters" << std::endl; });
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_SPACE, [this]
+                                  { fluidParticleSys.togglePause(); });
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_F, [this]
+                                  { fluidParticleSys.renderPausedNextFrame(); });
+
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_V, [this]
+                                  { fluidParticleSys.toggleDebugLine(); });
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_1, [this]
+                                  { fluidParticleSys.setDebugLineType(FluidParticleSystem::VELOCITY); });
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_2, [this]
+                                  { fluidParticleSys.setDebugLineType(FluidParticleSystem::PRESSURE_FORCE); });
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_3, [this]
+                                  { fluidParticleSys.setDebugLineType(FluidParticleSystem::EXTERNAL_FORCE); });
+
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_N, [this]
+                                  { fluidParticleSys.toggleNeighborView(); });
+    lveWindow.input.oneTimeKeyUse(GLFW_KEY_D, [this]
+                                  { fluidParticleSys.toggleDensityView(); });
+}
+
 void FluidSim2DApp::renderLoop()
 {
-    // key settings
-    int pauseKey = GLFW_KEY_SPACE;
-    int reloadKey = GLFW_KEY_R;
-
     auto currentTime = std::chrono::high_resolution_clock::now();
     auto now = currentTime;
     bool oneSecondPassed;
@@ -289,35 +328,9 @@ void FluidSim2DApp::renderLoop()
                 static_cast<int>(std::ceil(windowExtent.width / 8.f)),
                 static_cast<int>(std::ceil(windowExtent.height / 8.f)));
 
+            handleInput();
+
             // fluid particle system
-            if (lveWindow.input.getMouseButtonState(GLFW_MOUSE_BUTTON_LEFT) || lveWindow.input.getMouseButtonState(GLFW_MOUSE_BUTTON_RIGHT))
-            {
-                double mouseX, mouseY;
-                lveWindow.input.getMousePosition(mouseX, mouseY);
-                glm::vec2 mousePos = {static_cast<float>(mouseX), static_cast<float>(mouseY)};
-                fluidParticleSys.setRangeForcePos(lveWindow.input.getMouseButtonState(GLFW_MOUSE_BUTTON_LEFT), mousePos);
-            }
-            if (lveWindow.input.isKeyUpdated(reloadKey) && lveWindow.input.isKeyPressed(reloadKey))
-            {
-                fluidParticleSys.reloadConfigParam();
-                std::cout << "Reloaded config parameters" << std::endl;
-                lveWindow.input.clearKeyUpdate(reloadKey);
-            }
-            if (lveWindow.input.isKeyUpdated(pauseKey) && lveWindow.input.isKeyPressed(pauseKey))
-            {
-                fluidParticleSys.togglePause();
-                lveWindow.input.clearKeyUpdate(pauseKey);
-            }
-            if (oneSecondPassed)
-            {
-                // print density and pressure at mouse position
-                double mouseX, mouseY;
-                lveWindow.input.getMousePosition(mouseX, mouseY);
-                glm::vec2 mousePos = {static_cast<float>(mouseX), static_cast<float>(mouseY)};
-                fluidParticleSys.printDensity(mousePos);
-                fluidParticleSys.printPressureForce(mousePos);
-                std::cout << std::endl;
-            }
             fluidParticleSys.updateParticleData(frameTime);
             writeParticleBuffer();
 

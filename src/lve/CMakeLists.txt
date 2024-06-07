@@ -45,3 +45,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_DIR}/vulkan-1.lib)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_DIR}/libyaml-cpp.dll.a)
 # Link glfw lib
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBRARY_DIR}/libglfw3.a)
+# # Link OpenMP lib
+# find_package(OpenMP)
+# if(OpenMP_CXX_FOUND)
+#     target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+# else()
+#     message(FATAL_ERROR "OpenMP not found")
+# endif()

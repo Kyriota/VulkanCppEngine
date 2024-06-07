@@ -14,6 +14,8 @@ namespace lve
         void hashCombine(std::size_t &seed, const T &v, const Rest &...rest);
 
         unsigned int positiveMod(int value, unsigned int m);
+        float fastInvSqrt(float x);
+        float fastSqrt(float x);
     } // namespace math
 } // namespace lve
 

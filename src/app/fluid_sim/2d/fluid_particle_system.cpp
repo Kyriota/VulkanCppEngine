@@ -112,21 +112,52 @@ void FluidParticleSystem::updateWindowExtent(VkExtent2D newExtent)
 void FluidParticleSystem::updateParticleData(float deltaTime)
 {
     if (isPaused)
-        return;
-    
+    {
+        if (!pausedNextFrame)
+            return;
+        std::cout << "Render next frame" << std::endl;
+        deltaTime = maxDeltaTime;
+        pausedNextFrame = false;
+    }
+
     if (deltaTime > maxDeltaTime)
         deltaTime = maxDeltaTime;
 
-    for (int i = 0; i < particleCount; i++) // predict position
+    for (int i = 0; i < particleCount; i++) // update predicted position and spacial lookup
+    {
         nextPositionData[i] = positionData[i] + velocityData[i] * lookAheadTime;
+        int hashValue = hashGridCoord2D(pos2gridCoord(nextPositionData[i], smoothRadius));
+        unsigned int hashKey = lve::math::positiveMod(hashValue, particleCount);
+        spacialLookup[i].particleIndex = i;
+        spacialLookup[i].spatialHashKey = hashKey;
+    }
 
-    updateSpatialLookup();
+    std::sort(
+        spacialLookup.begin(),
+        spacialLookup.end(),
+        [](const SpatialHashEntry &a, const SpatialHashEntry &b)
+        {
+            return a.spatialHashKey < b.spatialHashKey;
+        });
 
-    // store neighbor index of the first particle for debug
-    firstParticleNeighborIndex.clear();
-    foreachNeighbor(0, [&](int neighborIndex)
-                    { firstParticleNeighborIndex.push_back(neighborIndex); });
-    firstParticleNeighborIndex.push_back(-1); // mark the end of the list
+    // init spacial lookup entry
+    std::fill(spacialLookupEntry.begin(), spacialLookupEntry.end(), -1);
+    for (int i = 0; i < particleCount; i++)
+    {
+        unsigned int key = spacialLookup[i].spatialHashKey;
+        unsigned int keyPrev = (i == 0) ? -1 : spacialLookup[i - 1].spatialHashKey;
+        if (key != keyPrev)
+            spacialLookupEntry[key] = i;
+    }
+
+    if (isNeighborViewActive)
+    {
+        // store neighbor index of the first particle
+        firstParticleNeighborIndex.clear();
+        foreachNeighbor(0, [&](int neighborIndex)
+                        { firstParticleNeighborIndex.push_back(neighborIndex); });
+        firstParticleNeighborIndex.push_back(-1); // mark the end of the list
+    }
 
     for (int i = 0; i < particleCount; i++) // calculate density using predicted position
         densityData[i] = calculateDensity(i);
@@ -137,7 +168,7 @@ void FluidParticleSystem::updateParticleData(float deltaTime)
         externalForceData[i] = calculateExternalForce(i);
         viscosityForceData[i] = calculateViscosityForce(i);
 
-        glm::vec2 acceleration = (pressureForceData[i] + viscosityForceData[i] + externalForceData[i]) / densityData[i];
+        glm::vec2 acceleration = (pressureForceData[i] + viscosityForceData[i] + externalForceData[i]) / densityData[i].density;
         velocityData[i] += acceleration * deltaTime;
         positionData[i] += velocityData[i] * deltaTime;
     }
@@ -145,35 +176,38 @@ void FluidParticleSystem::updateParticleData(float deltaTime)
     rangeForceInfo.active = false;
 
     // update debug lines
-    for (int i = 0; i < particleCount; i++)
-    {
-        glm::vec2 particlePos = positionData[i];
-        debugLines[i].start.position = glm::vec3(scaledPos2ScreenPos(particlePos), 0.f);
-        // draw velocity
-        // debugLines[i].end.position = glm::vec3(scaledPos2ScreenPos(particlePos + velocityData[i] * 0.1f), 0.f);
-        // draw pressure force
-        debugLines[i].end.position = glm::vec3(scaledPos2ScreenPos(particlePos + pressureForceData[i] / pressureMultiplier * 0.1f), 0.f);
-    }
+    if (isDebugLineVisible)
+        updateDebugLines();
 }
 
-void FluidParticleSystem::setRangeForcePos(bool sign, glm::vec2 mousePosition)
+void FluidParticleSystem::updateDebugLines()
+{
+    auto setDebugLines = [&](std::function<glm::vec2(int)> callback)
+    {
+        for (int i = 0; i < particleCount; i++)
+        {
+            glm::vec2 particlePos = positionData[i];
+            debugLines[i].start.position = glm::vec3(scaledPos2ScreenPos(particlePos), debugLineZ);
+            debugLines[i].end.position = glm::vec3(scaledPos2ScreenPos(particlePos + callback(i)), debugLineZ);
+        }
+    };
+
+    if (debugLineType == VELOCITY)
+        setDebugLines([&](int i)
+                      { return velocityData[i] * 0.1f; });
+    else if (debugLineType == PRESSURE_FORCE)
+        setDebugLines([&](int i)
+                      { return pressureForceData[i] / (pressureMultiplier + nearPressureMultiplier) * 0.05f; });
+    else if (debugLineType == EXTERNAL_FORCE)
+        setDebugLines([&](int i)
+                      { return externalForceData[i] * lve::math::fastInvSqrt(glm::length(externalForceData[i])) * 0.01f; });
+}
+
+void FluidParticleSystem::setRangeForcePos(bool isRepulsive, glm::vec2 mousePosition)
 {
     rangeForceInfo.active = true;
-    rangeForceInfo.sign = sign;
+    rangeForceInfo.isRepulsive = isRepulsive;
     rangeForceInfo.position = mousePosition * dataScale;
-}
-
-void FluidParticleSystem::printDensity(glm::vec2 mousePosition)
-{
-    unsigned int minIndex = getClosetParticleIndex(mousePosition);
-    std::cout << "Density[" << minIndex << "]: " << densityData[minIndex] << std::endl;
-}
-
-void FluidParticleSystem::printPressureForce(glm::vec2 mousePosition)
-{
-    unsigned int minIndex = getClosetParticleIndex(mousePosition);
-    glm::vec2 pressureForce = calculatePressureForce(minIndex);
-    std::cout << "Pressure[" << minIndex << "]: (" << pressureForce.x << ", " << pressureForce.y << "), \t magnitude: " << glm::length(pressureForce) << std::endl;
 }
 
 unsigned int FluidParticleSystem::getClosetParticleIndex(glm::vec2 mousePosition)
@@ -233,9 +267,10 @@ float FluidParticleSystem::derivativeSpikyPow2_2D(float distance, float radius) 
     return -2.f * scalingFactorSpikyPow2_2D * v;
 }
 
-float FluidParticleSystem::calculateDensity(unsigned int particleIndex)
+FluidParticleSystem::Density FluidParticleSystem::calculateDensity(unsigned int particleIndex)
 {
     float density = massData[particleIndex] * scalingFactorSpikyPow2_2D_atZero;
+    float nearDensity = massData[particleIndex] * scalingFactorSpikyPow3_2D_atZero;
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
     foreachNeighbor(
         particleIndex,
@@ -245,15 +280,17 @@ float FluidParticleSystem::calculateDensity(unsigned int particleIndex)
             if (distance >= smoothRadius)
                 return;
             density += massData[neighborIndex] * kernelSpikyPow2_2D(distance, smoothRadius);
+            nearDensity += massData[neighborIndex] * kernelSpikyPow3_2D(distance, smoothRadius);
         });
-    return density;
+    return {density, nearDensity};
 }
 
 glm::vec2 FluidParticleSystem::calculatePressureForce(unsigned int particleIndex)
 {
     glm::vec2 pressureForce = glm::vec2(0.f, 0.f);
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
-    float pressureThis = pressureMultiplier * (densityData[particleIndex] - targetDensity);
+    float pressureThis = pressureMultiplier * (densityData[particleIndex].density - targetDensity);
+    float nearPressureThis = nearPressureMultiplier * densityData[particleIndex].nearDensity;
 
     foreachNeighbor(
         particleIndex,
@@ -269,10 +306,14 @@ glm::vec2 FluidParticleSystem::calculatePressureForce(unsigned int particleIndex
             else
                 dir = glm::normalize(nextPositionData[neighborIndex] - particleNextPos);
 
-            float pressureOther = pressureMultiplier * (densityData[neighborIndex] - targetDensity);
+            float pressureOther = pressureMultiplier * (densityData[neighborIndex].density - targetDensity);
+            float nearPressureOther = nearPressureMultiplier * densityData[neighborIndex].nearDensity;
             float sharedPressure = (pressureThis + pressureOther) * 0.5f;
+            float sharedNearPressure = (nearPressureThis + nearPressureOther) * 0.5f;
             pressureForce += derivativeSpikyPow2_2D(distance, smoothRadius) /
-                             densityData[neighborIndex] * sharedPressure * dir;
+                             densityData[neighborIndex].density * sharedPressure * dir;
+            pressureForce += derivativeSpikyPow3_2D(distance, smoothRadius) /
+                             densityData[neighborIndex].nearDensity * sharedNearPressure * dir;
         });
     return pressureForce;
 }
@@ -280,20 +321,6 @@ glm::vec2 FluidParticleSystem::calculatePressureForce(unsigned int particleIndex
 glm::vec2 FluidParticleSystem::calculateExternalForce(unsigned int particleIndex)
 {
     glm::vec2 externalForce = glm::vec2(0.f, 0.f);
-
-    // range force
-    if (rangeForceInfo.active)
-    {
-        glm::vec2 particlePos = positionData[particleIndex];
-        float distance = glm::distance(particlePos, rangeForceInfo.position);
-        if (distance < rangeForceRadius && distance > glm::epsilon<float>())
-        {
-            glm::vec2 dir = glm::normalize(rangeForceInfo.position - particlePos);
-            if (rangeForceInfo.sign)
-                dir *= -1.f;
-            externalForce += rangeForceScale * dir * (rangeForceRadius - distance) / rangeForceRadius;
-        }
-    }
 
     // boundary force, push particles back to range when they are near the boundary
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
@@ -312,7 +339,41 @@ glm::vec2 FluidParticleSystem::calculateExternalForce(unsigned int particleIndex
     }
 
     // gravity
-    externalForce += glm::vec2(0.f, gravityAccValue * densityData[particleIndex]);
+    glm::vec2 gravityForce = glm::vec2(0.f, gravityAccValue * densityData[particleIndex].density);
+    externalForce += gravityForce;
+
+    // range force
+    if (rangeForceInfo.active)
+    {
+        glm::vec2 particlePos = positionData[particleIndex];
+        float distance = glm::distance(particlePos, rangeForceInfo.position);
+        if (distance < rangeForceRadius && distance > glm::epsilon<float>())
+        {
+            glm::vec2 dir = glm::normalize(rangeForceInfo.position - particlePos);
+            if (rangeForceInfo.isRepulsive)
+            {
+                float repulsiveRadius = rangeForceRadius * 0.75f;
+                if (distance < repulsiveRadius)
+                {
+                    float distOverRadius = distance / repulsiveRadius; // 0 at center, 1 at edge
+                    externalForce -= 2.5f * lve::math::fastSqrt(1 - distOverRadius) * rangeForceScale * densityData[particleIndex].density * dir;
+                }
+            }
+            else
+            {
+                float distOverRadius = distance / rangeForceRadius; // 0 at center, 1 at edge
+                float rangeForceDistMultiplier = distance > rangeForceRadius * 0.5f
+                                                     ? lve::math::fastSqrt(1 - distOverRadius)
+                                                     : lve::math::fastSqrt(distOverRadius);
+                externalForce += rangeForceDistMultiplier * rangeForceScale *
+                                 densityData[particleIndex].density * dir;
+
+                // slow down the velocity when particles are in the range
+                externalForce -= rangeForceScale * viscosityMultiplier * (1 - distOverRadius) *
+                                 densityData[particleIndex].density * velocityData[particleIndex];
+            }
+        }
+    }
 
     return externalForce;
 }
@@ -345,36 +406,6 @@ glm::int2 FluidParticleSystem::pos2gridCoord(glm::vec2 position, float gridWidth
 int FluidParticleSystem::hashGridCoord2D(glm::int2 gridCoord) const
 {
     return static_cast<uint32_t>(gridCoord.x) * 15823 + static_cast<uint32_t>(gridCoord.y) * 9737333;
-}
-
-void FluidParticleSystem::updateSpatialLookup()
-{
-    for (int i = 0; i < particleCount; i++)
-    {
-        int hashValue = hashGridCoord2D(pos2gridCoord(nextPositionData[i], smoothRadius));
-        unsigned int hashKey = lve::math::positiveMod(hashValue, particleCount);
-        spacialLookup[i].particleIndex = i;
-        spacialLookup[i].spatialHashKey = hashKey;
-    }
-
-    std::sort(
-        spacialLookup.begin(),
-        spacialLookup.end(),
-        [](const SpatialHashEntry &a, const SpatialHashEntry &b)
-        {
-            return a.spatialHashKey < b.spatialHashKey;
-        });
-
-    // init spacial lookup entry
-    std::fill(spacialLookupEntry.begin(), spacialLookupEntry.end(), -1);
-
-    for (int i = 0; i < particleCount; i++)
-    {
-        unsigned int key = spacialLookup[i].spatialHashKey;
-        unsigned int keyPrev = (i == 0) ? -1 : spacialLookup[i - 1].spatialHashKey;
-        if (key != keyPrev)
-            spacialLookupEntry[key] = i;
-    }
 }
 
 /*

@@ -1,8 +1,6 @@
 #version 450
 
 #define M_PI 3.1415926535897932384626433832795
-// #define SHOW_DENSITY
-#define SHOW_NEIGHBORS
 
 layout(location = 0) in vec2 fragTexCoord;
 
@@ -19,6 +17,8 @@ layout(binding = 3) buffer Particles {
 	float smoothRadius;
 	float targetDensity;
 	float dataScale;
+	uint isNeighborViewActive;
+	uint isDensityViewActive;
 	vec2 data[];
 };
 
@@ -35,20 +35,23 @@ layout(binding = 4) buffer Neighbors {
 
 const float particleRadiusSqr = 4.0 * 4.0;
 
-const vec4 particleColorSlow = vec4(0.078, 0.282, 0.627, 1.0);
-const vec4 particleColorMedium = vec4(0.322, 0.984, 0.576, 1.0);
-const vec4 particleColorMedHigh = vec4(0.980, 0.925, 0.027, 1.0);
-const vec4 particleColorFast = vec4(0.941, 0.290, 0.047, 1.0);
+const vec4 colorLow = vec4(0.078, 0.282, 0.627, 1.0);
+const vec4 colorMed = vec4(0.322, 0.984, 0.576, 1.0);
+const vec4 colorMedHigh = vec4(0.980, 0.925, 0.027, 1.0);
+const vec4 colorHigh = vec4(0.941, 0.290, 0.047, 1.0);
 
-const float maxDisplayVelocityMagSqr = 200.0 * 200.0;
+const vec4 upColor = vec4(0.996, 0.267, 0.412, 1.0);
+const vec4 downColor = vec4(0.435, 0.525, 0.984, 1.0);
+const vec4 leftColor = vec4(0.984, 0.851, 0.353, 1.0);
+const vec4 rightColor = vec4(0.400, 0.851, 0.549, 1.0);
+
+const float maxDisplayVelocityMag = 200.0;
+const float maxDisplayVelocityMagSqr = maxDisplayVelocityMag * maxDisplayVelocityMag;
 const float medHighVelocityMagSqr = maxDisplayVelocityMagSqr / 4.0 * 3.0;
 const float medVelocityMagSqr = maxDisplayVelocityMagSqr / 2.0;
 
-
-const vec4 bgColorLowDensity = vec4(0.0, 0.0, 1.0, 1.0);
-const vec4 bgColorTargetDensity = vec4(1.0, 1.0, 1.0, 1.0);
-const vec4 bgColorHighDensity = vec4(1.0, 0.0, 0.0, 1.0);
-const vec4 bgColorDefault = vec4(0.0, 0.0, 0.0, 1.0);
+const vec4 black = vec4(0.0, 0.0, 0.0, 1.0);
+const vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
 
 float kernelSpikyPow2_2D(float dist, float radius)
 {
@@ -72,61 +75,93 @@ float calculateDensity(vec2 samplePointPos) {
 	return density;
 }
 
-void main() {
-	// Draw all particles
-	for (int i = 0; i < numParticles; i++) {
-		vec2 particlePosition = data[i] / dataScale;
-		vec2 diff = fragTexCoord - particlePosition;
-		float distanceSqr = dot(diff, diff);
+vec4 fillParticleByVelocity(int particleIndex) {
+	vec2 particleVelocity = data[particleIndex + numParticles] / dataScale;
+	float velocityMagSqr = dot(particleVelocity, particleVelocity);
+	vec2 velocityDir = normalize(particleVelocity);
+	vec2 normalizedVelocity = particleVelocity;
+	if (velocityMagSqr > maxDisplayVelocityMagSqr) {
+		normalizedVelocity = velocityDir * maxDisplayVelocityMag;
+	}
 
-		if (distanceSqr < particleRadiusSqr) { // If the pixel is inside the particle
-			if (i == 0) { // Draw the first particle in red
-				outColor = vec4(1.0, 0.0, 0.0, 1.0);
-				return;
-			}
+	// find the color based on the velocity magnitude and direction
+	vec3 xColor, yColor;
+	vec3 defaultColor = white.rgb * 0.01;
 
-#ifdef SHOW_NEIGHBORS
-			// check if current particle is the neighbor of the first particle
-			for (int j = 0; j < numParticles; j++) {
-				if (neighborIndex[j] == -1) {
-					break;
-				}
-				if (neighborIndex[j] == i) {
-					outColor = vec4(1.0, 1.0, 1.0, 1.0);
-					return;
-				}
-			}
-#endif
+	float xIntensity = clamp(abs(normalizedVelocity.x) / maxDisplayVelocityMag, 0.0, 1.0);
+	if (velocityDir.x > 0.0) {
+		xColor = mix(defaultColor, leftColor.rgb, xIntensity);
+	}
+	else {
+		xColor = mix(defaultColor, rightColor.rgb, xIntensity);
+	}
 
-			vec2 particleVelocity = data[i + numParticles] / dataScale;
-			float velocityMagSqr = dot(particleVelocity, particleVelocity);
-			velocityMagSqr = min(velocityMagSqr, maxDisplayVelocityMagSqr);
-			// find the color based on the velocity
-			vec4 particleColor;
-			if (velocityMagSqr < medVelocityMagSqr) {
-				particleColor = mix(particleColorSlow, particleColorMedium, velocityMagSqr / medVelocityMagSqr);
-			} else if (velocityMagSqr < medHighVelocityMagSqr) {
-				particleColor = mix(particleColorMedium, particleColorMedHigh, (velocityMagSqr - medVelocityMagSqr) / (medHighVelocityMagSqr - medVelocityMagSqr));
-			} else {
-				particleColor = mix(particleColorMedHigh, particleColorFast, (velocityMagSqr - medHighVelocityMagSqr) / (maxDisplayVelocityMagSqr - medHighVelocityMagSqr));
-			}
-			outColor = particleColor;
-			return;
+	float yIntensity = clamp(abs(normalizedVelocity.y) / maxDisplayVelocityMag, 0.0, 1.0);
+	if (velocityDir.y > 0.0) {
+		yColor = mix(defaultColor, downColor.rgb, yIntensity);
+	}
+	else {
+		yColor = mix(defaultColor, upColor.rgb, yIntensity);
+	}
+
+	float intensitySum = xIntensity + yIntensity;
+	return vec4(clamp(xColor * xIntensity / intensitySum + yColor * yIntensity / intensitySum, 0.0, 1.0), 1.0);
+}
+
+vec4 applyNeighborView(int particleIndex) {
+	if (particleIndex == 0) { // Draw the first particle in red
+		return vec4(1.0, 0.0, 0.0, 1.0);
+	}
+	// check if current particle is the neighbor of the first particle
+	for (int j = 0; j < numParticles; j++) {
+		if (neighborIndex[j] == -1) {
+			break;
+		}
+		if (neighborIndex[j] == particleIndex) {
+			return vec4(1.0, 1.0, 1.0, 1.0);
 		}
 	}
+	return fillParticleByVelocity(particleIndex);
+}
 
-#ifdef SHOW_DENSITY
-	// calculate density
+vec4 applyDensityView() {
 	float density = calculateDensity(fragTexCoord);
-	float maxDisplayDensity = targetDensity * 2.0;
+	float maxDisplayDensity = targetDensity * 1.25;
+	float minDisplayDensity = targetDensity * 0.75;
+	float medHighDensity = targetDensity * 1.125;
 	density = min(density, maxDisplayDensity);
-	// outColor = mix(bgColorLowDensity, bgColorHighDensity, density / maxDisplayDensity);
-	if (density < targetDensity) {
-		outColor = mix(bgColorLowDensity, bgColorTargetDensity, density / targetDensity);
+	vec4 bgColor;
+	if (density < minDisplayDensity) {
+		bgColor = mix(black, colorLow, density / minDisplayDensity);
+	} else if (density < targetDensity) {
+		bgColor = mix(colorLow, colorMed, (density - minDisplayDensity) / (targetDensity - minDisplayDensity));
+	} else if (density < medHighDensity) {
+		bgColor = mix(colorMed, colorMedHigh, (density - targetDensity) / (medHighDensity - targetDensity));
 	} else {
-		outColor = mix(bgColorTargetDensity, bgColorHighDensity, (density - targetDensity) / targetDensity);
+		bgColor = mix(colorMedHigh, colorHigh, (density - medHighDensity) / (maxDisplayDensity - medHighDensity));
 	}
-#else
-	outColor = bgColorDefault;
-#endif
+	return bgColor;
+}
+
+void main() {
+	if (isDensityViewActive == 1) {
+		outColor = applyDensityView();
+	}
+	else {
+		for (int i = 0; i < numParticles; i++) { // Draw all particles
+			vec2 particlePosition = data[i] / dataScale;
+			vec2 diff = fragTexCoord - particlePosition;
+			float distanceSqr = dot(diff, diff);
+
+			if (distanceSqr < particleRadiusSqr) { // If the pixel is inside the particle
+				if (isNeighborViewActive == 1)
+					outColor = applyNeighborView(i);
+				else
+					outColor = fillParticleByVelocity(i);
+				return;
+			}
+	}
+
+		outColor = black;
+	}
 }

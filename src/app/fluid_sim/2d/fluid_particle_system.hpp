@@ -32,9 +32,21 @@ public:
     void setRangeForcePos(bool sign, glm::vec2 mousePosition);
 
     // control and debug
+    enum DebugLineType
+    {
+        VELOCITY,
+        PRESSURE_FORCE,
+        EXTERNAL_FORCE
+    };
     void togglePause() { isPaused = !isPaused; }
-    void printDensity(glm::vec2 mousePosition);
-    void printPressureForce(glm::vec2 mousePosition);
+    void toggleDebugLine() { isDebugLineVisible = !isDebugLineVisible; }
+    void toggleNeighborView() { isNeighborViewActive = !isNeighborViewActive; }
+    void toggleDensityView() { isDensityViewActive = !isDensityViewActive; }
+    void renderPausedNextFrame() { pausedNextFrame = true; }
+    bool isDebugLineOn() { return isDebugLineVisible; }
+    bool isNeighborViewOn() { return isNeighborViewActive; }
+    bool isDensityViewOn() { return isDensityViewActive; }
+    void setDebugLineType(DebugLineType type) { debugLineType = type; }
     std::vector<int> &getFirstParticleNeighborIndex() { return firstParticleNeighborIndex; }
     std::vector<lve::Line> &getDebugLines() { return debugLines; }
 
@@ -51,9 +63,16 @@ private:
     glm::vec2 scaledWindowExtent;
 
     // control and debug
+    bool isPaused = false;
+    bool pausedNextFrame = false;
     std::vector<int> firstParticleNeighborIndex;
     std::vector<lve::Line> debugLines;
-    bool isPaused = false;
+    float debugLineZ = 0.25f;
+    void updateDebugLines();
+    bool isDebugLineVisible = false;
+    DebugLineType debugLineType = VELOCITY;
+    bool isNeighborViewActive = false;
+    bool isDensityViewActive = false;
     unsigned int getClosetParticleIndex(glm::vec2 mousePosition);
     std::vector<glm::vec2> pressureForceData;
     std::vector<glm::vec2> externalForceData;
@@ -75,10 +94,15 @@ private:
     float boundaryMargin = 0.5;
 
     // particle data
+    struct Density
+    {
+        float density;
+        float nearDensity;
+    };
     std::vector<glm::vec2> positionData;
     std::vector<glm::vec2> nextPositionData;
     std::vector<glm::vec2> velocityData;
-    std::vector<float> densityData;
+    std::vector<Density> densityData;
     std::vector<float> massData;
     void initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize);
     void initSimParams(lve::io::YamlConfig &config);
@@ -98,7 +122,7 @@ private:
     float scalingFactorSpikyPow2_2D_atZero;
 
     // update rules
-    float calculateDensity(unsigned int particleIndex);
+    Density calculateDensity(unsigned int particleIndex);
     glm::vec2 calculatePressureForce(unsigned int particleIndex);
     glm::vec2 calculateExternalForce(unsigned int particleIndex);
     glm::vec2 calculateViscosityForce(unsigned int particleIndex);
@@ -109,7 +133,6 @@ private:
     std::vector<int> spacialLookupEntry;
     glm::int2 pos2gridCoord(glm::vec2 position, float gridWidth) const;
     int hashGridCoord2D(glm::int2 gridCoord) const;
-    void updateSpatialLookup();
     void foreachNeighbor(unsigned int particleIndex, std::function<void(int)> callback);
     const glm::int2 offset2D[9] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {0, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
@@ -117,7 +140,7 @@ private:
     struct RangeForceInfo
     {
         bool active;
-        bool sign;
+        bool isRepulsive;
         glm::vec2 position;
     };
     RangeForceInfo rangeForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};

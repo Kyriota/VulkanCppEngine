@@ -34,7 +34,7 @@ private:
 #else
     const std::string APP_NAME = "FluidSim2DApp (debug)";
 #endif
-    lve::Window lveWindow{1200, 800, APP_NAME};
+    lve::Window lveWindow{128, 128, APP_NAME};
     lve::Device lveDevice{lveWindow};
     lve::FrameManager lveRenderer{lveWindow, lveDevice};
     VkExtent2D windowExtent = lveWindow.getExtent();
@@ -74,6 +74,9 @@ private:
     void initParticleBuffer();
     void writeParticleBuffer();
     void drawDebugLines(VkCommandBuffer cmdBuffer);
+
+    // Input
+    void handleInput();
 
     // Multi-threading
     std::atomic<bool> isRunning{true};
