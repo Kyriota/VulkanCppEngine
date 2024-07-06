@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(vulkan-cpp-engine)
+include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/CommonSettings.cmake)
 
 # Engine
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/lve)
@@ -16,31 +17,14 @@ set(HEADER ${APP_HDR})
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCE} ${HEADER})
 
-# Set output directory
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/build/Debug
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/build/Release
-)
-
-# Get the current configuration
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CONFIGURATION "DEBUG")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CONFIGURATION "RELEASE")
-else()
-    message(FATAL_ERROR "Unsupported configuration")
-endif()
-
-# Set RUNTIME_OUTPUT_DIRECTORY
-set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/${CONFIGURATION})
+# Set output deirectories
+set_output_directories(${PROJECT_NAME})
 
 # Add include directories
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 # Link Engine
 target_link_libraries(${PROJECT_NAME} Engine)
-
-
 
 # ==================== Other scripts ====================
 if(WIN32)
@@ -49,9 +33,17 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(IS_DEBUG 1)
+    set(DYNAMIC_LIB_DIR ${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-mingw-dynamic/debug/bin)
+else()
+    set(IS_DEBUG 0)
+    set(DYNAMIC_LIB_DIR ${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-mingw-dynamic/bin)
+endif()
+
 add_custom_target(make_scripts
     COMMAND ${CMAKE_COMMAND} -E echo "Running make scripts..."
-    COMMAND ${CMAKE_SOURCE_DIR}/run_make_scripts${SCRIPT_SUFFIX} ${RUNTIME_OUTPUT_DIRECTORY} ${CMAKE_SOURCE_DIR}/assets/shaders ${CMAKE_SOURCE_DIR}/assets ${CMAKE_SOURCE_DIR}/config
+    COMMAND ${CMAKE_SOURCE_DIR}/run_make_scripts${SCRIPT_SUFFIX} ${IS_DEBUG} ${RUNTIME_OUTPUT_DIRECTORY} ${CMAKE_SOURCE_DIR}/assets/shaders ${CMAKE_SOURCE_DIR}/assets ${CMAKE_SOURCE_DIR}/config ${DYNAMIC_LIB_DIR}
     RESULT_VARIABLE MAKE_SCRIPTS_RESULT
     VERBATIM
 )

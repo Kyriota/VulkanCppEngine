@@ -1,5 +1,5 @@
 ---
-particleCount: 512 # Change as needed
+particleCount: 200 # Change as needed
 smoothRadius: 0.35
 targetDensity: 55
 pressureMultiplier: 150
@@ -19,5 +19,5 @@ maxWidth: 4
 randomize: yes # Change as needed
 
 windowSize:
-  - 600 # Change as needed
-  - 600 # Change as needed
+  - 400 # Change as needed
+  - 400 # Change as needed

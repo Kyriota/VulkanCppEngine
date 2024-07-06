@@ -1,6 +1,7 @@
 @echo off
-set RUNTIME_OUTPUT_DIR=%1
-set EXTERNAL_DLL_DIR=%2
+set IS_DEBUG=%1
+set RUNTIME_OUTPUT_DIR=%2
+set DYNAMIC_LIB_DIR=%3
 
 if not exist "%RUNTIME_OUTPUT_DIR%" (
     echo Runtime output directory not found, given path: "%RUNTIME_OUTPUT_DIR%"
@@ -22,7 +23,17 @@ for %%f in (%GCC_DLL_LIST%) do (
 )
 
 @REM Copy yaml-cpp DLL
-copy "%EXTERNAL_DLL_DIR%\libyaml-cpp.dll" "%RUNTIME_OUTPUT_DIR%" >nul
+if %IS_DEBUG% == 1 (
+    set YAML_CPP_DLL=libyaml-cppd.dll
+) else (
+    set YAML_CPP_DLL=libyaml-cpp.dll
+)
+copy "%DYNAMIC_LIB_DIR%\%YAML_CPP_DLL%" "%RUNTIME_OUTPUT_DIR%" >nul
+if errorlevel 1 (
+    echo Error occured when copying "%YAML_CPP_DLL%"
+    exit /b 1
+)
+echo Copied "%YAML_CPP_DLL%"
 
 echo All DLLs copied successfully.
 exit /b 0

@@ -2,11 +2,15 @@
 set SHADER_OUTPUT_DIR=%1\assets\shaders
 set SHADER_DIR=%2
 
-set SDK_PATH=C:\VulkanSDK
-set GLSLC_PATH=%SDK_PATH%\Bin\glslc.exe
+set GLSLC_PATH=%VULKAN_SDK%\Bin\glslc.exe
 
 if not exist "%SHADER_DIR%" (
     echo Shader directory not found, given path: "%SHADER_DIR%"
+    exit /b 1
+)
+
+if not exist "%GLSLC_PATH%" (
+    echo glslc.exe not found, given path: "%GLSLC_PATH%"
     exit /b 1
 )
 
