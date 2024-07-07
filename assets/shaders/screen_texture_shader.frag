@@ -26,13 +26,6 @@ layout(binding = 4) buffer Neighbors {
 	int neighborIndex[];
 };
 
-// struct ParticleData
-// {
-// 	unsigned int numParticles;
-// 	std::vector<glm::vec2> positions;
-// 	std::vector<glm::vec2> velocities;
-// };
-
 const float particleRadiusSqr = 4.0 * 4.0;
 
 const vec4 colorLow = vec4(0.078, 0.282, 0.627, 1.0);

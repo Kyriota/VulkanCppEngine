@@ -1,4 +1,3 @@
-external/*
 build/*
 assets/models/*
 vcpkg/*
