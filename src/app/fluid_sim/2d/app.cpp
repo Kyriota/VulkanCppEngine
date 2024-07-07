@@ -351,8 +351,3 @@ void FluidSim2DApp::renderLoop()
         }
     }
 }
-
-// TODO:
-//  - 简化bingding流程
-//  - unsigned int -> size_t，并将可以换成size_t的数组index换成size_t
-//  - 优先选择独显

@@ -12,7 +12,7 @@ function(add_external_libs_lve target_name)
     set(CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-mingw-static/share)
     # Link glm lib
     find_package(glm CONFIG REQUIRED)
-    target_link_libraries(${target_name} PUBLIC glm::glm)
+    target_link_libraries(${target_name} PUBLIC glm::glm-header-only)
     # Link glfw lib
     find_package(glfw3 CONFIG REQUIRED)
     target_link_libraries(${target_name} PUBLIC glfw)

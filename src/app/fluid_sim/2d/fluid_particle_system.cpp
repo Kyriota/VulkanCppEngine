@@ -10,7 +10,7 @@ FluidParticleSystem::FluidParticleSystem(const std::string &configFilePath, VkEx
 {
     this->configFilePath = configFilePath;
     lve::io::YamlConfig config{configFilePath};
-    particleCount = config.get<unsigned int>("particleCount");
+    particleCount = config.get<size_t>("particleCount");
 
     initSimParams(config);
 
@@ -210,23 +210,6 @@ void FluidParticleSystem::setRangeForcePos(bool isRepulsive, glm::vec2 mousePosi
     rangeForceInfo.position = mousePosition * dataScale;
 }
 
-unsigned int FluidParticleSystem::getClosetParticleIndex(glm::vec2 mousePosition)
-{
-    glm::vec2 position = mousePosition * dataScale;
-    float minDistance = std::numeric_limits<float>::max();
-    int minIndex = -1;
-    for (int i = 0; i < particleCount; i++)
-    {
-        float distance = glm::distance(positionData[i], position);
-        if (distance < minDistance)
-        {
-            minDistance = distance;
-            minIndex = i;
-        }
-    }
-    return minIndex;
-}
-
 float FluidParticleSystem::kernelPoly6_2D(float distance, float radius) const
 {
     if (distance >= radius)
@@ -267,7 +250,7 @@ float FluidParticleSystem::derivativeSpikyPow2_2D(float distance, float radius) 
     return -2.f * scalingFactorSpikyPow2_2D * v;
 }
 
-FluidParticleSystem::Density FluidParticleSystem::calculateDensity(unsigned int particleIndex)
+FluidParticleSystem::Density FluidParticleSystem::calculateDensity(size_t particleIndex)
 {
     float density = massData[particleIndex] * scalingFactorSpikyPow2_2D_atZero;
     float nearDensity = massData[particleIndex] * scalingFactorSpikyPow3_2D_atZero;
@@ -285,7 +268,7 @@ FluidParticleSystem::Density FluidParticleSystem::calculateDensity(unsigned int 
     return {density, nearDensity};
 }
 
-glm::vec2 FluidParticleSystem::calculatePressureForce(unsigned int particleIndex)
+glm::vec2 FluidParticleSystem::calculatePressureForce(size_t particleIndex)
 {
     glm::vec2 pressureForce = glm::vec2(0.f, 0.f);
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
@@ -318,7 +301,7 @@ glm::vec2 FluidParticleSystem::calculatePressureForce(unsigned int particleIndex
     return pressureForce;
 }
 
-glm::vec2 FluidParticleSystem::calculateExternalForce(unsigned int particleIndex)
+glm::vec2 FluidParticleSystem::calculateExternalForce(size_t particleIndex)
 {
     glm::vec2 externalForce = glm::vec2(0.f, 0.f);
 
@@ -378,7 +361,7 @@ glm::vec2 FluidParticleSystem::calculateExternalForce(unsigned int particleIndex
     return externalForce;
 }
 
-glm::vec2 FluidParticleSystem::calculateViscosityForce(unsigned int particleIndex)
+glm::vec2 FluidParticleSystem::calculateViscosityForce(size_t particleIndex)
 {
     glm::vec2 viscosityForce = glm::vec2(0.f, 0.f);
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
@@ -413,7 +396,7 @@ int FluidParticleSystem::hashGridCoord2D(glm::int2 gridCoord) const
  * @param particleIndex: index of the particle
  * @param callback: function to be called for each neighbor
  */
-void FluidParticleSystem::foreachNeighbor(unsigned int particleIndex, std::function<void(int)> callback)
+void FluidParticleSystem::foreachNeighbor(size_t particleIndex, std::function<void(int)> callback)
 {
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
     glm::int2 gridPos = pos2gridCoord(particleNextPos, smoothRadius);
@@ -431,7 +414,7 @@ void FluidParticleSystem::foreachNeighbor(unsigned int particleIndex, std::funct
             if (spacialLookup[j].spatialHashKey != hashKey)
                 break;
 
-            unsigned int neighborIndex = spacialLookup[j].particleIndex;
+            size_t neighborIndex = spacialLookup[j].particleIndex;
 
             // simple check to skip hash collision
             glm::vec2 neighborNextPos = nextPositionData[neighborIndex];

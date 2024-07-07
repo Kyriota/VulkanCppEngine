@@ -22,7 +22,7 @@ public:
     void updateWindowExtent(VkExtent2D newExtent);
     void updateParticleData(float deltaTime);
 
-    unsigned int getParticleCount() const { return particleCount; }
+    size_t getParticleCount() const { return particleCount; }
     float getSmoothRadius() const { return smoothRadius; }
     float getTargetDensity() const { return targetDensity; }
     float getDataScale() const { return dataScale; }
@@ -53,12 +53,12 @@ public:
 private:
     struct SpatialHashEntry
     {
-        unsigned int particleIndex;
+        size_t particleIndex;
         unsigned int spatialHashKey;
     };
 
     std::string configFilePath;
-    unsigned int particleCount;
+    size_t particleCount;
     VkExtent2D windowExtent;
     glm::vec2 scaledWindowExtent;
 
@@ -73,7 +73,6 @@ private:
     DebugLineType debugLineType = VELOCITY;
     bool isNeighborViewActive = false;
     bool isDensityViewActive = false;
-    unsigned int getClosetParticleIndex(glm::vec2 mousePosition);
     std::vector<glm::vec2> pressureForceData;
     std::vector<glm::vec2> externalForceData;
     std::vector<glm::vec2> viscosityForceData;
@@ -122,18 +121,18 @@ private:
     float scalingFactorSpikyPow2_2D_atZero;
 
     // update rules
-    Density calculateDensity(unsigned int particleIndex);
-    glm::vec2 calculatePressureForce(unsigned int particleIndex);
-    glm::vec2 calculateExternalForce(unsigned int particleIndex);
-    glm::vec2 calculateViscosityForce(unsigned int particleIndex);
-    glm::vec2 calculateNearPressureForce(unsigned int particleIndex);
+    Density calculateDensity(size_t particleIndex);
+    glm::vec2 calculatePressureForce(size_t particleIndex);
+    glm::vec2 calculateExternalForce(size_t particleIndex);
+    glm::vec2 calculateViscosityForce(size_t particleIndex);
+    glm::vec2 calculateNearPressureForce(size_t particleIndex);
 
     // hash grid
     std::vector<SpatialHashEntry> spacialLookup;
     std::vector<int> spacialLookupEntry;
     glm::int2 pos2gridCoord(glm::vec2 position, float gridWidth) const;
     int hashGridCoord2D(glm::int2 gridCoord) const;
-    void foreachNeighbor(unsigned int particleIndex, std::function<void(int)> callback);
+    void foreachNeighbor(size_t particleIndex, std::function<void(int)> callback);
     const glm::int2 offset2D[9] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {0, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
 
     // external force

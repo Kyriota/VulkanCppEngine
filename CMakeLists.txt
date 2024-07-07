@@ -7,7 +7,7 @@ include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/RunMakeScripts.cmake)
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/lve)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Add source files
 file(GLOB_RECURSE APP_SRC ${CMAKE_SOURCE_DIR}/src/app/*.cpp)

@@ -4,7 +4,7 @@ include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/CommonSettings.cmake)
 include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/AddExternalPkg.cmake)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # Add source files
 file(GLOB_RECURSE SOURCE ${CMAKE_SOURCE_DIR}/src/lve/*.cpp)

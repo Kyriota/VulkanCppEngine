@@ -13,25 +13,25 @@ echo - assets root dir: %ASSETS_ROOT_DIR%
 echo - config root dir: %CONFIG_ROOT_DIR%
 echo - dynamic lib dir: %DYNAMIC_LIB_DIR%
 
-call %~dp0\MakeScripts\win32\compile_shaders.bat %RUNTIME_OUTPUT_DIRECTORY% %SHADER_SOURCE_DIR%
+call %~dp0\compile_shaders.bat %RUNTIME_OUTPUT_DIRECTORY% %SHADER_SOURCE_DIR%
 if errorlevel 1 (
     echo Error occured when compiling shaders
     exit /b 1
 )
 
-call %~dp0\MakeScripts\win32\copy_assets.bat %RUNTIME_OUTPUT_DIRECTORY% %ASSETS_ROOT_DIR%
+call %~dp0\copy_assets.bat %RUNTIME_OUTPUT_DIRECTORY% %ASSETS_ROOT_DIR%
 if errorlevel 1 (
     echo Error occured when copying assets
     exit /b 1
 )
 
-call %~dp0\MakeScripts\win32\copy_dlls.bat %IS_DEBUG% %RUNTIME_OUTPUT_DIRECTORY% %DYNAMIC_LIB_DIR%
+call %~dp0\copy_dlls.bat %IS_DEBUG% %RUNTIME_OUTPUT_DIRECTORY% %DYNAMIC_LIB_DIR%
 if errorlevel 1 (
     echo Error occured when copying dlls
     exit /b 1
 )
 
-call %~dp0\MakeScripts\win32\copy_config.bat %RUNTIME_OUTPUT_DIRECTORY% %CONFIG_ROOT_DIR%
+call %~dp0\copy_config.bat %RUNTIME_OUTPUT_DIRECTORY% %CONFIG_ROOT_DIR%
 if errorlevel 1 (
     echo Error occured when copying config
     exit /b 1
