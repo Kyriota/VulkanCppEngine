@@ -23,12 +23,18 @@ namespace lve
 
     ComputePipeline::~ComputePipeline() { cleanUp(); }
 
-    ComputePipeline::ComputePipeline(ComputePipeline &&other) noexcept
-        : lveDevice{other.lveDevice}, computePipeline{other.computePipeline},
-          computePipelineLayout{other.computePipelineLayout},
-          compShaderModule{other.compShaderModule}, initialized{other.initialized}
+    ComputePipeline::ComputePipeline(ComputePipeline &&other) noexcept : lveDevice{other.lveDevice}
     {
-        other.computePipelineLayout = nullptr;
+        computePipeline = other.computePipeline;
+        computePipelineLayout = other.computePipelineLayout;
+        compShaderModule = other.compShaderModule;
+        initialized = other.initialized;
+
+        // Reset other object
+        other.computePipeline = VK_NULL_HANDLE;
+        other.computePipelineLayout = VK_NULL_HANDLE;
+        other.compShaderModule = VK_NULL_HANDLE;
+        other.initialized = false;
     }
 
     ComputePipeline &ComputePipeline::operator=(ComputePipeline &&other)
@@ -62,7 +68,6 @@ namespace lve
                                                   const VkDescriptorSet *pGlobalDescriptorSet,
                                                   uint32_t width, uint32_t height)
     {
-        checkInitialized();
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
         vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0,
                                 1, pGlobalDescriptorSet, 0, nullptr);
@@ -78,14 +83,6 @@ namespace lve
             vkDestroyShaderModule(lveDevice.vkDevice(), compShaderModule, nullptr);
             vkDestroyPipeline(lveDevice.vkDevice(), computePipeline, nullptr);
             initialized = false;
-        }
-    }
-
-    void ComputePipeline::checkInitialized()
-    {
-        if (!initialized)
-        {
-            throw std::runtime_error("Trying to use an uninitialized ComputePipeline");
         }
     }
 

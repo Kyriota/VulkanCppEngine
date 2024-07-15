@@ -7,7 +7,7 @@
 #include "lve/core/device.hpp"
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/window.hpp"
-#include "lve/core/system/render_system.hpp"
+#include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/pipeline/compute_pipeline.hpp"
 #include "lve/go/geo/line.hpp"
 
@@ -56,8 +56,8 @@ private:
     std::unique_ptr<lve::DescriptorSetLayout> globalSetLayout;
     std::vector<VkDescriptorSet> globalDescriptorSets;
     lve::SamplerManager samplerManager{lveDevice};
-    lve::RenderSystem screenTextureRenderSystem{lveDevice};
-    lve::RenderSystem lineRenderSystem{lveDevice};
+    lve::GraphicPipeline screenTextureRenderPipeline{lveDevice};
+    lve::GraphicPipeline lineRenderPipeline{lveDevice};
     lve::ComputePipeline fluidSimComputePipeline{lveDevice};
 
     lve::Image screenTextureImage{lveDevice};

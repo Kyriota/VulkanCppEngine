@@ -33,6 +33,7 @@ namespace lve
         ComputePipeline &operator=(ComputePipeline &&other);
 
         VkPipeline getPipeline() { return computePipeline; }
+        VkPipelineLayout getPipelineLayout() { return computePipelineLayout; }
 
         void dispatchComputePipeline(VkCommandBuffer cmdBuffer,
                                      const VkDescriptorSet *pGlobalDescriptorSet, uint32_t width,
@@ -40,8 +41,6 @@ namespace lve
 
     private:
         void cleanUp();
-
-        void checkInitialized();
 
         void createComputePipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
         void createComputePipeline(const std::string &compFilepath);

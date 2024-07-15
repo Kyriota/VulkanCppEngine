@@ -1,11 +1,11 @@
 #include "app/renderer/app.hpp"
 #include "app/renderer/controller.hpp"
 
+#include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/resource/buffer.hpp"
+#include "lve/core/resource/sampler_manager.hpp"
 #include "lve/go/comp/camera.hpp"
 #include "lve/util/file_io.hpp"
-#include "lve/core/resource/sampler_manager.hpp"
-#include "lve/core/system/render_system.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -13,8 +13,8 @@
 // std
 #include <cassert>
 #include <chrono>
-#include <stdexcept>
 #include <cmath>
+#include <stdexcept>
 #include <string>
 
 struct GlobalUbo
@@ -42,12 +42,9 @@ void RendererApp::run()
 
     for (int i = 0; i < uboBuffers.size(); i++)
     {
-        uboBuffers[i] = std::make_unique<lve::Buffer>(
-            lveDevice,
-            sizeof(GlobalUbo),
-            1,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        uboBuffers[i] = std::make_unique<lve::Buffer>(lveDevice, sizeof(GlobalUbo), 1,
+                                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         uboBuffers[i]->map();
     }
 
@@ -61,13 +58,15 @@ void RendererApp::run()
     lve::GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
     graphicPipelineConfigInfo.vertFilepath = "simple_shader.vert.spv";
     graphicPipelineConfigInfo.fragFilepath = "simple_shader.frag.spv";
-    graphicPipelineConfigInfo.vertexBindingDescriptions = lve::Model::Vertex::getBindingDescriptions();
-    graphicPipelineConfigInfo.vertexAttributeDescriptions = lve::Model::Vertex::getAttributeDescriptions();
+    graphicPipelineConfigInfo.vertexBindingDescriptions =
+        lve::Model::Vertex::getBindingDescriptions();
+    graphicPipelineConfigInfo.vertexAttributeDescriptions =
+        lve::Model::Vertex::getAttributeDescriptions();
 
-    lve::RenderSystem simpleRenderSystem{
-        lveDevice,
-        lveRenderer.getSwapChainRenderPass(),
-        {globalSetLayout->getDescriptorSetLayout()},
+    lve::GraphicPipeline simpleRenderPipeline{
+        lveDevice, lveRenderer.getSwapChainRenderPass(),
+        lve::GraphicPipelineLayoutConfigInfo{
+            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}},
         graphicPipelineConfigInfo};
 
     lve::Camera camera{};
@@ -83,7 +82,8 @@ void RendererApp::run()
 
         auto newTime = std::chrono::high_resolution_clock::now();
         float frameTime =
-            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime)
+                .count();
         currentTime = newTime;
 
         cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
@@ -105,12 +105,9 @@ void RendererApp::run()
             // render
             lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-            renderGameObjects(
-                commandBuffer,
-                &globalDescriptorSets[frameIndex],
-                gameObjects,
-                simpleRenderSystem.getPipelineLayout(),
-                simpleRenderSystem.getPipeline());
+            renderGameObjects(commandBuffer, &globalDescriptorSets[frameIndex], gameObjects,
+                              simpleRenderPipeline.getPipelineLayout(),
+                              &simpleRenderPipeline);
 
             lveRenderer.endSwapChainRenderPass(commandBuffer);
             lveRenderer.endFrame();
