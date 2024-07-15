@@ -20,19 +20,37 @@ namespace lve
     class ComputePipeline
     {
     public:
-        ComputePipeline(Device &device, const std::string &compFilepath, const ComputePipelineConfigInfo &configInfo);
+        ComputePipeline(Device &device) : lveDevice(device) {}
+        ComputePipeline(Device &device,
+                        const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
+                        const std::string &compFilepath);
         ~ComputePipeline();
 
         ComputePipeline(const ComputePipeline &) = delete;
         ComputePipeline &operator=(const ComputePipeline &) = delete;
 
+        ComputePipeline(ComputePipeline &&other) noexcept;
+        ComputePipeline &operator=(ComputePipeline &&other);
+
         VkPipeline getPipeline() { return computePipeline; }
 
+        void dispatchComputePipeline(VkCommandBuffer cmdBuffer,
+                                     const VkDescriptorSet *pGlobalDescriptorSet, uint32_t width,
+                                     uint32_t height);
+
     private:
-        void createComputePipeline(const std::string &compFilepath, const ComputePipelineConfigInfo &configInfo);
+        void cleanUp();
+
+        void checkInitialized();
+
+        void createComputePipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
+        void createComputePipeline(const std::string &compFilepath);
 
         Device &lveDevice;
         VkPipeline computePipeline;
+        VkPipelineLayout computePipelineLayout;
         VkShaderModule compShaderModule;
+
+        bool initialized = false;
     };
 } // namespace lve

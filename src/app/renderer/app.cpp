@@ -6,7 +6,6 @@
 #include "lve/util/file_io.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/system/render_system.hpp"
-#include "lve/core/system/compute_system.hpp"
 
 // libs
 #include "include/glm.hpp"

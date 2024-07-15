@@ -8,7 +8,7 @@
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/window.hpp"
 #include "lve/core/system/render_system.hpp"
-#include "lve/core/system/compute_system.hpp"
+#include "lve/core/pipeline/compute_pipeline.hpp"
 #include "lve/go/geo/line.hpp"
 
 // std
@@ -58,7 +58,7 @@ private:
     lve::SamplerManager samplerManager{lveDevice};
     lve::RenderSystem screenTextureRenderSystem{lveDevice};
     lve::RenderSystem lineRenderSystem{lveDevice};
-    lve::ComputeSystem fluidSimComputeSystem{lveDevice};
+    lve::ComputePipeline fluidSimComputePipeline{lveDevice};
 
     lve::Image screenTextureImage{lveDevice};
     VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;

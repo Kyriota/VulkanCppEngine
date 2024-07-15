@@ -2,10 +2,5 @@
     
     "cmake.configureSettings": {
         "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake"
-    },
-    "files.associations": {
-        "*.ejs": "html",
-        "*.tpp": "cpp",
-        "stdexcept": "cpp"
     }
 }

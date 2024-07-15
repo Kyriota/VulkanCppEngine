@@ -102,7 +102,7 @@ FluidSim2DApp::FluidSim2DApp()
         {globalSetLayout->getDescriptorSetLayout()},
         linePipelineConfigInfo);
 
-    fluidSimComputeSystem = lve::ComputeSystem(
+    fluidSimComputePipeline = lve::ComputePipeline(
         lveDevice,
         {globalSetLayout->getDescriptorSetLayout()},
         "my_compute_shader.comp.spv");
@@ -317,7 +317,7 @@ void FluidSim2DApp::renderLoop()
 
             // update
             windowExtent = lveWindow.getExtent();
-            fluidSimComputeSystem.dispatchComputePipeline(
+            fluidSimComputePipeline.dispatchComputePipeline(
                 commandBuffer,
                 &globalDescriptorSets[frameIndex],
                 static_cast<int>(std::ceil(windowExtent.width / 8.f)),
