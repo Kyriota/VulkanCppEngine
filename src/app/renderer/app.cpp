@@ -67,7 +67,9 @@ void RendererApp::run()
     lve::GraphicPipeline simpleRenderPipeline{
         lveDevice,
         lve::GraphicPipelineLayoutConfigInfo{
-            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}},
+            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()},
+            .pushConstantRanges = {{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                    sizeof(lve::SimplePushConstantData)}}},
         graphicPipelineConfigInfo};
 
     lve::Camera camera{};
@@ -107,8 +109,7 @@ void RendererApp::run()
             lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
             renderGameObjects(commandBuffer, &globalDescriptorSets[frameIndex], gameObjects,
-                              simpleRenderPipeline.getPipelineLayout(),
-                              &simpleRenderPipeline);
+                              simpleRenderPipeline.getPipelineLayout(), &simpleRenderPipeline);
 
             lveRenderer.endSwapChainRenderPass(commandBuffer);
             lveRenderer.endFrame();

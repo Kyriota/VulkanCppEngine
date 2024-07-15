@@ -66,8 +66,8 @@ namespace lve
                                                   uint32_t width, uint32_t height)
     {
         vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0,
-                                1, pGlobalDescriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1,
+                                pGlobalDescriptorSet, 0, nullptr);
 
         vkCmdDispatch(cmdBuffer, width, height, 1);
     }
@@ -79,8 +79,8 @@ namespace lve
         vkDestroyPipeline(lveDevice.vkDevice(), pipeline, nullptr);
     }
 
-    void ComputePipeline::createPipelineLayout(
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
+    void
+    ComputePipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -99,13 +99,7 @@ namespace lve
     void ComputePipeline::createPipeline(const std::string &compFilePath)
     {
         assert(pipelineLayout != nullptr &&
-               "Cannot create pipeline before pipeline layout is created");
-
-        ComputePipelineConfigInfo configInfo{};
-        configInfo.pipelineLayout = pipelineLayout;
-
-        assert(configInfo.pipelineLayout != VK_NULL_HANDLE &&
-               "Cannot create compute pipeline: no pipelineLayout provided in configInfo");
+               "Cannot create pipeline before pipeline layout is initialized");
 
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
@@ -121,7 +115,7 @@ namespace lve
         VkComputePipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
         pipelineInfo.stage = shaderStageInfo;
-        pipelineInfo.layout = configInfo.pipelineLayout;
+        pipelineInfo.layout = pipelineLayout;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
         pipelineInfo.basePipelineIndex = -1;
 

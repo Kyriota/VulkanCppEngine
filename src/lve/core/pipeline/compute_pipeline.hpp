@@ -9,15 +9,6 @@
 
 namespace lve
 {
-    struct ComputePipelineConfigInfo
-    {
-        ComputePipelineConfigInfo() = default;
-        ComputePipelineConfigInfo(const ComputePipelineConfigInfo &) = delete;
-        ComputePipelineConfigInfo &operator=(const ComputePipelineConfigInfo &) = delete;
-
-        VkPipelineLayout pipelineLayout = nullptr;
-    };
-
     class ComputePipeline : public Pipeline
     {
     public:
