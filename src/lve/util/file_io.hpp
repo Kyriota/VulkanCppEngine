@@ -16,10 +16,10 @@ namespace lve
         std::string readTextFile(const std::string &filename);
         std::vector<char> readBinaryFile(const std::string &filename);
 
-        void writeFile(const std::string &filepath, const std::vector<char> &data);
-        void writeFile(const std::string &filepath, const std::string &data);
+        void writeFile(const std::string &filePath, const std::vector<char> &data);
+        void writeFile(const std::string &filePath, const std::string &data);
 
-        bool fileExists(const std::string &filepath);
+        bool fileExists(const std::string &filePath);
         bool isFileOpen(const std::ifstream &file);
         bool isFileOpen(const std::ofstream &file);
 

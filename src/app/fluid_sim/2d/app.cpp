@@ -83,25 +83,31 @@ FluidSim2DApp::FluidSim2DApp()
     updateGlobalDescriptorSets(true);
 
     lve::GraphicPipelineConfigInfo screenTexturePipelineConfigInfo{};
-    screenTexturePipelineConfigInfo.vertFilepath = "screen_texture_shader.vert.spv";
-    screenTexturePipelineConfigInfo.fragFilepath = "screen_texture_shader.frag.spv";
+    screenTexturePipelineConfigInfo.vertFilePath = "screen_texture_shader.vert.spv";
+    screenTexturePipelineConfigInfo.fragFilePath = "screen_texture_shader.frag.spv";
+    screenTexturePipelineConfigInfo.renderPass = lveRenderer.getSwapChainRenderPass();
 
     lve::GraphicPipelineConfigInfo linePipelineConfigInfo{};
     linePipelineConfigInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    linePipelineConfigInfo.vertFilepath = "line_2d.vert.spv";
-    linePipelineConfigInfo.fragFilepath = "line_2d.frag.spv";
+    linePipelineConfigInfo.vertFilePath = "line_2d.vert.spv";
+    linePipelineConfigInfo.fragFilePath = "line_2d.frag.spv";
+    linePipelineConfigInfo.renderPass = lveRenderer.getSwapChainRenderPass();
     linePipelineConfigInfo.vertexBindingDescriptions = lve::Line::Vertex::getBindingDescriptions();
     linePipelineConfigInfo.vertexAttributeDescriptions =
         lve::Line::Vertex::getAttributeDescriptions();
 
+    VkPushConstantRange screenExtentPushRange = {VK_SHADER_STAGE_VERTEX_BIT |
+                                                     VK_SHADER_STAGE_FRAGMENT_BIT,
+                                                 0, sizeof(lve::ScreenExtentPushConstantData)};
     screenTextureRenderPipeline = lve::GraphicPipeline(
-        lveDevice, lveRenderer.getSwapChainRenderPass(),
+        lveDevice,
         lve::GraphicPipelineLayoutConfigInfo{
-            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}},
+            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()},
+            .pushConstantRanges = {screenExtentPushRange}},
         screenTexturePipelineConfigInfo);
 
     lineRenderPipeline = lve::GraphicPipeline(
-        lveDevice, lveRenderer.getSwapChainRenderPass(),
+        lveDevice,
         lve::GraphicPipelineLayoutConfigInfo{
             .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}},
         linePipelineConfigInfo);
@@ -247,8 +253,7 @@ void FluidSim2DApp::drawDebugLines(VkCommandBuffer cmdBuffer)
     lineCollection.clearLines();
     lineCollection.addLines(fluidParticleSys.getDebugLines());
     lve::renderLines(cmdBuffer, &globalDescriptorSets[lveRenderer.getFrameIndex()],
-                     lineRenderPipeline.getPipelineLayout(), &lineRenderPipeline,
-                     lineCollection);
+                     lineRenderPipeline.getPipelineLayout(), &lineRenderPipeline, lineCollection);
 }
 
 void FluidSim2DApp::handleInput()

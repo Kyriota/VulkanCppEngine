@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lve/core/device.hpp"
+#include "lve/core/pipeline/pipeline.hpp"
 #include "lve/go/game_object.hpp"
 #include "lve/go/geo/line.hpp"
 
@@ -10,6 +11,17 @@
 
 namespace lve
 {
+    struct SimplePushConstantData
+    {
+        glm::mat4 modelMatrix{1.f};
+        glm::mat4 normalMatrix{1.f};
+    };
+
+    struct ScreenExtentPushConstantData
+    {
+        glm::vec2 screenExtent;
+    };
+
     struct GraphicPipelineConfigInfo
     {
         GraphicPipelineConfigInfo();
@@ -26,14 +38,13 @@ namespace lve
         std::vector<VkDynamicState> dynamicStateEnables;
         VkPipelineDynamicStateCreateInfo dynamicStateInfo;
 
-        VkPipelineLayout pipelineLayout;
         VkRenderPass renderPass;
         uint32_t subpass;
 
         std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions;
         std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions;
-        std::string vertFilepath;
-        std::string fragFilepath;
+        std::string vertFilePath;
+        std::string fragFilePath;
     };
 
     struct GraphicPipelineLayoutConfigInfo
@@ -46,7 +57,7 @@ namespace lve
     {
     public:
         GraphicPipeline(Device &device) : lveDevice(device) {}
-        GraphicPipeline(Device &device, VkRenderPass renderPass,
+        GraphicPipeline(Device &device,
                         const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
                         const GraphicPipelineConfigInfo &pipelineConfigInfo);
         ~GraphicPipeline();
@@ -64,7 +75,7 @@ namespace lve
         void cleanUp();
 
         void createGraphicPipelineLayout(const GraphicPipelineLayoutConfigInfo &configInfo);
-        void createGraphicsPipeline(VkRenderPass renderPass, const GraphicPipelineConfigInfo &configInfo);
+        void createGraphicsPipeline(const GraphicPipelineConfigInfo &configInfo);
 
         Device &lveDevice;
         VkPipeline graphicPipeline;

@@ -56,15 +56,16 @@ void RendererApp::run()
     updateGlobalDescriptorSets();
 
     lve::GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
-    graphicPipelineConfigInfo.vertFilepath = "simple_shader.vert.spv";
-    graphicPipelineConfigInfo.fragFilepath = "simple_shader.frag.spv";
+    graphicPipelineConfigInfo.vertFilePath = "simple_shader.vert.spv";
+    graphicPipelineConfigInfo.fragFilePath = "simple_shader.frag.spv";
+    graphicPipelineConfigInfo.renderPass = lveRenderer.getSwapChainRenderPass();
     graphicPipelineConfigInfo.vertexBindingDescriptions =
         lve::Model::Vertex::getBindingDescriptions();
     graphicPipelineConfigInfo.vertexAttributeDescriptions =
         lve::Model::Vertex::getAttributeDescriptions();
 
     lve::GraphicPipeline simpleRenderPipeline{
-        lveDevice, lveRenderer.getSwapChainRenderPass(),
+        lveDevice,
         lve::GraphicPipelineLayoutConfigInfo{
             .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}},
         graphicPipelineConfigInfo};

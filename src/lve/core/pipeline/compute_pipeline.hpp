@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lve/core/device.hpp"
+#include "lve/core/pipeline/pipeline.hpp"
 
 // std
 #include <string>
@@ -17,14 +18,14 @@ namespace lve
         VkPipelineLayout pipelineLayout = nullptr;
     };
 
-    class ComputePipeline
+    class ComputePipeline : public Pipeline
     {
     public:
-        ComputePipeline(Device &device) : lveDevice(device) {}
+        ComputePipeline(Device &device) : Pipeline(device) {}
         ComputePipeline(Device &device,
                         const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
-                        const std::string &compFilepath);
-        ~ComputePipeline();
+                        const std::string &compFilePath);
+        ~ComputePipeline() { cleanUp(); }
 
         ComputePipeline(const ComputePipeline &) = delete;
         ComputePipeline &operator=(const ComputePipeline &) = delete;
@@ -32,24 +33,16 @@ namespace lve
         ComputePipeline(ComputePipeline &&other) noexcept;
         ComputePipeline &operator=(ComputePipeline &&other);
 
-        VkPipeline getPipeline() { return computePipeline; }
-        VkPipelineLayout getPipelineLayout() { return computePipelineLayout; }
-
         void dispatchComputePipeline(VkCommandBuffer cmdBuffer,
                                      const VkDescriptorSet *pGlobalDescriptorSet, uint32_t width,
                                      uint32_t height);
 
     private:
-        void cleanUp();
+        void release() override;
 
-        void createComputePipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
-        void createComputePipeline(const std::string &compFilepath);
+        void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
+        void createPipeline(const std::string &compFilePath);
 
-        Device &lveDevice;
-        VkPipeline computePipeline;
-        VkPipelineLayout computePipelineLayout;
         VkShaderModule compShaderModule;
-
-        bool initialized = false;
     };
 } // namespace lve

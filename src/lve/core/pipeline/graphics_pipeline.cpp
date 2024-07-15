@@ -11,17 +11,6 @@
 
 namespace lve
 {
-    struct SimplePushConstantData
-    {
-        glm::mat4 modelMatrix{1.f};
-        glm::mat4 normalMatrix{1.f};
-    };
-
-    struct ScreenExtentPushConstantData
-    {
-        glm::vec2 screenExtent;
-    };
-
     GraphicPipelineConfigInfo::GraphicPipelineConfigInfo()
     {
         this->inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -106,33 +95,28 @@ namespace lve
         this->dynamicStateInfo.flags = 0;
         this->dynamicStateInfo.pNext = nullptr;
 
-        this->pipelineLayout = VK_NULL_HANDLE;
         this->renderPass = VK_NULL_HANDLE;
         this->subpass = 0;
 
         this->vertexBindingDescriptions = {};
         this->vertexAttributeDescriptions = {};
-        this->vertFilepath = "";
-        this->fragFilepath = "";
+        this->vertFilePath = "";
+        this->fragFilePath = "";
     }
 
-    GraphicPipeline::GraphicPipeline(Device &device, VkRenderPass renderPass,
+    GraphicPipeline::GraphicPipeline(Device &device,
                                      const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
                                      const GraphicPipelineConfigInfo &pipelineConfigInfo)
         : lveDevice{device}
     {
         createGraphicPipelineLayout(layoutConfigInfo);
-        createGraphicsPipeline(renderPass, pipelineConfigInfo);
+        createGraphicsPipeline(pipelineConfigInfo);
         initialized = true;
     }
 
-    GraphicPipeline::~GraphicPipeline()
-    {
-        cleanUp();
-    }
+    GraphicPipeline::~GraphicPipeline() { cleanUp(); }
 
-    GraphicPipeline::GraphicPipeline(GraphicPipeline &&other) noexcept
-        : lveDevice{other.lveDevice}
+    GraphicPipeline::GraphicPipeline(GraphicPipeline &&other) noexcept : lveDevice{other.lveDevice}
     {
         graphicPipeline = other.graphicPipeline;
         graphicPipelineLayout = other.graphicPipelineLayout;
@@ -188,33 +172,42 @@ namespace lve
         }
     }
 
-    void GraphicPipeline::createGraphicPipelineLayout(const GraphicPipelineLayoutConfigInfo &layoutConfigInfo)
+    void GraphicPipeline::createGraphicPipelineLayout(
+        const GraphicPipelineLayoutConfigInfo &layoutConfigInfo)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layoutConfigInfo.descriptorSetLayouts.size());
-        pipelineLayoutInfo.pSetLayouts = layoutConfigInfo.descriptorSetLayouts.data();
-        pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(layoutConfigInfo.pushConstantRanges.size());
-        pipelineLayoutInfo.pPushConstantRanges = layoutConfigInfo.pushConstantRanges.data();
+        uint32_t layoutCount = static_cast<uint32_t>(layoutConfigInfo.descriptorSetLayouts.size());
+        pipelineLayoutInfo.setLayoutCount = layoutCount;
+        pipelineLayoutInfo.pSetLayouts =
+            layoutCount == 0 ? nullptr : layoutConfigInfo.descriptorSetLayouts.data();
+        uint32_t pushConstantRangeCount =
+            static_cast<uint32_t>(layoutConfigInfo.pushConstantRanges.size());
+        pipelineLayoutInfo.pushConstantRangeCount = pushConstantRangeCount;
+        pipelineLayoutInfo.pPushConstantRanges =
+            pushConstantRangeCount == 0 ? nullptr : layoutConfigInfo.pushConstantRanges.data();
 
-        if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &graphicPipelineLayout) !=
-            VK_SUCCESS)
+        if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr,
+                                   &graphicPipelineLayout) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout!");
         }
     }
 
-    void GraphicPipeline::createGraphicsPipeline(VkRenderPass renderPass, const GraphicPipelineConfigInfo &pipelineConfigInfo)
+    void
+    GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pipelineConfigInfo)
     {
-        assert(pipelineConfigInfo.pipelineLayout != VK_NULL_HANDLE &&
-               "Cannot create graphics pipeline: no pipelineLayout provided in pipelineConfigInfo");
+        assert(graphicPipelineLayout != VK_NULL_HANDLE &&
+               "Cannot create graphics pipeline: pipelineLayout not initialized yet");
         assert(pipelineConfigInfo.renderPass != VK_NULL_HANDLE &&
-               "Cannot create graphics pipeline: no renderPass provided in pipelineConfigInfo");
+               "Cannot create graphics pipeline: renderPass not provided in pipelineConfigInfo");
 
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
-        std::vector<char> vertCode = io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilepath);
-        std::vector<char> fragCode = io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilepath);
+        std::vector<char> vertCode =
+            io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilePath);
+        std::vector<char> fragCode =
+            io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilePath);
 
         createShaderModule(lveDevice, vertCode, &vertShaderModule);
         createShaderModule(lveDevice, fragCode, &fragShaderModule);
@@ -259,7 +252,7 @@ namespace lve
         pipelineInfo.pDepthStencilState = &pipelineConfigInfo.depthStencilInfo;
         pipelineInfo.pDynamicState = &pipelineConfigInfo.dynamicStateInfo;
 
-        pipelineInfo.layout = pipelineConfigInfo.pipelineLayout;
+        pipelineInfo.layout = graphicPipelineLayout;
         pipelineInfo.renderPass = pipelineConfigInfo.renderPass;
         pipelineInfo.subpass = pipelineConfigInfo.subpass;
 
@@ -273,24 +266,14 @@ namespace lve
         }
     }
 
-    void renderGameObjects(
-        VkCommandBuffer cmdBuffer,
-        const VkDescriptorSet *pGlobalDescriptorSet,
-        GameObject::Map &gameObjects,
-        VkPipelineLayout graphicPipelineLayout,
-        GraphicPipeline *graphicPipeline)
+    void renderGameObjects(VkCommandBuffer cmdBuffer, const VkDescriptorSet *pGlobalDescriptorSet,
+                           GameObject::Map &gameObjects, VkPipelineLayout graphicPipelineLayout,
+                           GraphicPipeline *graphicPipeline)
     {
         bind(cmdBuffer, graphicPipeline->getPipeline());
 
-        vkCmdBindDescriptorSets(
-            cmdBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            graphicPipelineLayout,
-            0,
-            1,
-            pGlobalDescriptorSet,
-            0,
-            nullptr);
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout,
+                                0, 1, pGlobalDescriptorSet, 0, nullptr);
 
         for (auto &kv : gameObjects)
         {
@@ -301,69 +284,41 @@ namespace lve
             push.modelMatrix = obj.transform.mat4();
             push.normalMatrix = obj.transform.normalMatrix();
 
-            vkCmdPushConstants(
-                cmdBuffer,
-                graphicPipelineLayout,
-                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                sizeof(SimplePushConstantData),
-                &push);
+            vkCmdPushConstants(cmdBuffer, graphicPipelineLayout,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(SimplePushConstantData), &push);
             obj.model->bind(cmdBuffer);
             obj.model->draw(cmdBuffer);
         }
     }
 
-    void renderScreenTexture(
-        VkCommandBuffer cmdBuffer,
-        const VkDescriptorSet *pGlobalDescriptorSet,
-        VkPipelineLayout graphicPipelineLayout,
-        GraphicPipeline *graphicPipeline,
-        VkExtent2D extent)
+    void renderScreenTexture(VkCommandBuffer cmdBuffer, const VkDescriptorSet *pGlobalDescriptorSet,
+                             VkPipelineLayout graphicPipelineLayout,
+                             GraphicPipeline *graphicPipeline, VkExtent2D extent)
     {
         bind(cmdBuffer, graphicPipeline->getPipeline());
 
-        vkCmdBindDescriptorSets(
-            cmdBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            graphicPipelineLayout,
-            0,
-            1,
-            pGlobalDescriptorSet,
-            0,
-            nullptr);
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout,
+                                0, 1, pGlobalDescriptorSet, 0, nullptr);
 
         ScreenExtentPushConstantData push{};
         push.screenExtent = glm::vec2(extent.width, extent.height);
-        
-        vkCmdPushConstants(
-            cmdBuffer,
-            graphicPipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-            0,
-            sizeof(ScreenExtentPushConstantData),
-            &push);
+
+        vkCmdPushConstants(cmdBuffer, graphicPipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(ScreenExtentPushConstantData), &push);
 
         vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
     }
 
-    void renderLines(
-        VkCommandBuffer cmdBuffer,
-        const VkDescriptorSet *pGlobalDescriptorSet,
-        VkPipelineLayout graphicPipelineLayout,
-        GraphicPipeline *graphicPipeline,
-        LineCollection &lineCollection)
+    void renderLines(VkCommandBuffer cmdBuffer, const VkDescriptorSet *pGlobalDescriptorSet,
+                     VkPipelineLayout graphicPipelineLayout, GraphicPipeline *graphicPipeline,
+                     LineCollection &lineCollection)
     {
         bind(cmdBuffer, graphicPipeline->getPipeline());
 
-        vkCmdBindDescriptorSets(
-            cmdBuffer,
-            VK_PIPELINE_BIND_POINT_GRAPHICS,
-            graphicPipelineLayout,
-            0,
-            1,
-            pGlobalDescriptorSet,
-            0,
-            nullptr);
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout,
+                                0, 1, pGlobalDescriptorSet, 0, nullptr);
 
         lineCollection.bind(cmdBuffer);
         lineCollection.draw(cmdBuffer);

@@ -13,26 +13,24 @@ namespace lve
 {
     ComputePipeline::ComputePipeline(Device &device,
                                      const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
-                                     const std::string &compFilepath)
-        : lveDevice{device}
+                                     const std::string &compFilePath)
+        : Pipeline(device)
     {
-        createComputePipelineLayout(descriptorSetLayouts);
-        createComputePipeline(compFilepath);
+        createPipelineLayout(descriptorSetLayouts);
+        createPipeline(compFilePath);
         initialized = true;
     }
 
-    ComputePipeline::~ComputePipeline() { cleanUp(); }
-
-    ComputePipeline::ComputePipeline(ComputePipeline &&other) noexcept : lveDevice{other.lveDevice}
+    ComputePipeline::ComputePipeline(ComputePipeline &&other) noexcept : Pipeline(other.lveDevice)
     {
-        computePipeline = other.computePipeline;
-        computePipelineLayout = other.computePipelineLayout;
+        pipeline = other.pipeline;
+        pipelineLayout = other.pipelineLayout;
         compShaderModule = other.compShaderModule;
         initialized = other.initialized;
 
         // Reset other object
-        other.computePipeline = VK_NULL_HANDLE;
-        other.computePipelineLayout = VK_NULL_HANDLE;
+        other.pipeline = VK_NULL_HANDLE;
+        other.pipelineLayout = VK_NULL_HANDLE;
         other.compShaderModule = VK_NULL_HANDLE;
         other.initialized = false;
     }
@@ -46,17 +44,16 @@ namespace lve
 
         if (this != &other)
         {
-            // Clean up existing resources
             cleanUp();
 
-            computePipeline = other.computePipeline;
-            computePipelineLayout = other.computePipelineLayout;
+            pipeline = other.pipeline;
+            pipelineLayout = other.pipelineLayout;
             compShaderModule = other.compShaderModule;
             initialized = other.initialized;
 
             // Reset other object
-            other.computePipeline = VK_NULL_HANDLE;
-            other.computePipelineLayout = VK_NULL_HANDLE;
+            other.pipeline = VK_NULL_HANDLE;
+            other.pipelineLayout = VK_NULL_HANDLE;
             other.compShaderModule = VK_NULL_HANDLE;
             other.initialized = false;
         }
@@ -68,25 +65,21 @@ namespace lve
                                                   const VkDescriptorSet *pGlobalDescriptorSet,
                                                   uint32_t width, uint32_t height)
     {
-        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0,
+        vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0,
                                 1, pGlobalDescriptorSet, 0, nullptr);
 
         vkCmdDispatch(cmdBuffer, width, height, 1);
     }
 
-    void ComputePipeline::cleanUp()
+    void ComputePipeline::release()
     {
-        if (initialized)
-        {
-            vkDestroyPipelineLayout(lveDevice.vkDevice(), computePipelineLayout, nullptr);
-            vkDestroyShaderModule(lveDevice.vkDevice(), compShaderModule, nullptr);
-            vkDestroyPipeline(lveDevice.vkDevice(), computePipeline, nullptr);
-            initialized = false;
-        }
+        vkDestroyPipelineLayout(lveDevice.vkDevice(), pipelineLayout, nullptr);
+        vkDestroyShaderModule(lveDevice.vkDevice(), compShaderModule, nullptr);
+        vkDestroyPipeline(lveDevice.vkDevice(), pipeline, nullptr);
     }
 
-    void ComputePipeline::createComputePipelineLayout(
+    void ComputePipeline::createPipelineLayout(
         std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -97,26 +90,26 @@ namespace lve
         pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
         if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr,
-                                   &computePipelineLayout) != VK_SUCCESS)
+                                   &pipelineLayout) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout");
         }
     }
 
-    void ComputePipeline::createComputePipeline(const std::string &compFilepath)
+    void ComputePipeline::createPipeline(const std::string &compFilePath)
     {
-        assert(computePipelineLayout != nullptr &&
+        assert(pipelineLayout != nullptr &&
                "Cannot create pipeline before pipeline layout is created");
 
         ComputePipelineConfigInfo configInfo{};
-        configInfo.pipelineLayout = computePipelineLayout;
+        configInfo.pipelineLayout = pipelineLayout;
 
         assert(configInfo.pipelineLayout != VK_NULL_HANDLE &&
                "Cannot create compute pipeline: no pipelineLayout provided in configInfo");
 
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
-        std::vector<char> compCode = io::readBinaryFile(shaderRoot + compFilepath);
+        std::vector<char> compCode = io::readBinaryFile(shaderRoot + compFilePath);
         createShaderModule(lveDevice, compCode, &compShaderModule);
 
         VkPipelineShaderStageCreateInfo shaderStageInfo{};
@@ -133,7 +126,7 @@ namespace lve
         pipelineInfo.basePipelineIndex = -1;
 
         if (vkCreateComputePipelines(lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo,
-                                     nullptr, &computePipeline) != VK_SUCCESS)
+                                     nullptr, &pipeline) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create compute pipeline");
         }

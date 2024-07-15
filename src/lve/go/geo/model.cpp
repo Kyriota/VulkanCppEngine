@@ -34,10 +34,10 @@ namespace lve
     }
 
     std::unique_ptr<Model> Model::createModelFromFile(
-        Device &device, const std::string &filepath)
+        Device &device, const std::string &filePath)
     {
         Builder builder{};
-        builder.loadModel(filepath);
+        builder.loadModel(filePath);
         return std::make_unique<Model>(device, builder);
     }
 
@@ -148,14 +148,14 @@ namespace lve
         return attributeDescriptions;
     }
 
-    void Model::Builder::loadModel(const std::string &filepath)
+    void Model::Builder::loadModel(const std::string &filePath)
     {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str()))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str()))
         {
             throw std::runtime_error(warn + err);
         }

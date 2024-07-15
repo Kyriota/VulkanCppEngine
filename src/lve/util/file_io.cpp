@@ -41,27 +41,27 @@ namespace lve
             return buffer;
         }
 
-        void writeFile(const std::string &filepath, const std::vector<char> &data)
+        void writeFile(const std::string &filePath, const std::vector<char> &data)
         {
-            std::ofstream file{filepath, std::ios::binary};
-            checkFileOpen(file, filepath);
+            std::ofstream file{filePath, std::ios::binary};
+            checkFileOpen(file, filePath);
 
             file.write(data.data(), data.size());
             file.close();
         }
 
-        void writeFile(const std::string &filepath, const std::string &data)
+        void writeFile(const std::string &filePath, const std::string &data)
         {
-            std::ofstream file{filepath};
-            checkFileOpen(file, filepath);
+            std::ofstream file{filePath};
+            checkFileOpen(file, filePath);
 
             file << data;
             file.close();
         }
 
-        bool fileExists(const std::string &filepath)
+        bool fileExists(const std::string &filePath)
         {
-            std::ifstream file{filepath};
+            std::ifstream file{filePath};
             return file.good();
         }
 
