@@ -116,9 +116,9 @@ namespace lve
 
     GraphicPipeline::~GraphicPipeline()
     {
-        vkDestroyShaderModule(lveDevice.device(), vertShaderModule, nullptr);
-        vkDestroyShaderModule(lveDevice.device(), fragShaderModule, nullptr);
-        vkDestroyPipeline(lveDevice.device(), graphicPipeline, nullptr);
+        vkDestroyShaderModule(lveDevice.vkDevice(), vertShaderModule, nullptr);
+        vkDestroyShaderModule(lveDevice.vkDevice(), fragShaderModule, nullptr);
+        vkDestroyPipeline(lveDevice.vkDevice(), graphicPipeline, nullptr);
     }
 
     void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &configInfo)
@@ -185,7 +185,7 @@ namespace lve
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
         if (vkCreateGraphicsPipelines(
-                lveDevice.device(),
+                lveDevice.vkDevice(),
                 VK_NULL_HANDLE,
                 1,
                 &pipelineInfo,

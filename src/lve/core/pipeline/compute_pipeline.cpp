@@ -19,8 +19,8 @@ namespace lve
 
     ComputePipeline::~ComputePipeline()
     {
-        vkDestroyShaderModule(lveDevice.device(), compShaderModule, nullptr);
-        vkDestroyPipeline(lveDevice.device(), computePipeline, nullptr);
+        vkDestroyShaderModule(lveDevice.vkDevice(), compShaderModule, nullptr);
+        vkDestroyPipeline(lveDevice.vkDevice(), computePipeline, nullptr);
     }
 
     void ComputePipeline::createComputePipeline(const std::string &compFilepath, const ComputePipelineConfigInfo &configInfo)
@@ -48,7 +48,7 @@ namespace lve
         pipelineInfo.basePipelineIndex = -1;
 
         if (vkCreateComputePipelines(
-                lveDevice.device(),
+                lveDevice.vkDevice(),
                 VK_NULL_HANDLE,
                 1,
                 &pipelineInfo,

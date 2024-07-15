@@ -17,7 +17,7 @@ namespace lve
 
     ComputeSystem::~ComputeSystem()
     {
-        vkDestroyPipelineLayout(lveDevice.device(), computePipelineLayout, nullptr);
+        vkDestroyPipelineLayout(lveDevice.vkDevice(), computePipelineLayout, nullptr);
     }
 
     ComputeSystem::ComputeSystem(ComputeSystem &&other) noexcept
@@ -31,7 +31,7 @@ namespace lve
 
     ComputeSystem &ComputeSystem::operator=(ComputeSystem &&other)
     {
-        if (this->lveDevice.device() != other.lveDevice.device())
+        if (this->lveDevice.vkDevice() != other.lveDevice.vkDevice())
         {
             throw std::runtime_error("Moved ComputeSystem objects must be on the same LveDevice");
         }
@@ -74,7 +74,7 @@ namespace lve
     {
         if (initialized)
         {
-            vkDestroyPipelineLayout(lveDevice.device(), computePipelineLayout, nullptr);
+            vkDestroyPipelineLayout(lveDevice.vkDevice(), computePipelineLayout, nullptr);
         }
     }
 
@@ -86,7 +86,7 @@ namespace lve
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         
-        if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &computePipelineLayout) !=
+        if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &computePipelineLayout) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout!");

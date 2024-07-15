@@ -3,6 +3,7 @@
 #include "app/fluid_sim/2d/fluid_particle_system.hpp"
 #include "lve/core/resource/descriptors.hpp"
 #include "lve/core/resource/image.hpp"
+#include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/device.hpp"
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/window.hpp"
@@ -21,7 +22,6 @@ public:
     const std::string WINDOW_RESIZED_CALLBACK_NAME = "FluidSim2DApp";
 
     FluidSim2DApp();
-    ~FluidSim2DApp();
 
     FluidSim2DApp(const FluidSim2DApp &) = delete;
     FluidSim2DApp &operator=(const FluidSim2DApp &) = delete;
@@ -55,6 +55,7 @@ private:
     std::unique_ptr<lve::Buffer> neighborBuffer;
     std::unique_ptr<lve::DescriptorSetLayout> globalSetLayout;
     std::vector<VkDescriptorSet> globalDescriptorSets;
+    lve::SamplerManager samplerManager{lveDevice};
     lve::RenderSystem screenTextureRenderSystem{lveDevice};
     lve::RenderSystem lineRenderSystem{lveDevice};
     lve::ComputeSystem fluidSimComputeSystem{lveDevice};

@@ -1,25 +1,9 @@
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/util/math.hpp"
 
-namespace std
-{
-    template <>
-    struct hash<lve::SamplerKey>
-    {
-        size_t operator()(const lve::SamplerKey &key) const
-        {
-            size_t seed = 0;
-            lve::math::hashCombine(seed, key.type, key.device);
-            return seed;
-        }
-    };
-} // namespace std
-
 namespace lve
 {
-    std::unordered_map<SamplerKey, VkSampler> SamplerManager::samplers;
-
-    VkSampler SamplerManager::getDefaultSampler(VkDevice device)
+    VkSampler SamplerManager::getDefaultSampler()
     {
         VkSamplerCreateInfo defaultSamplerInfo{};
         defaultSamplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -40,47 +24,46 @@ namespace lve
         defaultSamplerInfo.maxLod = 0.0f;
 
         VkSampler sampler;
-        createSamplerWithInfo(device, defaultSamplerInfo, sampler);
+        createSamplerWithInfo(defaultSamplerInfo, sampler);
 
         return sampler;
     }
 
-    void SamplerManager::createSamplerWithInfo(VkDevice device, VkSamplerCreateInfo &createInfo, VkSampler &sampler)
+    void SamplerManager::createSamplerWithInfo(VkSamplerCreateInfo &createInfo, VkSampler &sampler)
     {
-        if (vkCreateSampler(device, &createInfo, nullptr, &sampler) != VK_SUCCESS)
+        if (vkCreateSampler(lveDevice.vkDevice(), &createInfo, nullptr, &sampler) != VK_SUCCESS)
         {
             throw std::runtime_error("Failed to create texture sampler");
         }
     }
 
-    void SamplerManager::createSamplerWithKey(SamplerKey key)
+    void SamplerManager::createSampler(SamplerType type)
     {
         // use switch statement to create different types of samplers
-        switch (key.type)
+        switch (type)
         {
         case SamplerType::DEFAULT:
-            samplers[key] = getDefaultSampler(key.device);
+            samplers[type] = getDefaultSampler();
             break;
         default:
             throw std::runtime_error("Failed to create sampler: unknown sampler type");
         }
     }
 
-    VkSampler SamplerManager::getSampler(SamplerKey key)
+    VkSampler SamplerManager::getSampler(SamplerType type)
     {
-        if (samplers.find(key) == samplers.end())
+        if (samplers.find(type) == samplers.end())
         {
-            createSamplerWithKey(key);
+            createSampler(type);
         }
-        return samplers[key];
+        return samplers[type];
     }
 
-    void SamplerManager::clearSamplers()
+    SamplerManager::~SamplerManager()
     {
         for (auto &sampler : samplers)
         {
-            vkDestroySampler(sampler.first.device, sampler.second, nullptr);
+            vkDestroySampler(lveDevice.vkDevice(), sampler.second, nullptr);
         }
-        samplers.clear();
     }
 } // namespace lve

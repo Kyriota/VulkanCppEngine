@@ -44,7 +44,7 @@ namespace lve
         Device &operator=(Device &&) = delete;
 
         VkCommandPool getCommandPool() { return commandPool; }
-        VkDevice device() { return device_; }
+        VkDevice vkDevice() { return device_; }
         VkSurfaceKHR surface() { return surface_; }
         VkQueue graphicsQueue() { return graphicsQueue_; }
         VkQueue presentQueue() { return presentQueue_; }

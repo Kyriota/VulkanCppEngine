@@ -149,7 +149,7 @@ namespace lve
 
     RenderSystem &RenderSystem::operator=(RenderSystem &&other)
     {
-        if (this->lveDevice.device() != other.lveDevice.device())
+        if (this->lveDevice.vkDevice() != other.lveDevice.vkDevice())
         {
             throw std::runtime_error("Moved RenderSystem objects must be on the same LveDevice");
         }
@@ -174,7 +174,7 @@ namespace lve
     {
         if (initialized)
         {
-            vkDestroyPipelineLayout(lveDevice.device(), graphicPipelineLayout, nullptr);
+            vkDestroyPipelineLayout(lveDevice.vkDevice(), graphicPipelineLayout, nullptr);
         }
     }
 
@@ -191,7 +191,7 @@ namespace lve
         pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-        if (vkCreatePipelineLayout(lveDevice.device(), &pipelineLayoutInfo, nullptr, &graphicPipelineLayout) !=
+        if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &graphicPipelineLayout) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout!");

@@ -32,7 +32,7 @@ namespace lve
         VkExtent2D windowExtent = lveWindow.getExtent();
         VkExtent2D swapChainExtent = lveSwapChain == nullptr ? VkExtent2D{0, 0} : lveSwapChain->getSwapChainExtent();
 
-        vkDeviceWaitIdle(lveDevice.device());
+        vkDeviceWaitIdle(lveDevice.vkDevice());
 
         if (lveSwapChain == nullptr)
         {
@@ -63,7 +63,7 @@ namespace lve
         allocInfo.commandPool = lveDevice.getCommandPool();
         allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
-        if (vkAllocateCommandBuffers(lveDevice.device(), &allocInfo, commandBuffers.data()) !=
+        if (vkAllocateCommandBuffers(lveDevice.vkDevice(), &allocInfo, commandBuffers.data()) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("failed to allocate command buffers!");
@@ -73,7 +73,7 @@ namespace lve
     void FrameManager::freeCommandBuffers()
     {
         vkFreeCommandBuffers(
-            lveDevice.device(),
+            lveDevice.vkDevice(),
             lveDevice.getCommandPool(),
             static_cast<uint32_t>(commandBuffers.size()),
             commandBuffers.data());

@@ -118,7 +118,7 @@ void RendererApp::run()
         }
     }
 
-    vkDeviceWaitIdle(lveDevice.device());
+    vkDeviceWaitIdle(lveDevice.vkDevice());
 }
 
 void RendererApp::loadGameObjects()

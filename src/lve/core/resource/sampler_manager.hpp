@@ -12,29 +12,18 @@ namespace lve
         DEFAULT,
     };
 
-    struct SamplerKey
-    {
-        SamplerType type;
-        VkDevice device;
-
-        bool operator==(const SamplerKey &other) const
-        {
-            return type == other.type && device == other.device;
-        }
-    };
-
-    class SamplerManager // Static class to manage VkSampler objects
+    class SamplerManager
     {
     public:
-        static VkSampler getSampler(SamplerKey key);
-        static void clearSamplers();
+        SamplerManager(lve::Device &device) : lveDevice(device) {}
+        ~SamplerManager();
+        VkSampler getSampler(SamplerType type);
 
     private:
-        SamplerManager() = delete;
-
-        static VkSampler getDefaultSampler(VkDevice device);
-        static void createSamplerWithKey(SamplerKey key);
-        static void createSamplerWithInfo(VkDevice device, VkSamplerCreateInfo &createInfo, VkSampler &sampler);
-        static std::unordered_map<SamplerKey, VkSampler> samplers;
+        lve::Device &lveDevice;
+        VkSampler getDefaultSampler();
+        void createSampler(SamplerType type);
+        void createSamplerWithInfo(VkSamplerCreateInfo &createInfo, VkSampler &sampler);
+        std::unordered_map<SamplerType, VkSampler> samplers;
     };
 } // namespace lve

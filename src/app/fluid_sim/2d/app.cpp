@@ -108,11 +108,6 @@ FluidSim2DApp::FluidSim2DApp()
         "my_compute_shader.comp.spv");
 }
 
-FluidSim2DApp::~FluidSim2DApp()
-{
-    lve::SamplerManager::clearSamplers();
-}
-
 void FluidSim2DApp::run()
 {
     std::thread renderThread(&FluidSim2DApp::renderLoop, this);
@@ -122,13 +117,13 @@ void FluidSim2DApp::run()
     isRunning = false;
     renderThread.join();
 
-    vkDeviceWaitIdle(lveDevice.device());
+    vkDeviceWaitIdle(lveDevice.vkDevice());
 }
 
 void FluidSim2DApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
 {
     VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
-        0, lve::SamplerManager::getSampler({lve::SamplerType::DEFAULT, lveDevice.device()}));
+        0, samplerManager.getSampler({lve::SamplerType::DEFAULT}));
     auto particleBufferInfo = particleBuffer->descriptorInfo();
     auto neighborBufferInfo = neighborBuffer->descriptorInfo();
 

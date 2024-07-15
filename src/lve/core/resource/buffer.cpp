@@ -54,8 +54,8 @@ namespace lve
     Buffer::~Buffer()
     {
         unmap();
-        vkDestroyBuffer(lveDevice.device(), buffer, nullptr);
-        vkFreeMemory(lveDevice.device(), memory, nullptr);
+        vkDestroyBuffer(lveDevice.vkDevice(), buffer, nullptr);
+        vkFreeMemory(lveDevice.vkDevice(), memory, nullptr);
     }
 
     void Buffer::createBuffer(
@@ -71,25 +71,25 @@ namespace lve
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(lveDevice.device(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+        if (vkCreateBuffer(lveDevice.vkDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create vertex buffer!");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(lveDevice.device(), buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(lveDevice.vkDevice(), buffer, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = lveDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(lveDevice.device(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+        if (vkAllocateMemory(lveDevice.vkDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to allocate vertex buffer memory!");
         }
 
-        vkBindBufferMemory(lveDevice.device(), buffer, bufferMemory, 0);
+        vkBindBufferMemory(lveDevice.vkDevice(), buffer, bufferMemory, 0);
     }
 
     /**
@@ -104,7 +104,7 @@ namespace lve
     VkResult Buffer::map(VkDeviceSize size, VkDeviceSize offset)
     {
         assert(buffer && memory && "Called map on buffer before create");
-        return vkMapMemory(lveDevice.device(), memory, offset, size, 0, &mapped);
+        return vkMapMemory(lveDevice.vkDevice(), memory, offset, size, 0, &mapped);
     }
 
     /**
@@ -116,7 +116,7 @@ namespace lve
     {
         if (mapped)
         {
-            vkUnmapMemory(lveDevice.device(), memory);
+            vkUnmapMemory(lveDevice.vkDevice(), memory);
             mapped = nullptr;
         }
     }
@@ -179,7 +179,7 @@ namespace lve
         mappedRange.memory = memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkFlushMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+        return vkFlushMappedMemoryRanges(lveDevice.vkDevice(), 1, &mappedRange);
     }
 
     /**
@@ -200,7 +200,7 @@ namespace lve
         mappedRange.memory = memory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        return vkInvalidateMappedMemoryRanges(lveDevice.device(), 1, &mappedRange);
+        return vkInvalidateMappedMemoryRanges(lveDevice.vkDevice(), 1, &mappedRange);
     }
 
     /**

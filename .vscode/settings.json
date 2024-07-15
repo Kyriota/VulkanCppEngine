@@ -5,6 +5,7 @@
     },
     "files.associations": {
         "*.ejs": "html",
-        "*.tpp": "cpp"
+        "*.tpp": "cpp",
+        "stdexcept": "cpp"
     }
 }

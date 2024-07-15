@@ -48,7 +48,7 @@ namespace lve
         descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
 
         if (vkCreateDescriptorSetLayout(
-                lveDevice.device(),
+                lveDevice.vkDevice(),
                 &descriptorSetLayoutInfo,
                 nullptr,
                 &descriptorSetLayout) != VK_SUCCESS)
@@ -59,7 +59,7 @@ namespace lve
 
     DescriptorSetLayout::~DescriptorSetLayout()
     {
-        vkDestroyDescriptorSetLayout(lveDevice.device(), descriptorSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(lveDevice.vkDevice(), descriptorSetLayout, nullptr);
     }
 
     // *************** Descriptor Pool Builder *********************
@@ -104,7 +104,7 @@ namespace lve
         descriptorPoolInfo.maxSets = maxSets;
         descriptorPoolInfo.flags = poolFlags;
 
-        if (vkCreateDescriptorPool(lveDevice.device(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
+        if (vkCreateDescriptorPool(lveDevice.vkDevice(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
             VK_SUCCESS)
         {
             throw std::runtime_error("failed to create descriptor pool!");
@@ -113,7 +113,7 @@ namespace lve
 
     DescriptorPool::~DescriptorPool()
     {
-        vkDestroyDescriptorPool(lveDevice.device(), descriptorPool, nullptr);
+        vkDestroyDescriptorPool(lveDevice.vkDevice(), descriptorPool, nullptr);
     }
 
     bool DescriptorPool::allocateDescriptorSet(
@@ -127,7 +127,7 @@ namespace lve
 
         // Might want to create a "DescriptorPoolManager" class that handles this case, and builds
         // a new pool whenever an old pool fills up. But this is beyond our current scope
-        if (vkAllocateDescriptorSets(lveDevice.device(), &allocInfo, &descriptorSet) != VK_SUCCESS)
+        if (vkAllocateDescriptorSets(lveDevice.vkDevice(), &allocInfo, &descriptorSet) != VK_SUCCESS)
         {
             return false;
         }
@@ -137,7 +137,7 @@ namespace lve
     void DescriptorPool::freeDescriptorSet(std::vector<VkDescriptorSet> &descriptorSet) const
     {
         vkFreeDescriptorSets(
-            lveDevice.device(),
+            lveDevice.vkDevice(),
             descriptorPool,
             static_cast<uint32_t>(descriptorSet.size()),
             descriptorSet.data());
@@ -145,7 +145,7 @@ namespace lve
 
     void DescriptorPool::resetPool()
     {
-        vkResetDescriptorPool(lveDevice.device(), descriptorPool, 0);
+        vkResetDescriptorPool(lveDevice.vkDevice(), descriptorPool, 0);
     }
 
     // *************** Descriptor Writer *********************
@@ -203,7 +203,7 @@ namespace lve
         {
             write.dstSet = set;
         }
-        vkUpdateDescriptorSets(pool.lveDevice.device(), writes.size(), writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(pool.lveDevice.vkDevice(), writes.size(), writes.data(), 0, nullptr);
     }
 
 } // namespace lve

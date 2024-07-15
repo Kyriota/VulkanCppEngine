@@ -16,7 +16,7 @@ namespace lve
 
         extent = imageCreateInfo.extent;
 
-        if (vkCreateImage(lveDevice.device(), &imageCreateInfo, nullptr, &image) != VK_SUCCESS)
+        if (vkCreateImage(lveDevice.vkDevice(), &imageCreateInfo, nullptr, &image) != VK_SUCCESS)
         {
             throw std::runtime_error("Failed to create image");
         }
@@ -51,7 +51,7 @@ namespace lve
 
     Image &Image::operator=(Image &&other)
     {
-        if (this->lveDevice.device() != other.lveDevice.device())
+        if (this->lveDevice.vkDevice() != other.lveDevice.vkDevice())
         {
             throw std::runtime_error("Moved LveImage objects must be on the same Device");
         }
@@ -96,7 +96,7 @@ namespace lve
         }
 
         VkImageView imageView;
-        if (vkCreateImageView(lveDevice.device(), pImageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS)
+        if (vkCreateImageView(lveDevice.vkDevice(), pImageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS)
         {
             throw std::runtime_error("Failed to create texture image view");
         }
@@ -164,7 +164,7 @@ namespace lve
     void Image::allocateMemory(VkMemoryPropertyFlags memPropertyFlags)
     {
         VkMemoryRequirements memoryRequirements;
-        vkGetImageMemoryRequirements(lveDevice.device(), image, &memoryRequirements);
+        vkGetImageMemoryRequirements(lveDevice.vkDevice(), image, &memoryRequirements);
 
         VkMemoryAllocateInfo memoryAllocateInfo{};
         memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -173,12 +173,12 @@ namespace lve
             memoryRequirements.memoryTypeBits,
             memPropertyFlags);
 
-        if (vkAllocateMemory(lveDevice.device(), &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS)
+        if (vkAllocateMemory(lveDevice.vkDevice(), &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS)
         {
             throw std::runtime_error("Failed to allocate image memory");
         }
 
-        vkBindImageMemory(lveDevice.device(), image, imageMemory, 0);
+        vkBindImageMemory(lveDevice.vkDevice(), image, imageMemory, 0);
     }
 
     void Image::cleanUp()
@@ -190,9 +190,9 @@ namespace lve
 
         for (auto imageView : imageViews)
         {
-            vkDestroyImageView(lveDevice.device(), imageView.second, nullptr);
+            vkDestroyImageView(lveDevice.vkDevice(), imageView.second, nullptr);
         }
-        vkDestroyImage(lveDevice.device(), image, nullptr);
-        vkFreeMemory(lveDevice.device(), imageMemory, nullptr);
+        vkDestroyImage(lveDevice.vkDevice(), image, nullptr);
+        vkFreeMemory(lveDevice.vkDevice(), imageMemory, nullptr);
     }
 } // namespace lve

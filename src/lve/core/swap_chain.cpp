@@ -40,43 +40,43 @@ namespace lve
     {
         for (auto imageView : swapChainImageViews)
         {
-            vkDestroyImageView(device.device(), imageView, nullptr);
+            vkDestroyImageView(device.vkDevice(), imageView, nullptr);
         }
         swapChainImageViews.clear();
 
         if (swapChain != nullptr)
         {
-            vkDestroySwapchainKHR(device.device(), swapChain, nullptr);
+            vkDestroySwapchainKHR(device.vkDevice(), swapChain, nullptr);
             swapChain = nullptr;
         }
 
         for (auto framebuffer : swapChainFramebuffers)
         {
-            vkDestroyFramebuffer(device.device(), framebuffer, nullptr);
+            vkDestroyFramebuffer(device.vkDevice(), framebuffer, nullptr);
         }
 
-        vkDestroyRenderPass(device.device(), renderPass, nullptr);
+        vkDestroyRenderPass(device.vkDevice(), renderPass, nullptr);
 
         // cleanup synchronization objects
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            vkDestroySemaphore(device.device(), renderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(device.device(), imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(device.device(), inFlightFences[i], nullptr);
+            vkDestroySemaphore(device.vkDevice(), renderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(device.vkDevice(), imageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(device.vkDevice(), inFlightFences[i], nullptr);
         }
     }
 
     VkResult SwapChain::acquireNextImage(uint32_t *imageIndex)
     {
         vkWaitForFences(
-            device.device(),
+            device.vkDevice(),
             1,
             &inFlightFences[currentFrame],
             VK_TRUE,
             std::numeric_limits<uint64_t>::max());
 
         VkResult result = vkAcquireNextImageKHR(
-            device.device(),
+            device.vkDevice(),
             swapChain,
             std::numeric_limits<uint64_t>::max(),
             imageAvailableSemaphores[currentFrame], // must be a not signaled semaphore
@@ -90,7 +90,7 @@ namespace lve
     {
         if (imagesInFlight[*imageIndex] != VK_NULL_HANDLE)
         {
-            vkWaitForFences(device.device(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
+            vkWaitForFences(device.vkDevice(), 1, &imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[*imageIndex] = inFlightFences[currentFrame];
 
@@ -110,7 +110,7 @@ namespace lve
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
+        vkResetFences(device.vkDevice(), 1, &inFlightFences[currentFrame]);
         if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
             VK_SUCCESS)
         {
@@ -186,7 +186,7 @@ namespace lve
 
         createInfo.oldSwapchain = oldSwapChain == nullptr ? VK_NULL_HANDLE : oldSwapChain->swapChain;
 
-        if (vkCreateSwapchainKHR(device.device(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
+        if (vkCreateSwapchainKHR(device.vkDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create swap chain!");
         }
@@ -195,9 +195,9 @@ namespace lve
         // allowed to create a swap chain with more. That's why we'll first query the final number of
         // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
         // retrieve the handles.
-        vkGetSwapchainImagesKHR(device.device(), swapChain, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(device.vkDevice(), swapChain, &imageCount, nullptr);
         swapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(device.device(), swapChain, &imageCount, swapChainImages.data());
+        vkGetSwapchainImagesKHR(device.vkDevice(), swapChain, &imageCount, swapChainImages.data());
 
         swapChainImageFormat = surfaceFormat.format;
         swapChainExtent = extent;
@@ -219,7 +219,7 @@ namespace lve
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(device.device(), &viewInfo, nullptr, &swapChainImageViews[i]) !=
+            if (vkCreateImageView(device.vkDevice(), &viewInfo, nullptr, &swapChainImageViews[i]) !=
                 VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create texture image view!");
@@ -284,7 +284,7 @@ namespace lve
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(device.device(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(device.vkDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create render pass!");
         }
@@ -308,7 +308,7 @@ namespace lve
             framebufferInfo.layers = 1;
 
             if (vkCreateFramebuffer(
-                    device.device(),
+                    device.vkDevice(),
                     &framebufferInfo,
                     nullptr,
                     &swapChainFramebuffers[i]) != VK_SUCCESS)
@@ -382,11 +382,11 @@ namespace lve
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            if (vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
+            if (vkCreateSemaphore(device.vkDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
                     VK_SUCCESS ||
-                vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
+                vkCreateSemaphore(device.vkDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
                     VK_SUCCESS ||
-                vkCreateFence(device.device(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+                vkCreateFence(device.vkDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create synchronization objects for a frame!");
             }
