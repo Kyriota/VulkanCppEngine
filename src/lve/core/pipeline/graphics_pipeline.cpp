@@ -52,8 +52,7 @@ namespace lve
         this->multisampleInfo.pNext = nullptr;
 
         this->colorBlendAttachment.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT;
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         this->colorBlendAttachment.blendEnable = VK_FALSE;
         this->colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
         this->colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -90,8 +89,7 @@ namespace lve
         this->dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
         this->dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         this->dynamicStateInfo.pDynamicStates = this->dynamicStateEnables.data();
-        this->dynamicStateInfo.dynamicStateCount =
-            static_cast<uint32_t>(this->dynamicStateEnables.size());
+        this->dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(this->dynamicStateEnables.size());
         this->dynamicStateInfo.flags = 0;
         this->dynamicStateInfo.pNext = nullptr;
 
@@ -104,9 +102,11 @@ namespace lve
         this->fragFilePath = "";
     }
 
-    GraphicPipeline::GraphicPipeline(Device &device,
-                                     const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
-                                     const GraphicPipelineConfigInfo &pipelineConfigInfo)
+    GraphicPipeline::GraphicPipeline(
+        Device &device,
+        const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
+        const GraphicPipelineConfigInfo &pipelineConfigInfo
+    )
         : lveDevice{device}
     {
         createGraphicPipelineLayout(layoutConfigInfo);
@@ -172,42 +172,40 @@ namespace lve
         }
     }
 
-    void GraphicPipeline::createGraphicPipelineLayout(
-        const GraphicPipelineLayoutConfigInfo &layoutConfigInfo)
+    void GraphicPipeline::createGraphicPipelineLayout(const GraphicPipelineLayoutConfigInfo &layoutConfigInfo)
     {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         uint32_t layoutCount = static_cast<uint32_t>(layoutConfigInfo.descriptorSetLayouts.size());
         pipelineLayoutInfo.setLayoutCount = layoutCount;
-        pipelineLayoutInfo.pSetLayouts =
-            layoutCount == 0 ? nullptr : layoutConfigInfo.descriptorSetLayouts.data();
-        uint32_t pushConstantRangeCount =
-            static_cast<uint32_t>(layoutConfigInfo.pushConstantRanges.size());
+        pipelineLayoutInfo.pSetLayouts = layoutCount == 0 ? nullptr : layoutConfigInfo.descriptorSetLayouts.data();
+        uint32_t pushConstantRangeCount = static_cast<uint32_t>(layoutConfigInfo.pushConstantRanges.size());
         pipelineLayoutInfo.pushConstantRangeCount = pushConstantRangeCount;
         pipelineLayoutInfo.pPushConstantRanges =
             pushConstantRangeCount == 0 ? nullptr : layoutConfigInfo.pushConstantRanges.data();
 
-        if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr,
-                                   &graphicPipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &graphicPipelineLayout) !=
+            VK_SUCCESS)
         {
             throw std::runtime_error("failed to create pipeline layout!");
         }
     }
 
-    void
-    GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pipelineConfigInfo)
+    void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pipelineConfigInfo)
     {
-        assert(graphicPipelineLayout != VK_NULL_HANDLE &&
-               "Cannot create graphics pipeline: pipelineLayout not initialized yet");
-        assert(pipelineConfigInfo.renderPass != VK_NULL_HANDLE &&
-               "Cannot create graphics pipeline: renderPass not provided in pipelineConfigInfo");
+        assert(
+            graphicPipelineLayout != VK_NULL_HANDLE &&
+            "Cannot create graphics pipeline: pipelineLayout not initialized yet"
+        );
+        assert(
+            pipelineConfigInfo.renderPass != VK_NULL_HANDLE &&
+            "Cannot create graphics pipeline: renderPass not provided in pipelineConfigInfo"
+        );
 
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
-        std::vector<char> vertCode =
-            io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilePath);
-        std::vector<char> fragCode =
-            io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilePath);
+        std::vector<char> vertCode = io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilePath);
+        std::vector<char> fragCode = io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilePath);
 
         createShaderModule(lveDevice, vertCode, &vertShaderModule);
         createShaderModule(lveDevice, fragCode, &fragShaderModule);
@@ -232,10 +230,8 @@ namespace lve
         auto attributeDescriptions = pipelineConfigInfo.vertexAttributeDescriptions;
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexAttributeDescriptionCount =
-            static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.vertexBindingDescriptionCount =
-            static_cast<uint32_t>(bindingDescriptions.size());
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
         vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 
@@ -259,21 +255,27 @@ namespace lve
         pipelineInfo.basePipelineIndex = -1;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo,
-                                      nullptr, &graphicPipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(
+                lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicPipeline
+            ) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create graphics pipeline");
         }
     }
 
-    void renderGameObjects(VkCommandBuffer cmdBuffer, const VkDescriptorSet *pGlobalDescriptorSet,
-                           GameObject::Map &gameObjects, VkPipelineLayout graphicPipelineLayout,
-                           GraphicPipeline *graphicPipeline)
+    void renderGameObjects(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        GameObject::Map &gameObjects,
+        VkPipelineLayout graphicPipelineLayout,
+        GraphicPipeline *graphicPipeline
+    )
     {
         bind(cmdBuffer, graphicPipeline->getPipeline());
 
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout,
-                                0, 1, pGlobalDescriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(
+            cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
+        );
 
         for (auto &kv : gameObjects)
         {
@@ -284,41 +286,61 @@ namespace lve
             push.modelMatrix = obj.transform.mat4();
             push.normalMatrix = obj.transform.normalMatrix();
 
-            vkCmdPushConstants(cmdBuffer, graphicPipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                               sizeof(SimplePushConstantData), &push);
+            vkCmdPushConstants(
+                cmdBuffer,
+                graphicPipelineLayout,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                0,
+                sizeof(SimplePushConstantData),
+                &push
+            );
             obj.model->bind(cmdBuffer);
             obj.model->draw(cmdBuffer);
         }
     }
 
-    void renderScreenTexture(VkCommandBuffer cmdBuffer, const VkDescriptorSet *pGlobalDescriptorSet,
-                             VkPipelineLayout graphicPipelineLayout,
-                             GraphicPipeline *graphicPipeline, VkExtent2D extent)
+    void renderScreenTexture(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        VkPipelineLayout graphicPipelineLayout,
+        GraphicPipeline *graphicPipeline,
+        VkExtent2D extent
+    )
     {
         bind(cmdBuffer, graphicPipeline->getPipeline());
 
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout,
-                                0, 1, pGlobalDescriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(
+            cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
+        );
 
         ScreenExtentPushConstantData push{};
         push.screenExtent = glm::vec2(extent.width, extent.height);
 
-        vkCmdPushConstants(cmdBuffer, graphicPipelineLayout,
-                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                           sizeof(ScreenExtentPushConstantData), &push);
+        vkCmdPushConstants(
+            cmdBuffer,
+            graphicPipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(ScreenExtentPushConstantData),
+            &push
+        );
 
         vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
     }
 
-    void renderLines(VkCommandBuffer cmdBuffer, const VkDescriptorSet *pGlobalDescriptorSet,
-                     VkPipelineLayout graphicPipelineLayout, GraphicPipeline *graphicPipeline,
-                     LineCollection &lineCollection)
+    void renderLines(
+        VkCommandBuffer cmdBuffer,
+        const VkDescriptorSet *pGlobalDescriptorSet,
+        VkPipelineLayout graphicPipelineLayout,
+        GraphicPipeline *graphicPipeline,
+        LineCollection &lineCollection
+    )
     {
         bind(cmdBuffer, graphicPipeline->getPipeline());
 
-        vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout,
-                                0, 1, pGlobalDescriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(
+            cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicPipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
+        );
 
         lineCollection.bind(cmdBuffer);
         lineCollection.draw(cmdBuffer);

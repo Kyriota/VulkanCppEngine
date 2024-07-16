@@ -2,8 +2,8 @@
 #include "lve/util/math.hpp"
 
 // libs
-#include "include/tiny_obj_loader.hpp"
 #include "include/glm.hpp"
+#include "include/tiny_obj_loader.hpp"
 
 // std
 #include <cassert>
@@ -11,9 +11,8 @@
 #include <unordered_map>
 
 namespace std
-{   
-    template <>
-    struct hash<lve::Model::Vertex>
+{
+    template <> struct hash<lve::Model::Vertex>
     {
         size_t operator()(lve::Model::Vertex const &vertex) const
         {
@@ -33,8 +32,7 @@ namespace lve
         createIndexBuffer(builder.indices);
     }
 
-    std::unique_ptr<Model> Model::createModelFromFile(
-        Device &device, const std::string &filePath)
+    std::unique_ptr<Model> Model::createModelFromFile(Device &device, const std::string &filePath)
     {
         Builder builder{};
         builder.loadModel(filePath);
@@ -64,7 +62,8 @@ namespace lve
             vertexSize,
             vertexCount,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
 
         vertexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
     }
@@ -98,7 +97,8 @@ namespace lve
             indexSize,
             indexCount,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
 
         indexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
     }

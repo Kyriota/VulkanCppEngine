@@ -4,11 +4,11 @@
 #include "include/glfw.hpp"
 
 // std
-#include <string>
-#include <mutex>
 #include <condition_variable>
-#include <unordered_map>
 #include <functional>
+#include <mutex>
+#include <string>
+#include <unordered_map>
 
 namespace lve
 {
@@ -31,11 +31,19 @@ namespace lve
         bool isKeyRepeated(int keyCode) const { return keyState.at(keyCode) == KeyState::REPEAT; }
         bool isKeyUpdated(int keyCode) const { return keyUpdated.at(keyCode); }
         void clearKeyUpdate(int keyCode) { keyUpdated[keyCode] = false; }
-        void oneTimeKeyUse(int keyCode, std::function<void()> callback, KeyState targetState=KeyState::PRESS);
-        
+        void oneTimeKeyUse(int keyCode, std::function<void()> callback, KeyState targetState = KeyState::PRESS);
+
         KeyState getMouseButtonState(int button) const { return mouseButtonState.at(button); }
-        void getMousePosition(double &x, double &y) const { x = mouseX; y = mouseY; }
-        void getMousePositionDelta(double &dx, double &dy) const { dx = mouseDeltaX; dy = mouseDeltaY; }
+        void getMousePosition(double &x, double &y) const
+        {
+            x = mouseX;
+            y = mouseY;
+        }
+        void getMousePositionDelta(double &dx, double &dy) const
+        {
+            dx = mouseDeltaX;
+            dy = mouseDeltaY;
+        }
         bool isMouseButtonPressed(int button) const { return mouseButtonState.at(button) == KeyState::PRESS; }
         bool isMouseButtonReleased(int button) const { return mouseButtonState.at(button) == KeyState::RELEASE; }
         bool isMouseButtonUpdated(int button) const { return mouseButtonUpdated.at(button); }
@@ -86,7 +94,7 @@ namespace lve
         void mainThreadGlfwEventLoop();
 
         Input input;
-        
+
     private:
         void initWindow(int width, int height);
 

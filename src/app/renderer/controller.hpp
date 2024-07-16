@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lve/go/game_object.hpp"
 #include "lve/core/window.hpp"
+#include "lve/go/game_object.hpp"
 
 class KeyboardMovementController
 {

@@ -3,8 +3,8 @@
 #include "lve/core/device.hpp"
 
 // std
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace lve
 {

@@ -53,7 +53,10 @@ namespace lve
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physicalDevice); }
         VkFormat findSupportedFormat(
-            const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+            const std::vector<VkFormat> &candidates,
+            VkImageTiling tiling,
+            VkFormatFeatureFlags features
+        );
 
         VkCommandBuffer beginSingleTimeCommands();
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -87,7 +90,8 @@ namespace lve
         VkQueue graphicsQueue_;
         VkQueue presentQueue_;
 
-        const std::vector<const char *> debugLayers = {"VK_LAYER_KHRONOS_validation"}; // add VK_LAYER_LUNARG_monitor to show frame rate
+        const std::vector<const char *> debugLayers = {"VK_LAYER_KHRONOS_validation"
+        }; // add VK_LAYER_LUNARG_monitor to show frame rate
         const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     };
 

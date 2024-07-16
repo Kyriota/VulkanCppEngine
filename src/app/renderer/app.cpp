@@ -42,9 +42,13 @@ void RendererApp::run()
 
     for (int i = 0; i < uboBuffers.size(); i++)
     {
-        uboBuffers[i] = std::make_unique<lve::Buffer>(lveDevice, sizeof(GlobalUbo), 1,
-                                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        uboBuffers[i] = std::make_unique<lve::Buffer>(
+            lveDevice,
+            sizeof(GlobalUbo),
+            1,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+        );
         uboBuffers[i]->map();
     }
 
@@ -67,10 +71,14 @@ void RendererApp::run()
     lve::GraphicPipeline simpleRenderPipeline{
         lveDevice,
         lve::GraphicPipelineLayoutConfigInfo{
-            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()},
-            .pushConstantRanges = {{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                    sizeof(lve::SimplePushConstantData)}}},
-        graphicPipelineConfigInfo};
+                                             .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()},
+                                             .pushConstantRanges =
+                {{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                  0,
+                  sizeof(lve::SimplePushConstantData)}}
+        },
+        graphicPipelineConfigInfo
+    };
 
     lve::Camera camera{};
 
@@ -108,8 +116,13 @@ void RendererApp::run()
             // render
             lveRenderer.beginSwapChainRenderPass(commandBuffer);
 
-            renderGameObjects(commandBuffer, &globalDescriptorSets[frameIndex], gameObjects,
-                              simpleRenderPipeline.getPipelineLayout(), &simpleRenderPipeline);
+            renderGameObjects(
+                commandBuffer,
+                &globalDescriptorSets[frameIndex],
+                gameObjects,
+                simpleRenderPipeline.getPipelineLayout(),
+                &simpleRenderPipeline
+            );
 
             lveRenderer.endSwapChainRenderPass(commandBuffer);
             lveRenderer.endFrame();

@@ -5,10 +5,7 @@
 
 namespace lve
 {
-    Image::Image(
-        Device &device,
-        VkImageCreateInfo imageCreateInfo,
-        VkMemoryPropertyFlags memPropertyFlags)
+    Image::Image(Device &device, VkImageCreateInfo imageCreateInfo, VkMemoryPropertyFlags memPropertyFlags)
         : lveDevice{device}
     {
         VkImageLayout initialLayout = imageCreateInfo.initialLayout;
@@ -31,10 +28,7 @@ namespace lve
         }
     }
 
-    Image::~Image()
-    {
-        cleanUp();
-    }
+    Image::~Image() { cleanUp(); }
 
     Image::Image(Image &&other) noexcept
         : lveDevice{other.lveDevice},
@@ -76,14 +70,9 @@ namespace lve
         return *this;
     }
 
-    bool Image::hasImageView(int id) const
-    {
-        return imageViews.find(id) != imageViews.end();
-    }
+    bool Image::hasImageView(int id) const { return imageViews.find(id) != imageViews.end(); }
 
-    void Image::createImageView(
-        int id,
-        const VkImageViewCreateInfo *pImageViewCreateInfo)
+    void Image::createImageView(int id, const VkImageViewCreateInfo *pImageViewCreateInfo)
     {
         if (!initialized)
         {
@@ -146,7 +135,8 @@ namespace lve
             0,
             nullptr,
             1,
-            &imageMemoryBarrier);
+            &imageMemoryBarrier
+        );
 
         lveDevice.endSingleTimeCommands(commandBuffer);
 
@@ -156,9 +146,8 @@ namespace lve
     VkDescriptorImageInfo Image::getDescriptorImageInfo(int imageViewId, VkSampler sampler) const
     {
         return VkDescriptorImageInfo{
-            .sampler = sampler,
-            .imageView = getImageView(imageViewId),
-            .imageLayout = imageLayout};
+            .sampler = sampler, .imageView = getImageView(imageViewId), .imageLayout = imageLayout
+        };
     }
 
     void Image::allocateMemory(VkMemoryPropertyFlags memPropertyFlags)
@@ -169,9 +158,8 @@ namespace lve
         VkMemoryAllocateInfo memoryAllocateInfo{};
         memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memoryAllocateInfo.allocationSize = memoryRequirements.size;
-        memoryAllocateInfo.memoryTypeIndex = lveDevice.findMemoryType(
-            memoryRequirements.memoryTypeBits,
-            memPropertyFlags);
+        memoryAllocateInfo.memoryTypeIndex =
+            lveDevice.findMemoryType(memoryRequirements.memoryTypeBits, memPropertyFlags);
 
         if (vkAllocateMemory(lveDevice.vkDevice(), &memoryAllocateInfo, nullptr, &imageMemory) != VK_SUCCESS)
         {

@@ -39,7 +39,8 @@ namespace lve
         uint32_t instanceCount,
         VkBufferUsageFlags usageFlags,
         VkMemoryPropertyFlags memoryPropertyFlags,
-        VkDeviceSize minOffsetAlignment)
+        VkDeviceSize minOffsetAlignment
+    )
         : lveDevice{device},
           instanceSize{instanceSize},
           instanceCount{instanceCount},
@@ -63,7 +64,8 @@ namespace lve
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties,
         VkBuffer &buffer,
-        VkDeviceMemory &bufferMemory)
+        VkDeviceMemory &bufferMemory
+    )
     {
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -229,7 +231,7 @@ namespace lve
      */
     void Buffer::writeToBufferOrdered(void *data, VkDeviceSize size)
     {
-        assert (recordedOffset + size <= bufferSize && "Buffer overflow");
+        assert(recordedOffset + size <= bufferSize && "Buffer overflow");
 
         writeToBuffer(data, size, recordedOffset);
         addRecordedOffset(size);
@@ -242,10 +244,7 @@ namespace lve
      * @param index Used in offset calculation
      *
      */
-    void Buffer::writeToIndex(void *data, int index)
-    {
-        writeToBuffer(data, instanceSize, index * alignmentSize);
-    }
+    void Buffer::writeToIndex(void *data, int index) { writeToBuffer(data, instanceSize, index * alignmentSize); }
 
     /**
      *  Flush the memory range at index * alignmentSize of the buffer to make it visible to the device
@@ -276,9 +275,6 @@ namespace lve
      *
      * @return VkResult of the invalidate call
      */
-    VkResult Buffer::invalidateIndex(int index)
-    {
-        return invalidate(alignmentSize, index * alignmentSize);
-    }
+    VkResult Buffer::invalidateIndex(int index) { return invalidate(alignmentSize, index * alignmentSize); }
 
 } // namespace lve

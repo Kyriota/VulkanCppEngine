@@ -1,20 +1,20 @@
 #pragma once
 
 #include "app/fluid_sim/2d/fluid_particle_system.hpp"
+#include "lve/core/device.hpp"
+#include "lve/core/frame_manager.hpp"
+#include "lve/core/pipeline/compute_pipeline.hpp"
+#include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/resource/descriptors.hpp"
 #include "lve/core/resource/image.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
-#include "lve/core/device.hpp"
-#include "lve/core/frame_manager.hpp"
 #include "lve/core/window.hpp"
-#include "lve/core/pipeline/graphics_pipeline.hpp"
-#include "lve/core/pipeline/compute_pipeline.hpp"
 #include "lve/go/geo/line.hpp"
 
 // std
+#include <atomic>
 #include <memory>
 #include <vector>
-#include <atomic>
 
 class FluidSim2DApp
 {
@@ -43,7 +43,8 @@ private:
     struct FpsCounter
     {
         int frameCount = 0;
-        std::chrono::_V2::system_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+        std::chrono::_V2::system_clock::time_point startTime =
+            std::chrono::high_resolution_clock::now();
     };
     float maxFrameTime = 1.0 / 30.0;
     FpsCounter fpsCounter;

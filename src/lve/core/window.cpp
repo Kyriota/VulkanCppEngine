@@ -13,7 +13,7 @@ namespace lve
             keyState[i] = KeyState::RELEASE;
             keyUpdated[i] = false;
         }
-        
+
         for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
         {
             mouseButtonState[i] = KeyState::RELEASE;
@@ -34,7 +34,7 @@ namespace lve
     {
         if (key == GLFW_KEY_UNKNOWN)
             return;
-        
+
         if (action == GLFW_REPEAT)
             keyState[key] = KeyState::REPEAT;
         else if (action == GLFW_RELEASE)
@@ -64,10 +64,7 @@ namespace lve
     }
 
     // LveWindow Implementation
-    Window::Window(int w, int h, std::string name) : windowName{name}
-    {
-        initWindow(w, h);
-    }
+    Window::Window(int w, int h, std::string name) : windowName{name} { initWindow(w, h); }
 
     Window::~Window()
     {
@@ -85,29 +82,20 @@ namespace lve
         glfwSetWindowUserPointer(window, this);
 
         // set callbacks
-        glfwSetKeyCallback(
-            window,
-            [](GLFWwindow *window, int key, int scancode, int action, int mods)
-            {
-                Window *lveWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-                lveWindow->input.handleKeyEvent(key, action);
-            });
+        glfwSetKeyCallback(window, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+            Window *lveWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+            lveWindow->input.handleKeyEvent(key, action);
+        });
 
-        glfwSetMouseButtonCallback(
-            window,
-            [](GLFWwindow *window, int button, int action, int mods)
-            {
-                Window *lveWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-                lveWindow->input.handleMouseButtonEvent(button, action);
-            });
+        glfwSetMouseButtonCallback(window, [](GLFWwindow *window, int button, int action, int mods) {
+            Window *lveWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+            lveWindow->input.handleMouseButtonEvent(button, action);
+        });
 
-        glfwSetCursorPosCallback(
-            window,
-            [](GLFWwindow *window, double xpos, double ypos)
-            {
-                Window *lveWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-                lveWindow->input.handleCursorPositionEvent(xpos, ypos);
-            });
+        glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xpos, double ypos) {
+            Window *lveWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+            lveWindow->input.handleCursorPositionEvent(xpos, ypos);
+        });
     }
 
     void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface)
@@ -162,8 +150,5 @@ namespace lve
         glfwSetWindowTitle(window, title.c_str());
     }
 
-    void Window::resize(int width, int height)
-    {
-        glfwSetWindowSize(window, width, height);
-    }
+    void Window::resize(int width, int height) { glfwSetWindowSize(window, width, height); }
 } // namespace lve

@@ -13,9 +13,11 @@ namespace lve
     {
     public:
         ComputePipeline(Device &device) : Pipeline(device) {}
-        ComputePipeline(Device &device,
-                        const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
-                        const std::string &compFilePath);
+        ComputePipeline(
+            Device &device,
+            const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
+            const std::string &compFilePath
+        );
         ~ComputePipeline() { cleanUp(); }
 
         ComputePipeline(const ComputePipeline &) = delete;
@@ -24,9 +26,12 @@ namespace lve
         ComputePipeline(ComputePipeline &&other) noexcept;
         ComputePipeline &operator=(ComputePipeline &&other);
 
-        void dispatchComputePipeline(VkCommandBuffer cmdBuffer,
-                                     const VkDescriptorSet *pGlobalDescriptorSet, uint32_t width,
-                                     uint32_t height);
+        void dispatchComputePipeline(
+            VkCommandBuffer cmdBuffer,
+            const VkDescriptorSet *pGlobalDescriptorSet,
+            uint32_t width,
+            uint32_t height
+        );
 
     private:
         void release() override;

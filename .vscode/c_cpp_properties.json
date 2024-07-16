@@ -6,7 +6,7 @@
                 "${workspaceFolder}/src/**",
                 "${workspaceFolder}/vcpkg/installed/x64-mingw-static/include/",
                 "${workspaceFolder}/vcpkg/installed/x64-mingw-dynamic/include/",
-                "C:/VulkanSDK/Include/"
+                "${env:VULKAN_SDK}/Include/"
             ],
             "defines": [
                 "_DEBUG",

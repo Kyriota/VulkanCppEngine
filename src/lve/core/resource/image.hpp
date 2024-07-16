@@ -13,10 +13,7 @@ namespace lve
     class Image // wrapper for VkImage, VkDeviceMemory, and VkImageView
     {
     public:
-        Image(
-            Device &device,
-            VkImageCreateInfo imageCreateInfo,
-            VkMemoryPropertyFlags memPropertyFlags);
+        Image(Device &device, VkImageCreateInfo imageCreateInfo, VkMemoryPropertyFlags memPropertyFlags);
         Image(Device &device) : lveDevice(device) {}
 
         ~Image();
@@ -24,14 +21,12 @@ namespace lve
         Image(const Image &) = delete;
         Image &operator=(const Image &) = delete;
 
-        Image(Image&& other) noexcept;
-        Image& operator=(Image&& other);
+        Image(Image &&other) noexcept;
+        Image &operator=(Image &&other);
 
         bool hasImageView(int id) const;
 
-        void createImageView(
-            int id,
-            const VkImageViewCreateInfo *pImageViewCreateInfo);
+        void createImageView(int id, const VkImageViewCreateInfo *pImageViewCreateInfo);
 
         VkImageView getImageView(int id) const;
 

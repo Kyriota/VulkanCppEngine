@@ -57,9 +57,11 @@ namespace lve
     {
     public:
         GraphicPipeline(Device &device) : lveDevice(device) {}
-        GraphicPipeline(Device &device,
-                        const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
-                        const GraphicPipelineConfigInfo &pipelineConfigInfo);
+        GraphicPipeline(
+            Device &device,
+            const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
+            const GraphicPipelineConfigInfo &pipelineConfigInfo
+        );
         ~GraphicPipeline();
 
         GraphicPipeline(const GraphicPipeline &) = delete;
@@ -85,25 +87,28 @@ namespace lve
 
         bool initialized = false;
     };
-    
+
     void renderGameObjects(
         VkCommandBuffer cmdBuffer,
         const VkDescriptorSet *pGlobalDescriptorSet,
         GameObject::Map &gameObjects,
         VkPipelineLayout graphicPipelineLayout,
-        GraphicPipeline *graphicPipeline);
+        GraphicPipeline *graphicPipeline
+    );
 
     void renderScreenTexture(
         VkCommandBuffer cmdBuffer,
         const VkDescriptorSet *pGlobalDescriptorSet,
         VkPipelineLayout graphicPipelineLayout,
         GraphicPipeline *graphicPipeline,
-        VkExtent2D extent);
+        VkExtent2D extent
+    );
 
     void renderLines(
         VkCommandBuffer cmdBuffer,
         const VkDescriptorSet *pGlobalDescriptorSet,
         VkPipelineLayout graphicPipelineLayout,
         GraphicPipeline *graphicPipeline,
-        LineCollection &lineCollection);
+        LineCollection &lineCollection
+    );
 } // namespace lve

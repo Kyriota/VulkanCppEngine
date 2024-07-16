@@ -5,9 +5,9 @@
 
 // std
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
 namespace lve
 {
@@ -37,11 +37,9 @@ namespace lve
             void loadConfig(const std::string &yamlFilePath) { config = YAML::LoadFile(yamlFilePath); }
             void saveConfig(const std::string &yamlFilePath);
 
-            template <typename T>
-            T get(const std::string &key) const;
+            template <typename T> T get(const std::string &key) const;
 
-            template <typename T>
-            void set(const std::string &key, const T &value);
+            template <typename T> void set(const std::string &key, const T &value);
 
         private:
             YAML::Node config;

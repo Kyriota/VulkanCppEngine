@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lve/go/geo/line.hpp"
-#include "lve/util/math.hpp"
 #include "lve/util/file_io.hpp"
+#include "lve/util/math.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -133,7 +133,17 @@ private:
     glm::int2 pos2gridCoord(glm::vec2 position, float gridWidth) const;
     int hashGridCoord2D(glm::int2 gridCoord) const;
     void foreachNeighbor(size_t particleIndex, std::function<void(int)> callback);
-    const glm::int2 offset2D[9] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {0, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+    const glm::int2 offset2D[9] = {
+        {-1, -1},
+        { 0, -1},
+        { 1, -1},
+        {-1,  0},
+        { 0,  0},
+        { 1,  0},
+        {-1,  1},
+        { 0,  1},
+        { 1,  1}
+    };
 
     // external force
     struct RangeForceInfo

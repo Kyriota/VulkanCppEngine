@@ -6,10 +6,10 @@
 
 // std
 #include <cassert>
-#include <memory>
-#include <vector>
-#include <unordered_map>
 #include <functional>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
 namespace lve
 {
@@ -44,7 +44,10 @@ namespace lve
         void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
         using SwapChainResizedCallback = std::function<void(VkExtent2D)>;
-        void registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback) { swapChainResizedCallbacks[name] = callback; }
+        void registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback)
+        {
+            swapChainResizedCallbacks[name] = callback;
+        }
         void unregisterSwapChainResizedCallback(const std::string &name) { swapChainResizedCallbacks.erase(name); }
 
     private:

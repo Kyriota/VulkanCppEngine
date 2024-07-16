@@ -14,7 +14,8 @@ namespace lve
             uint32_t instanceCount,
             VkBufferUsageFlags usageFlags,
             VkMemoryPropertyFlags memoryPropertyFlags,
-            VkDeviceSize minOffsetAlignment = 1);
+            VkDeviceSize minOffsetAlignment = 1
+        );
         ~Buffer();
 
         Buffer(const Buffer &) = delete;
@@ -25,7 +26,8 @@ namespace lve
             VkBufferUsageFlags usage,
             VkMemoryPropertyFlags properties,
             VkBuffer &buffer,
-            VkDeviceMemory &bufferMemory);
+            VkDeviceMemory &bufferMemory
+        );
 
         VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         void unmap();

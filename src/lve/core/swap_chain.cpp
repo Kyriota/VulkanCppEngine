@@ -12,14 +12,9 @@
 namespace lve
 {
 
-    SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent)
-        : device{deviceRef}, windowExtent{extent}
-    {
-        init();
-    }
+    SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent) : device{deviceRef}, windowExtent{extent} { init(); }
 
-    SwapChain::SwapChain(
-        Device &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previous)
+    SwapChain::SwapChain(Device &deviceRef, VkExtent2D extent, std::shared_ptr<SwapChain> previous)
         : device{deviceRef}, windowExtent{extent}, oldSwapChain{previous}
     {
         init();
@@ -69,11 +64,8 @@ namespace lve
     VkResult SwapChain::acquireNextImage(uint32_t *imageIndex)
     {
         vkWaitForFences(
-            device.vkDevice(),
-            1,
-            &inFlightFences[currentFrame],
-            VK_TRUE,
-            std::numeric_limits<uint64_t>::max());
+            device.vkDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max()
+        );
 
         VkResult result = vkAcquireNextImageKHR(
             device.vkDevice(),
@@ -81,7 +73,8 @@ namespace lve
             std::numeric_limits<uint64_t>::max(),
             imageAvailableSemaphores[currentFrame], // must be a not signaled semaphore
             VK_NULL_HANDLE,
-            imageIndex);
+            imageIndex
+        );
 
         return result;
     }
@@ -111,8 +104,7 @@ namespace lve
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         vkResetFences(device.vkDevice(), 1, &inFlightFences[currentFrame]);
-        if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
-            VK_SUCCESS)
+        if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
@@ -145,8 +137,7 @@ namespace lve
         VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-        if (swapChainSupport.capabilities.maxImageCount > 0 &&
-            imageCount > swapChainSupport.capabilities.maxImageCount)
+        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
         {
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
@@ -219,8 +210,7 @@ namespace lve
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(device.vkDevice(), &viewInfo, nullptr, &swapChainImageViews[i]) !=
-                VK_SUCCESS)
+            if (vkCreateImageView(device.vkDevice(), &viewInfo, nullptr, &swapChainImageViews[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create texture image view!");
             }
@@ -265,8 +255,7 @@ namespace lve
 
         VkSubpassDependency dependency = {};
         dependency.dstSubpass = 0;
-        dependency.dstAccessMask =
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
         dependency.dstStageMask =
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -307,11 +296,8 @@ namespace lve
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(
-                    device.vkDevice(),
-                    &framebufferInfo,
-                    nullptr,
-                    &swapChainFramebuffers[i]) != VK_SUCCESS)
+            if (vkCreateFramebuffer(device.vkDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) !=
+                VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create framebuffer!");
             }
@@ -343,11 +329,7 @@ namespace lve
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0;
 
-            Image depthImage{
-                device,
-                imageInfo,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-            };
+            Image depthImage{device, imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT};
 
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -393,8 +375,7 @@ namespace lve
         }
     }
 
-    VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(
-        const std::vector<VkSurfaceFormatKHR> &availableFormats)
+    VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
     {
         for (const auto &availableFormat : availableFormats)
         {
@@ -408,8 +389,7 @@ namespace lve
         return availableFormats[0];
     }
 
-    VkPresentModeKHR SwapChain::chooseSwapPresentMode(
-        const std::vector<VkPresentModeKHR> &availablePresentModes)
+    VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
     {
         for (const auto &availablePresentMode : availablePresentModes)
         {
@@ -441,11 +421,11 @@ namespace lve
         {
             VkExtent2D actualExtent = windowExtent;
             actualExtent.width = std::max(
-                capabilities.minImageExtent.width,
-                std::min(capabilities.maxImageExtent.width, actualExtent.width));
+                capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width)
+            );
             actualExtent.height = std::max(
-                capabilities.minImageExtent.height,
-                std::min(capabilities.maxImageExtent.height, actualExtent.height));
+                capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height)
+            );
 
             return actualExtent;
         }
@@ -456,7 +436,8 @@ namespace lve
         return device.findSupportedFormat(
             {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
             VK_IMAGE_TILING_OPTIMAL,
-            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+        );
     }
 
 } // namespace lve

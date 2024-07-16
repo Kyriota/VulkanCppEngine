@@ -13,7 +13,8 @@ namespace lve
         uint32_t binding,
         VkDescriptorType descriptorType,
         VkShaderStageFlags stageFlags,
-        uint32_t count)
+        uint32_t count
+    )
     {
         assert(bindings.count(binding) == 0 && "Binding already in use");
         VkDescriptorSetLayoutBinding layoutBinding{};
@@ -33,7 +34,9 @@ namespace lve
     // *************** Descriptor Set Layout *********************
 
     DescriptorSetLayout::DescriptorSetLayout(
-        Device &lveDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings)
+        Device &lveDevice,
+        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings
+    )
         : lveDevice{lveDevice}, bindings{bindings}
     {
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings{};
@@ -48,10 +51,8 @@ namespace lve
         descriptorSetLayoutInfo.pBindings = setLayoutBindings.data();
 
         if (vkCreateDescriptorSetLayout(
-                lveDevice.vkDevice(),
-                &descriptorSetLayoutInfo,
-                nullptr,
-                &descriptorSetLayout) != VK_SUCCESS)
+                lveDevice.vkDevice(), &descriptorSetLayoutInfo, nullptr, &descriptorSetLayout
+            ) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create descriptor set layout!");
         }
@@ -64,15 +65,13 @@ namespace lve
 
     // *************** Descriptor Pool Builder *********************
 
-    DescriptorPool::Builder &DescriptorPool::Builder::addPoolSize(
-        VkDescriptorType descriptorType, uint32_t count)
+    DescriptorPool::Builder &DescriptorPool::Builder::addPoolSize(VkDescriptorType descriptorType, uint32_t count)
     {
         poolSizes.push_back({descriptorType, count});
         return *this;
     }
 
-    DescriptorPool::Builder &DescriptorPool::Builder::setPoolFlags(
-        VkDescriptorPoolCreateFlags flags)
+    DescriptorPool::Builder &DescriptorPool::Builder::setPoolFlags(VkDescriptorPoolCreateFlags flags)
     {
         poolFlags = flags;
         return *this;
@@ -94,7 +93,8 @@ namespace lve
         Device &lveDevice,
         uint32_t maxSets,
         VkDescriptorPoolCreateFlags poolFlags,
-        const std::vector<VkDescriptorPoolSize> &poolSizes)
+        const std::vector<VkDescriptorPoolSize> &poolSizes
+    )
         : lveDevice{lveDevice}
     {
         VkDescriptorPoolCreateInfo descriptorPoolInfo{};
@@ -104,20 +104,18 @@ namespace lve
         descriptorPoolInfo.maxSets = maxSets;
         descriptorPoolInfo.flags = poolFlags;
 
-        if (vkCreateDescriptorPool(lveDevice.vkDevice(), &descriptorPoolInfo, nullptr, &descriptorPool) !=
-            VK_SUCCESS)
+        if (vkCreateDescriptorPool(lveDevice.vkDevice(), &descriptorPoolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create descriptor pool!");
         }
     }
 
-    DescriptorPool::~DescriptorPool()
-    {
-        vkDestroyDescriptorPool(lveDevice.vkDevice(), descriptorPool, nullptr);
-    }
+    DescriptorPool::~DescriptorPool() { vkDestroyDescriptorPool(lveDevice.vkDevice(), descriptorPool, nullptr); }
 
     bool DescriptorPool::allocateDescriptorSet(
-        const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptorSet) const
+        const VkDescriptorSetLayout descriptorSetLayout,
+        VkDescriptorSet &descriptorSet
+    ) const
     {
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -137,32 +135,28 @@ namespace lve
     void DescriptorPool::freeDescriptorSet(std::vector<VkDescriptorSet> &descriptorSet) const
     {
         vkFreeDescriptorSets(
-            lveDevice.vkDevice(),
-            descriptorPool,
-            static_cast<uint32_t>(descriptorSet.size()),
-            descriptorSet.data());
+            lveDevice.vkDevice(), descriptorPool, static_cast<uint32_t>(descriptorSet.size()), descriptorSet.data()
+        );
     }
 
-    void DescriptorPool::resetPool()
-    {
-        vkResetDescriptorPool(lveDevice.vkDevice(), descriptorPool, 0);
-    }
+    void DescriptorPool::resetPool() { vkResetDescriptorPool(lveDevice.vkDevice(), descriptorPool, 0); }
 
     // *************** Descriptor Writer *********************
 
     DescriptorWriter::DescriptorWriter(DescriptorSetLayout &setLayout, DescriptorPool &pool)
-        : setLayout{setLayout}, pool{pool} {}
+        : setLayout{setLayout}, pool{pool}
+    {
+    }
 
-    DescriptorWriter &DescriptorWriter::writeBuffer(
-        uint32_t binding, VkDescriptorBufferInfo *bufferInfo)
+    DescriptorWriter &DescriptorWriter::writeBuffer(uint32_t binding, VkDescriptorBufferInfo *bufferInfo)
     {
         assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
         auto &bindingDescription = setLayout.bindings[binding];
 
         assert(
-            bindingDescription.descriptorCount == 1 &&
-            "Binding single descriptor info, but binding expects multiple");
+            bindingDescription.descriptorCount == 1 && "Binding single descriptor info, but binding expects multiple"
+        );
 
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -175,16 +169,15 @@ namespace lve
         return *this;
     }
 
-    DescriptorWriter &DescriptorWriter::writeImage(
-        uint32_t binding, VkDescriptorImageInfo *imageInfo)
+    DescriptorWriter &DescriptorWriter::writeImage(uint32_t binding, VkDescriptorImageInfo *imageInfo)
     {
         assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
 
         auto &bindingDescription = setLayout.bindings[binding];
 
         assert(
-            bindingDescription.descriptorCount == 1 &&
-            "Binding single descriptor info, but binding expects multiple");
+            bindingDescription.descriptorCount == 1 && "Binding single descriptor info, but binding expects multiple"
+        );
 
         VkWriteDescriptorSet write{};
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

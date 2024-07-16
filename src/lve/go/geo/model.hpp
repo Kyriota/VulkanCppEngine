@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lve/core/resource/buffer.hpp"
 #include "lve/core/device.hpp"
+#include "lve/core/resource/buffer.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -27,8 +27,7 @@ namespace lve
 
             bool operator==(const Vertex &other) const
             {
-                return position == other.position && color == other.color && normal == other.normal &&
-                       uv == other.uv;
+                return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
             }
         };
 
@@ -45,8 +44,7 @@ namespace lve
         Model(const Model &) = delete;
         Model &operator=(const Model &) = delete;
 
-        static std::unique_ptr<Model> createModelFromFile(
-            Device &device, const std::string &filePath);
+        static std::unique_ptr<Model> createModelFromFile(Device &device, const std::string &filePath);
 
         void bind(VkCommandBuffer commandBuffer);
         void draw(VkCommandBuffer commandBuffer);

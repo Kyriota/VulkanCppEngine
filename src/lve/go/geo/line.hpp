@@ -1,7 +1,7 @@
 #pragma once
 
-#include "lve/core/resource/buffer.hpp"
 #include "lve/core/device.hpp"
+#include "lve/core/resource/buffer.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -19,10 +19,17 @@ namespace lve
             Vertex() = default;
 
             Vertex(glm::vec3 position, glm::vec4 color) : position{position}, color{color} {}
-            Vertex(glm::vec2 position, glm::vec4 color) : position{glm::vec3{position, 0.0f}}, color{color} {}
-            
+            Vertex(glm::vec2 position, glm::vec4 color) : position{glm::vec3{position, 0.0f}}, color{color}
+            {
+            }
+
             Vertex(glm::vec3 position) : position{position} {}
-            Vertex(glm::vec2 position) : position{glm::vec3{position, 0.0f}} {}
+            Vertex(glm::vec2 position)
+                : position{
+                      glm::vec3{position, 0.0f}
+            }
+            {
+            }
 
             glm::vec3 position{};
             glm::vec4 color{0.0f, 1.0f, 0.0f, 1.0f}; // defalt color is green

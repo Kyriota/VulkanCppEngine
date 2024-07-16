@@ -3,16 +3,15 @@
 // std
 #include <array>
 #include <cassert>
-#include <stdexcept>
-#include <iostream>
-#include <thread>
 #include <chrono>
+#include <iostream>
+#include <stdexcept>
+#include <thread>
 
 namespace lve
 {
 
-    FrameManager::FrameManager(Window &window, Device &device)
-        : lveWindow{window}, lveDevice{device}
+    FrameManager::FrameManager(Window &window, Device &device) : lveWindow{window}, lveDevice{device}
     {
         recreateSwapChain();
         createCommandBuffers();
@@ -25,7 +24,9 @@ namespace lve
         if (lveWindow.isWindowMinimized())
         {
             std::unique_lock<std::mutex> renderLock(lveWindow.renderMutex);
-            lveWindow.renderCondVar.wait(renderLock, [this] { return !lveWindow.isWindowMinimized(); });
+            lveWindow.renderCondVar.wait(renderLock, [this] {
+                return !lveWindow.isWindowMinimized();
+            });
             return false;
         }
 
@@ -63,8 +64,7 @@ namespace lve
         allocInfo.commandPool = lveDevice.getCommandPool();
         allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
-        if (vkAllocateCommandBuffers(lveDevice.vkDevice(), &allocInfo, commandBuffers.data()) !=
-            VK_SUCCESS)
+        if (vkAllocateCommandBuffers(lveDevice.vkDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to allocate command buffers!");
         }
@@ -76,7 +76,8 @@ namespace lve
             lveDevice.vkDevice(),
             lveDevice.getCommandPool(),
             static_cast<uint32_t>(commandBuffers.size()),
-            commandBuffers.data());
+            commandBuffers.data()
+        );
         commandBuffers.clear();
     }
 
@@ -120,8 +121,7 @@ namespace lve
 
         auto result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
 
-        if (
-            result == VK_ERROR_OUT_OF_DATE_KHR || // The swap chain has become incompatible with
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || // The swap chain has become incompatible with
                                                   // the surface and can no longer be used for rendering.
                                                   // Usually happens after a window resize.
 
@@ -155,7 +155,8 @@ namespace lve
         assert(isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
         assert(
             commandBuffer == getCurrentCommandBuffer() &&
-            "Can't begin render pass on command buffer from a different frame");
+            "Can't begin render pass on command buffer from a different frame"
+        );
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -180,7 +181,10 @@ namespace lve
         viewport.height = static_cast<float>(lveSwapChain->getSwapChainExtent().height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        VkRect2D scissor{{0, 0}, lveSwapChain->getSwapChainExtent()};
+        VkRect2D scissor{
+            {0, 0},
+            lveSwapChain->getSwapChainExtent()
+        };
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
     }
@@ -190,7 +194,8 @@ namespace lve
         assert(isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
         assert(
             commandBuffer == getCurrentCommandBuffer() &&
-            "Can't end render pass on command buffer from a different frame");
+            "Can't end render pass on command buffer from a different frame"
+        );
         vkCmdEndRenderPass(commandBuffer);
     }
 } // namespace lve
