@@ -2,7 +2,6 @@
   "cmake.configureSettings": {
     "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake"
   },
-  "editor.formatOnSave": true,
   "C_Cpp.clang_format_style": "{BasedOnStyle: LLVM, UseTab: Never, IndentWidth: 4, TabWidth: 4, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 100, AccessModifierOffset: -4, NamespaceIndentation: All, BreakBeforeBraces: Custom, BraceWrapping: {AfterClass: true, AfterControlStatement: true, AfterEnum: true, AfterFunction: true, AfterNamespace: true, AfterObjCDeclaration: true, AfterStruct: true, AfterUnion: true, BeforeCatch: true, BeforeElse: true, IndentBraces: false, BeforeLambdaBody: false, BeforeWhile: false}, AllowShortLambdasOnASingleLine: Empty, AlignAfterOpenBracket: BlockIndent, BinPackArguments: false, BinPackParameters: false, AllowAllParametersOfDeclarationOnNextLine: false, PackConstructorInitializers: NextLine, AlignArrayOfStructures: Right }",
   "files.associations": {
     "*.ejs": "html",

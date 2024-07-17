@@ -18,13 +18,6 @@ namespace lve
             const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
             const std::string &compFilePath
         );
-        ~ComputePipeline() { cleanUp(); }
-
-        ComputePipeline(const ComputePipeline &) = delete;
-        ComputePipeline &operator=(const ComputePipeline &) = delete;
-
-        ComputePipeline(ComputePipeline &&other) noexcept;
-        ComputePipeline &operator=(ComputePipeline &&other);
 
         void dispatchComputePipeline(
             VkCommandBuffer cmdBuffer,
@@ -34,11 +27,7 @@ namespace lve
         );
 
     private:
-        void release() override;
-
         void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
         void createPipeline(const std::string &compFilePath);
-
-        VkShaderModule compShaderModule;
     };
 } // namespace lve
