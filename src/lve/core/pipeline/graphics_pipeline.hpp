@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lve/core/device.hpp"
-#include "lve/core/pipeline/pipeline.hpp"
+#include "lve/core/pipeline/pipeline_base.hpp"
 #include "lve/go/game_object.hpp"
 #include "lve/go/geo/line.hpp"
 
