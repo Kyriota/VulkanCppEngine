@@ -1,4 +1,8 @@
 #include "lve/core/pipeline/pipeline.hpp"
+#include "lve/util/file_io.hpp"
+
+// std
+#include <cassert>
 
 namespace lve
 {
@@ -66,5 +70,20 @@ namespace lve
             }
             initialized = false;
         }
+    }
+
+    void Pipeline::initShaderModule(std::string moduleName, const std::vector<char> &code)
+    {
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+
+        VkShaderModule shaderModule;
+        VkResult result =
+            vkCreateShaderModule(lveDevice.vkDevice(), &createInfo, nullptr, &shaderModule);
+        assert(result == VK_SUCCESS && "Failed to create shader module");
+
+        shaderModules[moduleName] = shaderModule;
     }
 } // namespace lve

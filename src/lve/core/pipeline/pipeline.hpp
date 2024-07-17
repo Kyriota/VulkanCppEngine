@@ -2,6 +2,9 @@
 
 #include "lve/core/device.hpp"
 
+// std
+#include <string>
+
 namespace lve
 {
     class Pipeline
@@ -19,8 +22,11 @@ namespace lve
         VkPipeline getPipeline() { return pipeline; }
         VkPipelineLayout getPipelineLayout() { return pipelineLayout; }
 
+        virtual void bind(VkCommandBuffer commandBuffer) = 0;
+
     protected:
         void cleanUp();
+        void initShaderModule(std::string moduleName, const std::vector<char> &code);
 
         Device &lveDevice;
         VkPipeline pipeline;

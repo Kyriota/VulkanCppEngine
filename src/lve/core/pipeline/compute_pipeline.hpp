@@ -26,6 +26,8 @@ namespace lve
             uint32_t height
         );
 
+        void bind(VkCommandBuffer commandBuffer) override;
+
     private:
         void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
         void createPipeline(const std::string &compFilePath);

@@ -53,39 +53,21 @@ namespace lve
         std::vector<VkPushConstantRange> pushConstantRanges;
     };
 
-    class GraphicPipeline
+    class GraphicPipeline : public Pipeline
     {
     public:
-        GraphicPipeline(Device &device) : lveDevice(device) {}
+        GraphicPipeline(Device &device) : Pipeline(device) {}
         GraphicPipeline(
             Device &device,
             const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
             const GraphicPipelineConfigInfo &pipelineConfigInfo
         );
-        ~GraphicPipeline();
 
-        GraphicPipeline(const GraphicPipeline &) = delete;
-        GraphicPipeline &operator=(const GraphicPipeline &) = delete;
-
-        GraphicPipeline(GraphicPipeline &&other) noexcept;
-        GraphicPipeline &operator=(GraphicPipeline &&other);
-
-        VkPipeline getPipeline() { return graphicPipeline; }
-        VkPipelineLayout getPipelineLayout() { return graphicPipelineLayout; }
+        void bind(VkCommandBuffer commandBuffer) override;
 
     private:
-        void cleanUp();
-
         void createGraphicPipelineLayout(const GraphicPipelineLayoutConfigInfo &configInfo);
         void createGraphicsPipeline(const GraphicPipelineConfigInfo &configInfo);
-
-        Device &lveDevice;
-        VkPipeline graphicPipeline;
-        VkPipelineLayout graphicPipelineLayout;
-        VkShaderModule vertShaderModule;
-        VkShaderModule fragShaderModule;
-
-        bool initialized = false;
     };
 
     void renderGameObjects(

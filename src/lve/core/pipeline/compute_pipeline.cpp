@@ -1,5 +1,4 @@
 #include "lve/core/pipeline/compute_pipeline.hpp"
-#include "lve/core/pipeline/pipeline_op.hpp"
 #include "lve/go/geo/model.hpp"
 #include "lve/util/file_io.hpp"
 
@@ -45,6 +44,11 @@ namespace lve
         vkCmdDispatch(cmdBuffer, width, height, 1);
     }
 
+    void ComputePipeline::bind(VkCommandBuffer commandBuffer)
+    {
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+    }
+
     void
     ComputePipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
     {
@@ -73,14 +77,12 @@ namespace lve
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
         std::vector<char> compCode = io::readBinaryFile(shaderRoot + compFilePath);
-        VkShaderModule compShaderModule;
-        createShaderModule(lveDevice, compCode, &compShaderModule);
-        shaderModules["comp"] = compShaderModule;
+        initShaderModule("comp", compCode);
 
         VkPipelineShaderStageCreateInfo shaderStageInfo{};
         shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-        shaderStageInfo.module = compShaderModule;
+        shaderStageInfo.module = shaderModules["comp"];
         shaderStageInfo.pName = "main";
 
         VkComputePipelineCreateInfo pipelineInfo{};
