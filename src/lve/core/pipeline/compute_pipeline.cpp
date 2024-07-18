@@ -1,5 +1,5 @@
 #include "lve/core/pipeline/compute_pipeline.hpp"
-#include "lve/go/geo/model.hpp"
+#include "lve/GO/geo/model.hpp"
 #include "lve/util/file_io.hpp"
 
 // std
@@ -76,7 +76,8 @@ namespace lve
 
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
-        std::vector<char> compCode = io::readBinaryFile(shaderRoot + compFilePath);
+        std::vector<char> compCode;
+        io::readBinaryFile(shaderRoot + compFilePath, compCode);
         initShaderModule("comp", compCode);
 
         VkPipelineShaderStageCreateInfo shaderStageInfo{};

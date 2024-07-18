@@ -1,4 +1,4 @@
-#include "lve/go/geo/line.hpp"
+#include "lve/GO/geo/line.hpp"
 
 // std
 #include <memory>
@@ -20,13 +20,18 @@ namespace lve
     {
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
 
-        attributeDescriptions.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-        attributeDescriptions.push_back({1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color)});
+        attributeDescriptions.push_back(
+            {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)}
+        );
+        attributeDescriptions.push_back(
+            {1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color)}
+        );
 
         return attributeDescriptions;
     }
 
-    LineCollection::LineCollection(Device &device, size_t maxLineCount) : lveDevice{device}, maxLineCount{maxLineCount}
+    LineCollection::LineCollection(Device &device, size_t maxLineCount)
+        : lveDevice{device}, maxLineCount{maxLineCount}
     {
         lines.reserve(maxLineCount);
         createLineBuffer();
@@ -37,16 +42,24 @@ namespace lve
         uint32_t lineSize = sizeof(Line);
         uint32_t totalLineCount = maxLineCount;
 
-        stagingBuffer =
-            std::make_unique<Buffer>(lveDevice, lineSize, totalLineCount, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        stagingBuffer = std::make_unique<Buffer>(
+            lveDevice,
+            lineSize,
+            totalLineCount,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        );
 
         stagingBuffer->map();
         stagingBuffer->writeToBuffer((void *)lines.data());
 
-        lineBuffer = std::make_unique<Buffer>(lveDevice, lineSize, totalLineCount,
-                                              VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        lineBuffer = std::make_unique<Buffer>(
+            lveDevice,
+            lineSize,
+            totalLineCount,
+            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+        );
 
         lineBuffer->copyBufferFrom(stagingBuffer->getBuffer(), lineSize * maxLineCount);
     }

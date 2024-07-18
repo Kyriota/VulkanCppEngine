@@ -8,3 +8,10 @@ function(set_output_directories target_name)
     # Set RUNTIME_OUTPUT_DIRECTORY
     set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE} PARENT_SCOPE)
 endfunction()
+
+
+
+function(set_cpp_standard target_name)
+    # Set C++ standard
+    target_compile_features(${target_name} PUBLIC cxx_std_20)
+endfunction()

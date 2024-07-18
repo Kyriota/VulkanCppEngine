@@ -13,8 +13,13 @@ namespace lve
 {
     namespace io
     {
-        std::string readTextFile(const std::string &filename);
-        std::vector<char> readBinaryFile(const std::string &filename);
+        void readTextFile(const std::string &filename, std::string &text);
+        void readBinaryFile(const std::string &filename, std::vector<char> &buffer);
+        void readBinaryFile(
+            const std::string &filename,
+            std::vector<uint32_t> &buffer,
+            bool littleEndian = true
+        );
 
         void writeFile(const std::string &filePath, const std::vector<char> &data);
         void writeFile(const std::string &filePath, const std::string &data);
@@ -34,7 +39,10 @@ namespace lve
 
             bool isConfigDefined() const { return config.IsDefined(); }
             bool isKeyDefined(const std::string &key) const;
-            void loadConfig(const std::string &yamlFilePath) { config = YAML::LoadFile(yamlFilePath); }
+            void loadConfig(const std::string &yamlFilePath)
+            {
+                config = YAML::LoadFile(yamlFilePath);
+            }
             void saveConfig(const std::string &yamlFilePath);
 
             template <typename T> T get(const std::string &key) const;

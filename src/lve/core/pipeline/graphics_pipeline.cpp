@@ -1,5 +1,5 @@
 #include "lve/core/pipeline/graphics_pipeline.hpp"
-#include "lve/go/geo/model.hpp"
+#include "lve/GO/geo/model.hpp"
 #include "lve/util/file_io.hpp"
 
 // std
@@ -158,10 +158,9 @@ namespace lve
 
         io::YamlConfig generalConfig{"config/general.yaml"};
         std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
-        std::vector<char> vertCode =
-            io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilePath);
-        std::vector<char> fragCode =
-            io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilePath);
+        std::vector<char> vertCode, fragCode;
+        io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilePath, vertCode);
+        io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilePath, fragCode);
         initShaderModule("vert", vertCode);
         initShaderModule("frag", fragCode);
 

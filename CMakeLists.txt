@@ -6,9 +6,6 @@ include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/RunMakeScripts.cmake)
 # Engine
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/lve)
 
-# Set C++ standard
-set(CMAKE_CXX_STANDARD 20)
-
 # Add source files
 file(GLOB_RECURSE APP_SRC ${CMAKE_SOURCE_DIR}/src/app/*.cpp)
 file(GLOB_RECURSE APP_HDR ${CMAKE_SOURCE_DIR}/src/app/*.hpp)
@@ -17,6 +14,9 @@ set(HEADER ${APP_HDR})
 
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCE} ${HEADER})
+
+# Set C++ standard
+set_cpp_standard(${PROJECT_NAME})
 
 # Set output deirectories
 set_output_directories(${PROJECT_NAME})

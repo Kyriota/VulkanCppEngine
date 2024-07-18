@@ -59,6 +59,7 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "valarray": "cpp",
-    "iomanip": "cpp"
+    "iomanip": "cpp",
+    "*.tpp": "cpp"
   }
 }

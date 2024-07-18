@@ -14,7 +14,6 @@ function(run_make_scripts target_name)
     add_custom_target(make_scripts
         COMMAND ${CMAKE_COMMAND} -E echo "Running make scripts for WIN32..."
         COMMAND ${CMAKE_SOURCE_DIR}/MakeScripts/win32/run_make_scripts.bat ${IS_DEBUG} ${RUNTIME_OUTPUT_DIRECTORY} ${CMAKE_SOURCE_DIR}/assets/shaders ${CMAKE_SOURCE_DIR}/assets ${CMAKE_SOURCE_DIR}/config ${DYNAMIC_LIB_DIR}
-        RESULT_VARIABLE MAKE_SCRIPTS_RESULT
         VERBATIM
     )
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app/fluid_sim/2d/fluid_particle_system.hpp"
+#include "lve/GO/geo/line.hpp"
 #include "lve/core/device.hpp"
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/pipeline/compute_pipeline.hpp"
@@ -9,7 +10,6 @@
 #include "lve/core/resource/image.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/window.hpp"
-#include "lve/go/geo/line.hpp"
 
 // std
 #include <atomic>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lve/go/geo/model.hpp"
+#include "lve/GO/geo/model.hpp"
 
 // libs
 #include "include/glm.hpp"

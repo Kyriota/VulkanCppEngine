@@ -16,6 +16,11 @@ function(add_external_libs_lve target_name)
     # Link glfw lib
     find_package(glfw3 CONFIG REQUIRED)
     target_link_libraries(${target_name} PUBLIC glfw)
+    # Link spirv_cross lib
+    find_package(spirv_cross_core CONFIG REQUIRED)
+    target_link_libraries(${target_name} PUBLIC spirv-cross-core)
+    find_package(spirv_cross_glsl CONFIG REQUIRED)
+    target_link_libraries(${target_name} PUBLIC spirv-cross-glsl)
 
     # Set VulkanSDK directory
     set(VULKAN_SDK $ENV{VULKAN_SDK})

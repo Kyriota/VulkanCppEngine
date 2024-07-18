@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lve/go/geo/line.hpp"
+#include "lve/GO/geo/line.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
 

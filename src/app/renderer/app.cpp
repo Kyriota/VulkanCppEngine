@@ -1,10 +1,10 @@
 #include "app/renderer/app.hpp"
 #include "app/renderer/controller.hpp"
 
+#include "lve/GO/component/camera.hpp"
 #include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
-#include "lve/go/comp/camera.hpp"
 #include "lve/util/file_io.hpp"
 
 // libs

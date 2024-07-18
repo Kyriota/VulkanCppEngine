@@ -1,9 +1,9 @@
 #pragma once
 
+#include "lve/GO/game_object.hpp"
+#include "lve/GO/geo/line.hpp"
 #include "lve/core/device.hpp"
 #include "lve/core/pipeline/pipeline_base.hpp"
-#include "lve/go/game_object.hpp"
-#include "lve/go/geo/line.hpp"
 
 // std
 #include <string>
