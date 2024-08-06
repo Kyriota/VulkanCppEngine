@@ -60,6 +60,24 @@
     "typeinfo": "cpp",
     "valarray": "cpp",
     "iomanip": "cpp",
-    "*.tpp": "cpp"
+    "*.tpp": "cpp",
+    "bitset": "cpp",
+    "complex": "cpp",
+    "forward_list": "cpp",
+    "regex": "cpp",
+    "typeindex": "cpp",
+    "variant": "cpp",
+    "codecvt": "cpp",
+    "bit": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp",
+    "numeric": "cpp",
+    "random": "cpp",
+    "numbers": "cpp",
+    "semaphore": "cpp",
+    "stop_token": "cpp",
+    "charconv": "cpp",
+    "format": "cpp",
+    "span": "cpp"
   }
 }
