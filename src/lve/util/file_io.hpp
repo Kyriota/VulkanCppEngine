@@ -1,10 +1,10 @@
 #pragma once
 
-// libs
-#include "include/yaml.hpp"
-
 // std
+#include <cassert>
+#include <filesystem>
 #include <fstream>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -24,38 +24,20 @@ namespace lve
         void writeFile(const std::string &filePath, const std::vector<char> &data);
         void writeFile(const std::string &filePath, const std::string &data);
 
-        bool fileExists(const std::string &filePath);
-        bool isFileOpen(const std::ifstream &file);
-        bool isFileOpen(const std::ofstream &file);
-
-        class YamlConfig
+        inline bool fileExists(const std::string &filePath)
         {
-        public:
-            YamlConfig() = default;
-            YamlConfig(const std::string &yamlFilePath) : config{YAML::LoadFile(yamlFilePath)} {}
+            return std::filesystem::is_regular_file(filePath);
+        }
+        inline bool pathExists(const std::string &path)
+        {
+            return std::filesystem::is_directory(path);
+        }
+        inline bool isFileOpen(const std::ifstream &file) { return file.is_open(); }
+        inline bool isFileOpen(const std::ofstream &file) { return file.is_open(); }
 
-            YamlConfig(const YamlConfig &) = delete;
-            YamlConfig &operator=(const YamlConfig &) = delete;
-
-            bool isConfigDefined() const { return config.IsDefined(); }
-            bool isKeyDefined(const std::string &key) const;
-            void loadConfig(const std::string &yamlFilePath)
-            {
-                config = YAML::LoadFile(yamlFilePath);
-            }
-            void saveConfig(const std::string &yamlFilePath);
-
-            template <typename T> T get(const std::string &key) const;
-
-            template <typename T> void set(const std::string &key, const T &value);
-
-        private:
-            YAML::Node config;
-
-            void checkKeyDefined(const std::string &key) const;
-            void checkConfigDefined() const;
-        };
+        void foreachFileInDirectory(
+            const std::string &dir,
+            std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback
+        );
     } // namespace io
 } // namespace lve
-
-#include "lve/util/file_io.tpp"

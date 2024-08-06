@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lve/GO/geo/line.hpp"
+#include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
 
@@ -15,7 +16,7 @@
 class FluidParticleSystem
 {
 public:
-    FluidParticleSystem(const std::string &configFilePath, VkExtent2D windowExtent);
+    FluidParticleSystem(VkExtent2D windowExtent);
 
     void reloadConfigParam();
 
@@ -57,7 +58,6 @@ private:
         unsigned int spatialHashKey;
     };
 
-    std::string configFilePath;
     size_t particleCount;
     VkExtent2D windowExtent;
     glm::vec2 scaledWindowExtent;
@@ -104,7 +104,7 @@ private:
     std::vector<Density> densityData;
     std::vector<float> massData;
     void initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize);
-    void initSimParams(lve::io::YamlConfig &config);
+    void initSimParams();
     glm::vec2 scaledPos2ScreenPos(glm::vec2 scaledPos) const;
 
     // kernels

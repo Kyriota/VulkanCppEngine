@@ -21,6 +21,4 @@ int main()
         lve::io::writeFile("error.log", e.what());
         return EXIT_FAILURE;
     }
-
-    return EXIT_SUCCESS;
 }

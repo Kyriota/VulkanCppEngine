@@ -10,6 +10,7 @@
 #include "lve/core/resource/image.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/window.hpp"
+#include "lve/path.hpp"
 
 // std
 #include <atomic>
@@ -64,7 +65,7 @@ private:
     lve::Image screenTextureImage{lveDevice};
     VkFormat screenTextureFormat = VK_FORMAT_R8G8B8A8_UNORM;
 
-    FluidParticleSystem fluidParticleSys{"config/fluidSim2D.yaml", lveWindow.getExtent()};
+    FluidParticleSystem fluidParticleSys{lveWindow.getExtent()};
     lve::LineCollection lineCollection{lveDevice, fluidParticleSys.getParticleCount()};
 
     void updateGlobalDescriptorSets(bool build = false);

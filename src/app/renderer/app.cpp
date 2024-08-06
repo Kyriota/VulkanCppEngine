@@ -1,10 +1,12 @@
 #include "app/renderer/app.hpp"
-#include "app/renderer/controller.hpp"
 
+#include "app/renderer/controller.hpp"
 #include "lve/GO/component/camera.hpp"
 #include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
+#include "lve/path.hpp"
+#include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 
 // libs
@@ -14,7 +16,6 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
-#include <stdexcept>
 #include <string>
 
 struct GlobalUbo
@@ -134,25 +135,23 @@ void RendererApp::run()
 
 void RendererApp::loadGameObjects()
 {
-    lve::io::YamlConfig generalConfig{"config/general.yaml"};
-    std::string modelRoot = generalConfig.get<std::string>("modelRoot") + "/";
-
     std::shared_ptr<lve::Model> lveModel =
-        lve::Model::createModelFromFile(lveDevice, modelRoot + "flat_vase.obj");
+        lve::Model::createModelFromFile(lveDevice, lve::path::asset::MODEL + "flat_vase.obj");
     auto flatVase = lve::GameObject::createGameObject();
     flatVase.model = lveModel;
     flatVase.transform.translation = {-.5f, .5f, 0.f};
     flatVase.transform.scale = {3.f, 1.5f, 3.f};
     gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 
-    lveModel = lve::Model::createModelFromFile(lveDevice, modelRoot + "smooth_vase.obj");
+    lveModel =
+        lve::Model::createModelFromFile(lveDevice, lve::path::asset::MODEL + "smooth_vase.obj");
     auto smoothVase = lve::GameObject::createGameObject();
     smoothVase.model = lveModel;
     smoothVase.transform.translation = {.5f, .5f, 0.f};
     smoothVase.transform.scale = {3.f, 1.5f, 3.f};
     gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
-    lveModel = lve::Model::createModelFromFile(lveDevice, modelRoot + "quad.obj");
+    lveModel = lve::Model::createModelFromFile(lveDevice, lve::path::asset::MODEL + "quad.obj");
     auto floor = lve::GameObject::createGameObject();
     floor.model = lveModel;
     floor.transform.translation = {0.f, .5f, 0.f};

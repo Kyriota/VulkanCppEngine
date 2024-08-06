@@ -1,5 +1,8 @@
 #include "lve/core/pipeline/graphics_pipeline.hpp"
+
 #include "lve/GO/geo/model.hpp"
+#include "lve/path.hpp"
+#include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 
 // std
@@ -156,11 +159,9 @@ namespace lve
             "Cannot create graphics pipeline: renderPass not provided in pipelineConfigInfo"
         );
 
-        io::YamlConfig generalConfig{"config/general.yaml"};
-        std::string shaderRoot = generalConfig.get<std::string>("shaderRoot") + "/";
         std::vector<char> vertCode, fragCode;
-        io::readBinaryFile(shaderRoot + pipelineConfigInfo.vertFilePath, vertCode);
-        io::readBinaryFile(shaderRoot + pipelineConfigInfo.fragFilePath, fragCode);
+        io::readBinaryFile(lve::path::asset::SHADER + pipelineConfigInfo.vertFilePath, vertCode);
+        io::readBinaryFile(lve::path::asset::SHADER + pipelineConfigInfo.fragFilePath, fragCode);
         initShaderModule("vert", vertCode);
         initShaderModule("frag", fragCode);
 

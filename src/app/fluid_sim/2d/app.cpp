@@ -2,7 +2,9 @@
 
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
-#include "lve/shader_tool/spirv_parser.hpp"
+#include "lve/path.hpp"
+#include "lve/shader_tool/parser.hpp"
+#include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
 
@@ -14,7 +16,6 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
-#include <stdexcept>
 #include <thread>
 
 struct GlobalUbo
@@ -28,16 +29,12 @@ struct GlobalUbo
 FluidSim2DApp::FluidSim2DApp()
 {
     // test code for spirv_parser
-    // std::vector<char> spirvBinary;
-    // lve::io::readBinaryFile("assets/shaders/screen_texture_shader.frag.spv", spirvBinary);
-    // lve::SpirvParser parser(std::vector<uint32_t>(spirvBinary.begin(), spirvBinary.end()));
-    std::vector<uint32_t> spirvBinary;
-    lve::io::readBinaryFile("assets/shaders/screen_texture_shader.frag.spv", spirvBinary);
-    lve::SpirvParser parser(std::move(spirvBinary));
+    // lve::ShaderParser parser("simple_shader.frag.spv");
+    // parser.dump("assets/shaders/");
 
     // resize window according to config
-    lve::io::YamlConfig config("config/fluidSim2D.yaml");
-    std::vector<int> windowSize = config.get<std::vector<int>>("windowSize");
+    std::vector<int> windowSize = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D)
+                                      .get<std::vector<int>>("windowSize");
     lveWindow.resize(windowSize[0], windowSize[1]);
 
     // register callback functions for window resize

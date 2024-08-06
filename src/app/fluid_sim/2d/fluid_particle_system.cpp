@@ -1,4 +1,7 @@
 #include "app/fluid_sim/2d/fluid_particle_system.hpp"
+
+#include "lve/path.hpp"
+#include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
 
@@ -6,14 +9,12 @@
 #include <algorithm>
 #include <iostream>
 
-FluidParticleSystem::FluidParticleSystem(const std::string &configFilePath, VkExtent2D windowExtent)
-    : windowExtent(windowExtent)
+FluidParticleSystem::FluidParticleSystem(VkExtent2D windowExtent) : windowExtent(windowExtent)
 {
-    this->configFilePath = configFilePath;
-    lve::io::YamlConfig config{configFilePath};
+    const lve::YamlConfig config = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D);
     particleCount = config.get<size_t>("particleCount");
 
-    initSimParams(config);
+    initSimParams();
 
     std::vector<float> startPoint = config.get<std::vector<float>>("startPoint");
     float stride = config.get<float>("stride");
@@ -25,8 +26,8 @@ FluidParticleSystem::FluidParticleSystem(const std::string &configFilePath, VkEx
 
 void FluidParticleSystem::reloadConfigParam()
 {
-    lve::io::YamlConfig config{configFilePath};
-    initSimParams(config);
+    lve::ConfigManager::reloadConfig(lve::path::config::FLUID_SIM_2D);
+    initSimParams();
 }
 
 void FluidParticleSystem::initParticleData(
@@ -80,8 +81,10 @@ void FluidParticleSystem::initParticleData(
     }
 }
 
-void FluidParticleSystem::initSimParams(lve::io::YamlConfig &config)
+void FluidParticleSystem::initSimParams()
 {
+    lve::YamlConfig config = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D);
+
     smoothRadius = config.get<float>("smoothRadius");
     boundaryMultipler = config.get<float>("boundaryMultipler");
     targetDensity = config.get<float>("targetDensity");

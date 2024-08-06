@@ -21,6 +21,9 @@ function(add_external_libs_lve target_name)
     target_link_libraries(${target_name} PUBLIC spirv-cross-core)
     find_package(spirv_cross_glsl CONFIG REQUIRED)
     target_link_libraries(${target_name} PUBLIC spirv-cross-glsl)
+    # Link cereal lib
+    find_package(cereal CONFIG REQUIRED)
+    target_link_libraries(${target_name} PUBLIC cereal::cereal)
 
     # Set VulkanSDK directory
     set(VULKAN_SDK $ENV{VULKAN_SDK})

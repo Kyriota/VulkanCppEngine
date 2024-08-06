@@ -1,7 +1,7 @@
 #include "lve/util/file_io.hpp"
 
 // std
-#include <stdexcept>
+#include <cassert>
 
 namespace lve
 {
@@ -9,14 +9,12 @@ namespace lve
     {
         void checkFileOpen(const std::ifstream &file, const std::string &filename)
         {
-            if (!file.is_open())
-                throw std::runtime_error("failed to open file: " + filename);
+            assert(file.is_open() && ("Failed to open file: " + filename).c_str());
         }
 
         void checkFileOpen(const std::ofstream &file, const std::string &filename)
         {
-            if (!file.is_open())
-                throw std::runtime_error("failed to open file: " + filename);
+            assert(file.is_open() && ("Failed to open file: " + filename).c_str());
         }
 
         void readTextFile(const std::string &filename, std::string &text)
@@ -97,38 +95,21 @@ namespace lve
             file.close();
         }
 
-        bool fileExists(const std::string &filePath)
+        void foreachFileInDirectory(
+            const std::string &dir,
+            std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback
+        )
         {
-            std::ifstream file{filePath};
-            return file.good();
-        }
+            assert(pathExists(dir));
 
-        bool isFileOpen(const std::ifstream &file) { return file.is_open(); }
-
-        bool isFileOpen(const std::ofstream &file) { return file.is_open(); }
-
-        bool YamlConfig::isKeyDefined(const std::string &key) const
-        {
-            checkConfigDefined();
-            return config[key].IsDefined();
-        }
-
-        void YamlConfig::saveConfig(const std::string &yamlFilePath)
-        {
-            checkConfigDefined();
-            writeFile(yamlFilePath, YAML::Dump(config));
-        }
-
-        void YamlConfig::checkKeyDefined(const std::string &key) const
-        {
-            if (!isKeyDefined(key))
-                throw std::runtime_error("key not found in config: " + key);
-        }
-
-        void YamlConfig::checkConfigDefined() const
-        {
-            if (!isConfigDefined())
-                throw std::runtime_error("config not initialized");
+            for (const auto &entry : std::filesystem::directory_iterator(dir))
+            {
+                if (entry.is_regular_file())
+                {
+                    const std::filesystem::__cxx11::directory_entry &entryRef = entry;
+                    callback(entryRef);
+                }
+            }
         }
     } // namespace io
 } // namespace lve
