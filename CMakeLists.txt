@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(vulkan-cpp-engine)
 include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/CommonSettings.cmake)
-include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/RunMakeScripts.cmake)
+include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/SetPhonyTargets.cmake)
 
 # Engine
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/lve)
@@ -28,4 +28,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(${PROJECT_NAME} Engine)
 
 # Run make scripts
-run_make_scripts(${PROJECT_NAME})
+set_phony_targets(${PROJECT_NAME})

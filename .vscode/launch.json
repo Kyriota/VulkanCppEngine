@@ -5,12 +5,11 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "setup_runtime_environment",
             // Resolved by CMake Tools:
             "program": "${command:cmake.launchTargetPath}",
             "args": [],
             "stopAtEntry": false,
-            // "cwd": "${workspaceFolder}",
             "cwd": "${command:cmake.getLaunchTargetDirectory}",
             "environment": [
                 {
@@ -18,7 +17,7 @@
                     // it gets resolved by CMake Tools:
                     "name": "PATH",
                     "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
-                },
+                }
             ],
             "externalConsole": false,
             "MIMode": "gdb",
