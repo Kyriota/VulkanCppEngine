@@ -29,8 +29,7 @@ struct GlobalUbo
 FluidSim2DApp::FluidSim2DApp()
 {
     // test code for spirv_parser
-    // lve::ShaderParser parser("simple_shader.frag.spv");
-    // parser.dump("assets/shaders/");
+    lve::ShaderParser parser((lve::path::asset::SHADER + "simple_shader.frag.spv").c_str());
 
     // resize window according to config
     std::vector<int> windowSize = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D)

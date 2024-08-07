@@ -1,6 +1,7 @@
 #include "lve/shader_tool/parser.hpp"
 
 #include "lve/util/file_io.hpp"
+#include "lve/util/hash.hpp"
 
 // std
 #include <cassert>
@@ -8,39 +9,69 @@
 
 namespace lve
 {
-    ShaderParser::ShaderParser(const char *spvFileName)
+    ShaderParser::ShaderParser(const std::string &spvFilePath)
     {
+        this->shaderSrcFilePath = spvFilePath;
+        this->shaderSrcFilePath = this->shaderSrcFilePath.substr(
+            0, this->shaderSrcFilePath.find_last_of(".")
+        ); // get rid of .spv extension
+
+        // load raw shader source and calculate hash
         std::vector<uint32_t> spirvBinary;
-        lve::io::readBinaryFile("assets/shaders/simple_shader.frag.spv", spirvBinary);
-        spirv_cross::CompilerGLSL compiler(std::move(spirvBinary));
+        io::readBinaryFile(spvFilePath, spirvBinary);
+        spvBinaryHash = hash(spirvBinary);
 
-        shaderSrcName = spvFileName;
-        shaderSrcName =
-            shaderSrcName.substr(0, shaderSrcName.find_last_of(".")); // get rid of .spv extension
-
-        summary = ShaderSummary(compiler, spvFileName);
-    }
-
-    void ShaderParser::dump(const char *outputFolder)
-    {
-        // check if the output folder exists
-        assert(io::pathExists(outputFolder));
-
-        // check if the output folder ends with a slash
-        std::string outputFolderStr(outputFolder);
-        if (outputFolderStr.back() != '/')
+        // check if meta file exists and if it has the same hash
+        metaFilePath = shaderSrcFilePath + ".meta";
+        if (io::fileExists(metaFilePath))
         {
-            outputFolderStr += '/';
+            std::ifstream metaFile(metaFilePath, std::ios::binary);
+            if (metaFile.is_open())
+            {
+                try // in case there is an error reading the meta file
+                {
+                    cereal::BinaryInputArchive archive(metaFile);
+                    archive(summary); // load summary from meta file
+                    if (summary.spvBinaryHash == spvBinaryHash)
+                    {
+                        return;
+                    }
+                }
+                catch (const std::exception &e)
+                {
+                    std::cerr << "Error reading meta file: " << e.what() << std::endl;
+                }
+            }
         }
 
-        std::string outputFilePath = outputFolderStr + shaderSrcName + ".sum";
+        // otherwise, parse the shader and generate meta file
+        spirv_cross::CompilerGLSL compiler(std::move(spirvBinary));
+
+        summary = ShaderSummary(compiler, spvFilePath, spvBinaryHash);
+        dump(metaFilePath);
+    }
+
+    void ShaderParser::dump(const std::string &outputFilePath) const
+    {
         std::ofstream outputFile(outputFilePath, std::ios::binary);
+
+        if (!outputFile.is_open())
+        {
+            throw std::runtime_error("Failed to open output file: " + std::string(outputFilePath));
+        }
+
         cereal::BinaryOutputArchive archive(outputFile);
         archive(summary);
     }
 
-    ShaderParser::SPIRTypeWrapper::SPIRTypeWrapper(spirv_cross::SPIRType baseType)
-        : baseType(baseType.basetype),
+    ShaderParser::SPIRTypeWrapper::SPIRTypeWrapper(
+        spirv_cross::SPIRType baseType,
+        const std::string &name,
+        bool isPushConstant
+    )
+        : name(name),
+          isPushConstant(isPushConstant),
+          baseType(baseType.basetype),
           storageClass(baseType.storage),
           bitWidth(baseType.width),
           vecSize(baseType.vecsize),
@@ -60,9 +91,10 @@ namespace lve
 
     ShaderParser::ShaderSummary::ShaderSummary(
         spirv_cross::CompilerGLSL &compiler,
-        const std::string &shaderFileName
+        const std::string &shaderPath,
+        const size_t spvBinaryHash
     )
-        : shaderFileName(shaderFileName)
+        : shaderPath(shaderPath), spvBinaryHash(spvBinaryHash)
     {
         spirv_cross::ShaderResources resources = compiler.get_shader_resources();
         addTypesInResources(resources.uniform_buffers, compiler);
@@ -73,25 +105,22 @@ namespace lve
         addTypesInResources(resources.storage_images, compiler);
         addTypesInResources(resources.sampled_images, compiler);
         addTypesInResources(resources.atomic_counters, compiler);
-        addTypesInResources(resources.push_constant_buffers, compiler);
         addTypesInResources(resources.separate_images, compiler);
         addTypesInResources(resources.separate_samplers, compiler);
-
-        // load raw shader source and calculate hash
-        std::vector<char> shaderSource;
-        io::readBinaryFile(shaderFileName, shaderSource);
-        rawShaderContentHash =
-            std::hash<std::string>{}(std::string(shaderSource.begin(), shaderSource.end()));
+        addTypesInResources(resources.push_constant_buffers, compiler, true);
     }
 
     void ShaderParser::ShaderSummary::addTypesInResources(
         spirv_cross::SmallVector<spirv_cross::Resource> resources,
-        spirv_cross::CompilerGLSL &compiler
+        spirv_cross::CompilerGLSL &compiler,
+        bool isPushConstant
     )
     {
         for (const spirv_cross::Resource &resource : resources)
         {
-            SPIRTypeWrapper typeWrapper(compiler.get_type(resource.base_type_id));
+            SPIRTypeWrapper typeWrapper(
+                compiler.get_type(resource.base_type_id), resource.name, isPushConstant
+            );
             types.push_back(typeWrapper);
         }
     }

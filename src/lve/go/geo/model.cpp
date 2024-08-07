@@ -1,6 +1,6 @@
 #include "lve/GO/geo/model.hpp"
 
-#include "lve/util/math.hpp"
+#include "lve/util/hash.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -18,7 +18,7 @@ namespace std
         size_t operator()(lve::Model::Vertex const &vertex) const
         {
             size_t seed = 0;
-            lve::math::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            lve::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
             return seed;
         }
     };

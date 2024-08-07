@@ -18,7 +18,14 @@ int main()
     }
     catch (const std::exception &e)
     {
+        std::cerr << e.what() << std::endl;
         lve::io::writeFile("error.log", e.what());
+        return EXIT_FAILURE;
+    }
+    catch (...)
+    {
+        std::cerr << "Unknown exception" << std::endl;
+        lve::io::writeFile("error.log", "Unknown exception");
         return EXIT_FAILURE;
     }
 }
