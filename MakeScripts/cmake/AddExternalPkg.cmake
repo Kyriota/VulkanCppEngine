@@ -27,6 +27,8 @@ function(add_external_libs_lve target_name)
 
     # Set VulkanSDK directory
     set(VULKAN_SDK $ENV{VULKAN_SDK})
+    # Replace backslashes with forward slashes
+    string(REPLACE "\\" "/" VULKAN_SDK ${VULKAN_SDK})
     # Check if VulkanSDK directory is set
     if(EXISTS ${VULKAN_SDK})
         # Add Vulkan include directories
