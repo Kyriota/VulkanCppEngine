@@ -1,4 +1,4 @@
-#include "lve/shader_tool/parser.hpp"
+#include "lve/shader/parser.hpp"
 
 #include "lve/util/file_io.hpp"
 #include "lve/util/hash.hpp"

@@ -63,9 +63,7 @@ namespace lve
 
     VkResult SwapChain::acquireNextImage(uint32_t *imageIndex)
     {
-        vkWaitForFences(
-            device.vkDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max()
-        );
+        vkWaitForFences(device.vkDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
         VkResult result = vkAcquireNextImageKHR(
             device.vkDevice(),
@@ -256,12 +254,10 @@ namespace lve
         VkSubpassDependency dependency = {};
         dependency.dstSubpass = 0;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        dependency.dstStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.srcAccessMask = 0;
-        dependency.srcStageMask =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 
         std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
         VkRenderPassCreateInfo renderPassInfo = {};
@@ -296,8 +292,7 @@ namespace lve
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(device.vkDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) !=
-                VK_SUCCESS)
+            if (vkCreateFramebuffer(device.vkDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create framebuffer!");
             }
@@ -364,10 +359,8 @@ namespace lve
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            if (vkCreateSemaphore(device.vkDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
-                    VK_SUCCESS ||
-                vkCreateSemaphore(device.vkDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
-                    VK_SUCCESS ||
+            if (vkCreateSemaphore(device.vkDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(device.vkDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
                 vkCreateFence(device.vkDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create synchronization objects for a frame!");
@@ -420,12 +413,10 @@ namespace lve
         else
         {
             VkExtent2D actualExtent = windowExtent;
-            actualExtent.width = std::max(
-                capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width)
-            );
-            actualExtent.height = std::max(
-                capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height)
-            );
+            actualExtent.width =
+                std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+            actualExtent.height =
+                std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
             return actualExtent;
         }

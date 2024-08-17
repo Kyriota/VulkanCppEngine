@@ -16,7 +16,6 @@ namespace lve
     {
     public:
         ShaderParser(const std::string &spvFilePath);
-        void dump(const std::string &outputFilePath) const;
 
         struct SPIRTypeWrapper
         {
@@ -104,6 +103,8 @@ namespace lve
         };
 
     private:
+        void dump(const std::string &outputFilePath) const;
+
         ShaderSummary summary;
         std::string shaderSrcFilePath;
         std::string metaFilePath;

@@ -3,7 +3,7 @@
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/path.hpp"
-#include "lve/shader_tool/parser.hpp"
+#include "lve/shader/parser.hpp"
 #include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
@@ -32,33 +32,27 @@ FluidSim2DApp::FluidSim2DApp()
     lve::ShaderParser parser((lve::path::asset::SHADER + "simple_shader.frag.spv").c_str());
 
     // resize window according to config
-    std::vector<int> windowSize = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D)
-                                      .get<std::vector<int>>("windowSize");
+    std::vector<int> windowSize =
+        lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D).get<std::vector<int>>("windowSize");
     lveWindow.resize(windowSize[0], windowSize[1]);
 
     // register callback functions for window resize
-    lveRenderer.registerSwapChainResizedCallback(
-        WINDOW_RESIZED_CALLBACK_NAME,
-        [this](VkExtent2D extent) {
-            recreateScreenTextureImage(extent);
-            updateGlobalDescriptorSets();
-            fluidParticleSys.updateWindowExtent(extent);
-        }
-    );
+    lveRenderer.registerSwapChainResizedCallback(WINDOW_RESIZED_CALLBACK_NAME, [this](VkExtent2D extent) {
+        recreateScreenTextureImage(extent);
+        updateGlobalDescriptorSets();
+        fluidParticleSys.updateWindowExtent(extent);
+    });
 
-    globalPool =
-        lve::DescriptorPool::Builder(lveDevice)
-            .setMaxSets(lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT
-            )
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(
-                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2
-            ) // particle buffer, neighbor buffer
-            .build();
+    globalPool = lve::DescriptorPool::Builder(lveDevice)
+                     .setMaxSets(lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+                     .addPoolSize(
+                         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                         lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2
+                     ) // particle buffer, neighbor buffer
+                     .build();
 
     uboBuffers.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
     globalDescriptorSets.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -66,11 +60,7 @@ FluidSim2DApp::FluidSim2DApp()
     for (int i = 0; i < uboBuffers.size(); i++)
     {
         uboBuffers[i] = std::make_unique<lve::Buffer>(
-            lveDevice,
-            sizeof(GlobalUbo),
-            1,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+            lveDevice, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
         );
         uboBuffers[i]->map();
     }
@@ -78,30 +68,29 @@ FluidSim2DApp::FluidSim2DApp()
     initParticleBuffer();
     writeParticleBuffer();
 
-    globalSetLayout =
-        lve::DescriptorSetLayout::Builder(lveDevice)
-            .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-            .addBinding(
-                1,
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                VK_SHADER_STAGE_FRAGMENT_BIT
-            ) // Frag shader input texture
-            .addBinding(
-                2,
-                VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                VK_SHADER_STAGE_COMPUTE_BIT
-            ) // Compute shader output texture
-            .addBinding(
-                3,
-                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                VK_SHADER_STAGE_FRAGMENT_BIT
-            ) // Frag shader input particle buffer
-            .addBinding(
-                4,
-                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                VK_SHADER_STAGE_FRAGMENT_BIT
-            ) // Frag shader input neighbor buffer
-            .build();
+    globalSetLayout = lve::DescriptorSetLayout::Builder(lveDevice)
+                          .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+                          .addBinding(
+                              1,
+                              VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                              VK_SHADER_STAGE_FRAGMENT_BIT
+                          ) // Frag shader input texture
+                          .addBinding(
+                              2,
+                              VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                              VK_SHADER_STAGE_COMPUTE_BIT
+                          ) // Compute shader output texture
+                          .addBinding(
+                              3,
+                              VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                              VK_SHADER_STAGE_FRAGMENT_BIT
+                          ) // Frag shader input particle buffer
+                          .addBinding(
+                              4,
+                              VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                              VK_SHADER_STAGE_FRAGMENT_BIT
+                          ) // Frag shader input neighbor buffer
+                          .build();
 
     recreateScreenTextureImage(lveWindow.getExtent());
     updateGlobalDescriptorSets(true);
@@ -117,34 +106,27 @@ FluidSim2DApp::FluidSim2DApp()
     linePipelineConfigInfo.fragFilePath = "line_2d.frag.spv";
     linePipelineConfigInfo.renderPass = lveRenderer.getSwapChainRenderPass();
     linePipelineConfigInfo.vertexBindingDescriptions = lve::Line::Vertex::getBindingDescriptions();
-    linePipelineConfigInfo.vertexAttributeDescriptions =
-        lve::Line::Vertex::getAttributeDescriptions();
+    linePipelineConfigInfo.vertexAttributeDescriptions = lve::Line::Vertex::getAttributeDescriptions();
 
     VkPushConstantRange screenExtentPushRange = {
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-        0,
-        sizeof(lve::ScreenExtentPushConstantData)
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(lve::ScreenExtentPushConstantData)
     };
     screenTextureRenderPipeline = lve::GraphicPipeline(
         lveDevice,
         lve::GraphicPipelineLayoutConfigInfo{
-            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()},
-            .pushConstantRanges = {screenExtentPushRange}
+            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}, .pushConstantRanges = {screenExtentPushRange}
         },
         screenTexturePipelineConfigInfo
     );
 
     lineRenderPipeline = lve::GraphicPipeline(
         lveDevice,
-        lve::GraphicPipelineLayoutConfigInfo{
-            .descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}
-        },
+        lve::GraphicPipelineLayoutConfigInfo{.descriptorSetLayouts = {globalSetLayout->getDescriptorSetLayout()}},
         linePipelineConfigInfo
     );
 
-    fluidSimComputePipeline = lve::ComputePipeline(
-        lveDevice, {globalSetLayout->getDescriptorSetLayout()}, "my_compute_shader.comp.spv"
-    );
+    fluidSimComputePipeline =
+        lve::ComputePipeline(lveDevice, {globalSetLayout->getDescriptorSetLayout()}, "my_compute_shader.comp.spv");
 }
 
 void FluidSim2DApp::run()
@@ -161,9 +143,8 @@ void FluidSim2DApp::run()
 
 void FluidSim2DApp::updateGlobalDescriptorSets(bool needMemoryAlloc)
 {
-    VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
-        0, samplerManager.getSampler({lve::SamplerType::DEFAULT})
-    );
+    VkDescriptorImageInfo screenTextureDescriptorInfo =
+        screenTextureImage.getDescriptorImageInfo(0, samplerManager.getSampler({lve::SamplerType::DEFAULT}));
     auto particleBufferInfo = particleBuffer->descriptorInfo();
     auto neighborBufferInfo = neighborBuffer->descriptorInfo();
 
@@ -223,11 +204,8 @@ void FluidSim2DApp::createScreenTextureImageView()
 
 void FluidSim2DApp::recreateScreenTextureImage(VkExtent2D extent)
 {
-    screenTextureImage = lve::Image(
-        lveDevice,
-        createScreenTextureInfo(screenTextureFormat, extent),
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    );
+    screenTextureImage =
+        lve::Image(lveDevice, createScreenTextureInfo(screenTextureFormat, extent), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     createScreenTextureImageView();
 }
@@ -278,12 +256,8 @@ void FluidSim2DApp::writeParticleBuffer()
     particleBuffer->writeToBufferOrdered(&dataScale, sizeof(float));
     particleBuffer->writeToBufferOrdered(&isNeighborViewActive, sizeof(uint32_t));
     particleBuffer->writeToBufferOrdered(&isDensityViewActive, sizeof(uint32_t));
-    particleBuffer->writeToBufferOrdered(
-        (void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount
-    );
-    particleBuffer->writeToBufferOrdered(
-        (void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount
-    );
+    particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount);
+    particleBuffer->writeToBufferOrdered((void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount);
 
     neighborBuffer->writeToBuffer((void *)fluidParticleSys.getFirstParticleNeighborIndex().data());
 }
@@ -312,9 +286,7 @@ void FluidSim2DApp::handleInput()
         double mouseX, mouseY;
         lveWindow.input.getMousePosition(mouseX, mouseY);
         glm::vec2 mousePos = {static_cast<float>(mouseX), static_cast<float>(mouseY)};
-        fluidParticleSys.setRangeForcePos(
-            lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT), mousePos
-        );
+        fluidParticleSys.setRangeForcePos(lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT), mousePos);
     }
 
     lveWindow.input.oneTimeKeyUse(GLFW_KEY_R, [this] {
@@ -351,29 +323,21 @@ void FluidSim2DApp::handleInput()
 
 void FluidSim2DApp::renderLoop()
 {
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    auto now = currentTime;
-    bool oneSecondPassed;
+    std::chrono::_V2::system_clock::time_point frameEndTime, frameStartTime = std::chrono::high_resolution_clock::now();
     while (isRunning)
     {
-        auto newTime = std::chrono::high_resolution_clock::now();
-        float frameTime =
-            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime)
-                .count();
-        frameTime = std::min(frameTime, maxFrameTime);
-        currentTime = newTime;
+        auto now = std::chrono::high_resolution_clock::now();
+        double frameDuration = std::chrono::duration<double>(now - frameStartTime).count();
+        frameDuration = std::min(frameDuration, maxFrameDuration);
+        frameStartTime = now;
 
         fpsCounter.frameCount++;
-        if (std::chrono::duration<float, std::chrono::seconds::period>(
-                currentTime - fpsCounter.startTime
-            )
-                .count() >= 1.0f)
+        if (std::chrono::duration<double>(frameStartTime - fpsCounter.startTime).count() >= 1.0)
         {
             lveWindow.setTitle(APP_NAME + " (FPS: " + std::to_string(fpsCounter.frameCount) + ")");
             fpsCounter.frameCount = 0;
-            fpsCounter.startTime = currentTime;
+            fpsCounter.startTime = frameStartTime;
         }
-        oneSecondPassed = fpsCounter.frameCount == 0;
 
         if (auto commandBuffer = lveRenderer.beginFrame())
         {
@@ -391,7 +355,7 @@ void FluidSim2DApp::renderLoop()
             handleInput();
 
             // fluid particle system
-            fluidParticleSys.updateParticleData(frameTime);
+            fluidParticleSys.updateParticleData(frameDuration);
             writeParticleBuffer();
 
             // render
@@ -410,5 +374,10 @@ void FluidSim2DApp::renderLoop()
             lveRenderer.endSwapChainRenderPass(commandBuffer);
             lveRenderer.endFrame();
         }
+
+        // busy waiting
+        while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - frameStartTime).count() <
+               minFrameDuration)
+            continue;
     }
 }
