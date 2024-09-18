@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app/fluid_sim/2d/fluid_particle_system.hpp"
+#include "app/fluid_sim_2d/fluid_particle_system.hpp"
 #include "lve/GO/geo/line.hpp"
 #include "lve/core/device.hpp"
 #include "lve/core/frame_manager.hpp"

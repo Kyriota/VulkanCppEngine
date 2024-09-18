@@ -1,4 +1,4 @@
-#include "app/fluid_sim/2d/fluid_particle_system.hpp"
+#include "app/fluid_sim_2d/fluid_particle_system.hpp"
 
 #include "lve/path.hpp"
 #include "lve/util/config_manager.hpp"

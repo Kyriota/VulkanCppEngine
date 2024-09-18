@@ -1,4 +1,4 @@
-#include "app/fluid_sim/2d/app.hpp"
+#include "app/fluid_sim_2d/app.hpp"
 
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
