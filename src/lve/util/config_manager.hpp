@@ -4,7 +4,6 @@
 #include "include/yaml.hpp"
 
 // std
-#include <cassert>
 #include <string>
 #include <unordered_map>
 
@@ -33,12 +32,18 @@ namespace lve
 
         inline void checkKeyDefined(const std::string &key) const
         {
-            assert(isKeyDefined(key) && ("key not found in config: " + key).c_str());
+            if (!isKeyDefined(key))
+            {
+                throw std::runtime_error("key not found in config: " + key);
+            }
         }
 
         inline void checkConfigDefined() const
         {
-            assert(isConfigDefined() && "config not initialized");
+            if (!isConfigDefined())
+            {
+                throw std::runtime_error("config not initialized");
+            }
         }
     };
 

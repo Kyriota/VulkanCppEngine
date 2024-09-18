@@ -1,20 +1,23 @@
 #include "lve/util/file_io.hpp"
 
-// std
-#include <cassert>
-
 namespace lve
 {
     namespace io
     {
         void checkFileOpen(const std::ifstream &file, const std::string &filename)
         {
-            assert(file.is_open() && ("Failed to open file: " + filename).c_str());
+            if (!file.is_open())
+            {
+                throw std::runtime_error("Failed to open file: " + filename);
+            }
         }
 
         void checkFileOpen(const std::ofstream &file, const std::string &filename)
         {
-            assert(file.is_open() && ("Failed to open file: " + filename).c_str());
+            if (!file.is_open())
+            {
+                throw std::runtime_error("Failed to open file: " + filename);
+            }
         }
 
         void readTextFile(const std::string &filename, std::string &text)
@@ -100,7 +103,10 @@ namespace lve
             std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback
         )
         {
-            assert(pathExists(dir));
+            if (!pathExists(dir))
+            {
+                throw std::runtime_error("Directory does not exist: " + dir);
+            }
 
             for (const auto &entry : std::filesystem::directory_iterator(dir))
             {

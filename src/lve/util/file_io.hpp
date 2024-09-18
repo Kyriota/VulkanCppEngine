@@ -1,7 +1,6 @@
 #pragma once
 
 // std
-#include <cassert>
 #include <filesystem>
 #include <fstream>
 #include <functional>

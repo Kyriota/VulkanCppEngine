@@ -7,7 +7,6 @@
 #include "include/tiny_obj_loader.hpp"
 
 // std
-#include <cassert>
 #include <cstring>
 #include <unordered_map>
 
@@ -43,7 +42,10 @@ namespace lve
     void Model::createVertexBuffer(const std::vector<Vertex> &vertices)
     {
         vertexCount = static_cast<uint32_t>(vertices.size());
-        assert(vertexCount >= 3 && "Vertex count must be at least 3");
+        if (vertexCount < 3)
+        {
+            throw std::runtime_error("Vertex count must be at least 3");
+        }
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
         uint32_t vertexSize = sizeof(vertices[0]);
 

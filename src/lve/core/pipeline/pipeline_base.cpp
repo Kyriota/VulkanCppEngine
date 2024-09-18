@@ -2,9 +2,6 @@
 
 #include "lve/util/file_io.hpp"
 
-// std
-#include <cassert>
-
 namespace lve
 {
     Pipeline::Pipeline(Pipeline &&other) noexcept : lveDevice(other.lveDevice)
@@ -81,9 +78,10 @@ namespace lve
         createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
         VkShaderModule shaderModule;
-        VkResult result =
-            vkCreateShaderModule(lveDevice.vkDevice(), &createInfo, nullptr, &shaderModule);
-        assert(result == VK_SUCCESS && "Failed to create shader module");
+        if (vkCreateShaderModule(lveDevice.vkDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create shader module!");
+        }
 
         shaderModules[moduleName] = shaderModule;
     }
