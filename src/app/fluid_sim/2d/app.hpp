@@ -44,9 +44,11 @@ private:
     struct FpsCounter
     {
         int frameCount = 0;
-        std::chrono::_V2::system_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+        std::chrono::_V2::system_clock::time_point startTime =
+            std::chrono::high_resolution_clock::now();
     };
     double maxFrameDuration = 1.0 / 30.0, minFrameDuration = 1.0 / 165.0;
+    bool isFrameRateLimited = false;
     FpsCounter fpsCounter;
 
     // GPU resources

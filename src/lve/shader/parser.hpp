@@ -15,15 +15,16 @@ namespace lve
     class ShaderParser
     {
     public:
-        ShaderParser(const std::string &spvFilePath);
-
         struct SPIRTypeWrapper
         {
             SPIRTypeWrapper() = default;
             SPIRTypeWrapper(
                 spirv_cross::SPIRType spirType,
+                spv::StorageClass storageClass,
                 const std::string &name,
-                bool isPushConstant = false
+                int binding,
+                int location,
+                uint32_t set
             );
 
             struct Image
@@ -51,9 +52,11 @@ namespace lve
             };
 
             std::string name;
-            bool isPushConstant;
+            int binding;
+            int location;
+            uint32_t set;
             spirv_cross::SPIRType::BaseType baseType;
-            spv::StorageClass storageClass;
+            spv::StorageClass storageClass; // uniform, input, output, push_constant, etc.
             Image image;
 
             uint32_t bitWidth;
@@ -64,7 +67,7 @@ namespace lve
             {
                 archive(
                     CEREAL_NVP(name),
-                    CEREAL_NVP(isPushConstant),
+                    CEREAL_NVP(binding),
                     CEREAL_NVP(baseType),
                     CEREAL_NVP(storageClass),
                     CEREAL_NVP(image),
@@ -81,26 +84,28 @@ namespace lve
             ShaderSummary() = default;
             ShaderSummary(
                 spirv_cross::CompilerGLSL &compiler,
-                const std::string &shaderPath,
+                const std::string &spvFilePath,
                 const size_t spvBinaryHash
             );
 
-            std::string shaderPath;
+            std::string spvFilePath;
             size_t spvBinaryHash;
-            std::vector<SPIRTypeWrapper> types;
+            std::vector<SPIRTypeWrapper> variables;
 
             template <class Archive> void serialize(Archive &archive)
             {
-                archive(CEREAL_NVP(shaderPath), CEREAL_NVP(spvBinaryHash), CEREAL_NVP(types));
+                archive(CEREAL_NVP(spvFilePath), CEREAL_NVP(spvBinaryHash), CEREAL_NVP(variables));
             }
 
         private:
             void addTypesInResources(
                 spirv_cross::SmallVector<spirv_cross::Resource> resources,
-                spirv_cross::CompilerGLSL &compiler,
-                bool isPushConstant = false
+                spirv_cross::CompilerGLSL &compiler
             );
         };
+
+        ShaderParser(const std::string &spvFilePath);
+        ShaderSummary getSummary() const { return summary; }
 
     private:
         void dump(const std::string &outputFilePath) const;

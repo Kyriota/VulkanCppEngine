@@ -66,13 +66,18 @@ namespace lve
 
     ShaderParser::SPIRTypeWrapper::SPIRTypeWrapper(
         spirv_cross::SPIRType baseType,
+        spv::StorageClass storageClass,
         const std::string &name,
-        bool isPushConstant
+        int binding,
+        int location,
+        uint32_t set
     )
         : name(name),
-          isPushConstant(isPushConstant),
+          binding(binding),
+          location(location),
+          set(set),
+          storageClass(storageClass),
           baseType(baseType.basetype),
-          storageClass(baseType.storage),
           bitWidth(baseType.width),
           vecSize(baseType.vecsize),
           columns(baseType.columns)
@@ -91,10 +96,10 @@ namespace lve
 
     ShaderParser::ShaderSummary::ShaderSummary(
         spirv_cross::CompilerGLSL &compiler,
-        const std::string &shaderPath,
+        const std::string &spvFilePath,
         const size_t spvBinaryHash
     )
-        : shaderPath(shaderPath), spvBinaryHash(spvBinaryHash)
+        : spvFilePath(spvFilePath), spvBinaryHash(spvBinaryHash)
     {
         spirv_cross::ShaderResources resources = compiler.get_shader_resources();
         addTypesInResources(resources.uniform_buffers, compiler);
@@ -107,21 +112,29 @@ namespace lve
         addTypesInResources(resources.atomic_counters, compiler);
         addTypesInResources(resources.separate_images, compiler);
         addTypesInResources(resources.separate_samplers, compiler);
-        addTypesInResources(resources.push_constant_buffers, compiler, true);
+        addTypesInResources(resources.push_constant_buffers, compiler);
     }
 
     void ShaderParser::ShaderSummary::addTypesInResources(
         spirv_cross::SmallVector<spirv_cross::Resource> resources,
-        spirv_cross::CompilerGLSL &compiler,
-        bool isPushConstant
+        spirv_cross::CompilerGLSL &compiler
     )
     {
         for (const spirv_cross::Resource &resource : resources)
         {
-            SPIRTypeWrapper typeWrapper(
-                compiler.get_type(resource.base_type_id), resource.name, isPushConstant
-            );
-            types.push_back(typeWrapper);
+            spirv_cross::SPIRType baseType = compiler.get_type(resource.base_type_id);
+            spv::StorageClass storageClass = compiler.get_storage_class(resource.id);
+            int binding, location;
+            bool hasBinding, hasLocation;
+            hasBinding = compiler.has_decoration(resource.id, spv::DecorationBinding);
+            hasLocation = compiler.has_decoration(resource.id, spv::DecorationLocation);
+            binding = hasBinding ? compiler.get_decoration(resource.id, spv::DecorationBinding) : -1;
+            location =
+                hasLocation ? compiler.get_decoration(resource.id, spv::DecorationLocation) : -1;
+            uint32_t set = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+            SPIRTypeWrapper typeWrapper(baseType, storageClass, resource.name, binding, location, set);
+            variables.push_back(typeWrapper);
         }
     }
 } // namespace lve
