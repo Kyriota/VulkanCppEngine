@@ -3,7 +3,6 @@
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/path.hpp"
-#include "lve/shader/parser.hpp"
 #include "lve/util/config_manager.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
@@ -28,9 +27,6 @@ struct GlobalUbo
 
 FluidSim2DApp::FluidSim2DApp()
 {
-    // test code for spirv_parser
-    lve::ShaderParser parser((lve::path::asset::SHADER + "screen_texture_shader.frag.spv").c_str());
-
     // resize window according to config
     std::vector<int> windowSize = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D)
                                       .get<std::vector<int>>("windowSize");
