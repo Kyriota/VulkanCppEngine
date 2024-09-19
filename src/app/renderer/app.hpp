@@ -29,7 +29,7 @@ private:
 
     lve::Window lveWindow{INIT_WIDTH, INIT_HEIGHT, "RendererApp"};
     lve::Device lveDevice{lveWindow};
-    lve::FrameManager lveRenderer{lveWindow, lveDevice};
+    lve::FrameManager lveFrameManager{lveWindow, lveDevice};
 
     // note: order of declarations matters because of destruction order
     std::unique_ptr<lve::DescriptorPool> globalPool{};

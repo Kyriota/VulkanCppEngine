@@ -6,7 +6,7 @@
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/path.hpp"
-#include "lve/util/config_manager.hpp"
+#include "lve/util/config.hpp"
 #include "lve/util/file_io.hpp"
 
 // libs
@@ -63,7 +63,7 @@ void RendererApp::run()
     lve::GraphicPipelineConfigInfo graphicPipelineConfigInfo{};
     graphicPipelineConfigInfo.vertFilePath = "simple_shader.vert.spv";
     graphicPipelineConfigInfo.fragFilePath = "simple_shader.frag.spv";
-    graphicPipelineConfigInfo.renderPass = lveRenderer.getSwapChainRenderPass();
+    graphicPipelineConfigInfo.renderPass = lveFrameManager.getSwapChainRenderPass();
     graphicPipelineConfigInfo.vertexBindingDescriptions =
         lve::Model::Vertex::getBindingDescriptions();
     graphicPipelineConfigInfo.vertexAttributeDescriptions =
@@ -101,12 +101,12 @@ void RendererApp::run()
         cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
         camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
-        float aspect = lveRenderer.getAspectRatio();
+        float aspect = lveFrameManager.getAspectRatio();
         camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 100.f);
 
-        if (auto commandBuffer = lveRenderer.beginFrame())
+        if (auto commandBuffer = lveFrameManager.beginFrame())
         {
-            int frameIndex = lveRenderer.getFrameIndex();
+            int frameIndex = lveFrameManager.getFrameIndex();
 
             // update
             GlobalUbo ubo{};
@@ -115,7 +115,7 @@ void RendererApp::run()
             uboBuffers[frameIndex]->flush();
 
             // render
-            lveRenderer.beginSwapChainRenderPass(commandBuffer);
+            lveFrameManager.beginSwapChainRenderPass(commandBuffer);
 
             renderGameObjects(
                 commandBuffer,
@@ -125,8 +125,8 @@ void RendererApp::run()
                 &simpleRenderPipeline
             );
 
-            lveRenderer.endSwapChainRenderPass(commandBuffer);
-            lveRenderer.endFrame();
+            lveFrameManager.endSwapChainRenderPass(commandBuffer);
+            lveFrameManager.endFrame();
         }
     }
 
