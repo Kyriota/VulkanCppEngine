@@ -55,4 +55,4 @@ namespace lve
     };
 } // namespace lve
 
-#include "lve/util/config_manager.tpp"
+#include "config.tpp"

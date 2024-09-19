@@ -1,8 +1,7 @@
-#include "lve/util/config_manager.hpp"
+#include "config.hpp"
 
 #include "lve/path.hpp"
 #include "lve/util/file_io.hpp"
-#include "config_manager.hpp"
 
 namespace lve
 {

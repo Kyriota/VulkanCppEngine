@@ -2,7 +2,7 @@
 
 #include "lve/GO/geo/model.hpp"
 #include "lve/path.hpp"
-#include "lve/util/config_manager.hpp"
+#include "lve/util/config.hpp"
 #include "lve/util/file_io.hpp"
 
 // std

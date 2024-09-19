@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lve/util/config_manager.hpp"
+#include "config.hpp"
 
 namespace lve
 {
