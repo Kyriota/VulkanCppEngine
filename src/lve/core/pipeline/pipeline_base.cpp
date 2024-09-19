@@ -4,7 +4,7 @@
 
 namespace lve
 {
-    Pipeline::Pipeline(Pipeline &&other) noexcept : lveDevice(other.lveDevice)
+    Pipeline::Pipeline(Pipeline &&other) : lveDevice(other.lveDevice)
     {
         pipeline = other.pipeline;
         pipelineLayout = other.pipelineLayout;

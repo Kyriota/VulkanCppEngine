@@ -16,7 +16,7 @@ namespace lve
         Pipeline(const Pipeline &) = delete;
         Pipeline &operator=(const Pipeline &) = delete;
 
-        Pipeline(Pipeline &&other) noexcept;
+        Pipeline(Pipeline &&other);
         Pipeline &operator=(Pipeline &&other);
 
         VkPipeline getPipeline() { return pipeline; }

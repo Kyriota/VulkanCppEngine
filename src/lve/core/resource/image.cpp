@@ -30,7 +30,7 @@ namespace lve
 
     Image::~Image() { cleanUp(); }
 
-    Image::Image(Image &&other) noexcept
+    Image::Image(Image &&other)
         : lveDevice{other.lveDevice},
           imageMemory{other.imageMemory},
           image{other.image},

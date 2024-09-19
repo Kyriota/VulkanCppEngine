@@ -21,7 +21,7 @@ namespace lve
         Image(const Image &) = delete;
         Image &operator=(const Image &) = delete;
 
-        Image(Image &&other) noexcept;
+        Image(Image &&other);
         Image &operator=(Image &&other);
 
         bool hasImageView(int id) const;
