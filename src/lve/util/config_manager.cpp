@@ -2,6 +2,7 @@
 
 #include "lve/path.hpp"
 #include "lve/util/file_io.hpp"
+#include "config_manager.hpp"
 
 namespace lve
 {
@@ -15,6 +16,22 @@ namespace lve
     {
         checkConfigDefined();
         io::writeFile(outputPath, YAML::Dump(config));
+    }
+
+    void YamlConfig::checkKeyDefined(const std::string &key) const
+    {
+        if (!isKeyDefined(key))
+        {
+            throw std::runtime_error("key not found in config: " + key);
+        }
+    }
+
+    void YamlConfig::checkConfigDefined() const
+    {
+        if (!isConfigDefined())
+        {
+            throw std::runtime_error("config not initialized");
+        }
     }
 
     const YamlConfig &ConfigManager::getConfig(const std::string &configReletivePath)

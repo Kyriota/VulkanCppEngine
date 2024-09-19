@@ -23,17 +23,6 @@ namespace lve
         void writeFile(const std::string &filePath, const std::vector<char> &data);
         void writeFile(const std::string &filePath, const std::string &data);
 
-        inline bool fileExists(const std::string &filePath)
-        {
-            return std::filesystem::is_regular_file(filePath);
-        }
-        inline bool pathExists(const std::string &path)
-        {
-            return std::filesystem::is_directory(path);
-        }
-        inline bool isFileOpen(const std::ifstream &file) { return file.is_open(); }
-        inline bool isFileOpen(const std::ofstream &file) { return file.is_open(); }
-
         void foreachFileInDirectory(
             const std::string &dir,
             std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback

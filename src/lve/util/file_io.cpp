@@ -103,7 +103,7 @@ namespace lve
             std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback
         )
         {
-            if (!pathExists(dir))
+            if (!std::filesystem::is_directory(dir))
             {
                 throw std::runtime_error("Directory does not exist: " + dir);
             }

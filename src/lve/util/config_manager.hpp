@@ -30,21 +30,8 @@ namespace lve
     private:
         YAML::Node config;
 
-        inline void checkKeyDefined(const std::string &key) const
-        {
-            if (!isKeyDefined(key))
-            {
-                throw std::runtime_error("key not found in config: " + key);
-            }
-        }
-
-        inline void checkConfigDefined() const
-        {
-            if (!isConfigDefined())
-            {
-                throw std::runtime_error("config not initialized");
-            }
-        }
+        void checkKeyDefined(const std::string &key) const;
+        void checkConfigDefined() const;
     };
 
     class ConfigManager // Singleton class
