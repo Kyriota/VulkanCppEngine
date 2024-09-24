@@ -1,12 +1,11 @@
 #include "app/fluid_sim_2d/gpu_resources.hpp"
 
-#include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/swap_chain.hpp"
 
 // libs
 #include "include/glm.hpp"
 
-namespace fluidsim2d
+namespace app::fluidsim2d
 {
 struct GlobalUbo
 {
@@ -172,7 +171,7 @@ void GpuResources::writeParticleBuffer()
 void GpuResources::updateGlobalDescriptorSets(bool needMemoryAlloc)
 {
     VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
-        0, lve::Samplers::getSampler(lveFrameManager.getDevice(), lve::Samplers::Type::DEFAULT)
+        0, samplerManager.getSampler(lve::SamplerType::DEFAULT)
     );
     auto particleBufferInfo = particleBuffer->descriptorInfo();
     auto neighborBufferInfo = neighborBuffer->descriptorInfo();
@@ -268,4 +267,4 @@ void GpuResources::renderTexture(VkCommandBuffer cmdBuffer)
         lveFrameManager.getWindow().getExtent()
     );
 }
-} // namespace fluidsim2d
+} // namespace app::fluidsim2d

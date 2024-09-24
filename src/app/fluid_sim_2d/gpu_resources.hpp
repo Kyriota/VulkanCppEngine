@@ -4,8 +4,9 @@
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/descriptors.hpp"
 #include "lve/core/resource/image.hpp"
+#include "lve/core/resource/sampler_manager.hpp"
 
-namespace fluidsim2d
+namespace app::fluidsim2d
 {
 class GpuResources
 {
@@ -31,12 +32,15 @@ private: // variables
     lve::FrameManager &lveFrameManager;
     FluidParticleSystem &fluidParticleSys;
 
+    // resources
+    lve::LineCollection lineCollection{lveFrameManager.getDevice(), fluidParticleSys.getParticleCount()};
+    lve::Image screenTextureImage{lveFrameManager.getDevice()};
+    lve::SamplerManager samplerManager{lveFrameManager.getDevice()};
+
     // buffers
     std::unique_ptr<lve::Buffer> particleBuffer;
     std::unique_ptr<lve::Buffer> neighborBuffer;
     std::vector<std::unique_ptr<lve::Buffer>> uboBuffers;
-    lve::LineCollection lineCollection{lveFrameManager.getDevice(), fluidParticleSys.getParticleCount()};
-    lve::Image screenTextureImage{lveFrameManager.getDevice()};
 
     // descriptors
     std::unique_ptr<lve::DescriptorPool> globalPool{};
@@ -47,4 +51,4 @@ private: // variables
     std::unique_ptr<lve::GraphicPipeline> screenTextureRenderPipeline;
     std::unique_ptr<lve::GraphicPipeline> lineRenderPipeline;
 };
-} // namespace fluidsim2d
+} // namespace app::fluidsim2d

@@ -1,10 +1,9 @@
 #include "lve/core/resource/sampler_manager.hpp"
-
 #include "lve/util/math.hpp"
 
 namespace lve
 {
-VkSampler Samplers::getDefaultSampler(lve::Device &lveDevice)
+VkSampler SamplerManager::getDefaultSampler()
 {
     VkSamplerCreateInfo defaultSamplerInfo{};
     defaultSamplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -25,16 +24,12 @@ VkSampler Samplers::getDefaultSampler(lve::Device &lveDevice)
     defaultSamplerInfo.maxLod = 0.0f;
 
     VkSampler sampler;
-    createSamplerWithInfo(lveDevice, defaultSamplerInfo, sampler);
+    createSamplerWithInfo(defaultSamplerInfo, sampler);
 
     return sampler;
 }
 
-void Samplers::createSamplerWithInfo(
-    lve::Device &lveDevice,
-    VkSamplerCreateInfo &createInfo,
-    VkSampler &sampler
-)
+void SamplerManager::createSamplerWithInfo(VkSamplerCreateInfo &createInfo, VkSampler &sampler)
 {
     if (vkCreateSampler(lveDevice.vkDevice(), &createInfo, nullptr, &sampler) != VK_SUCCESS)
     {
@@ -42,36 +37,33 @@ void Samplers::createSamplerWithInfo(
     }
 }
 
-void Samplers::createSampler(Key key)
+void SamplerManager::createSampler(SamplerType type)
 {
-    static Samplers instance;
     // use switch statement to create different types of samplers
-    switch (key.type)
+    switch (type)
     {
-    case Type::DEFAULT:
-        instance.samplerMap[key] = getDefaultSampler(*key.lveDevice);
+    case SamplerType::DEFAULT:
+        samplers[type] = getDefaultSampler();
         break;
     default:
         throw std::runtime_error("Failed to create sampler: unknown sampler type");
     }
 }
 
-VkSampler Samplers::getSampler(lve::Device &lveDevice, Type type)
+VkSampler SamplerManager::getSampler(SamplerType type)
 {
-    static Samplers instance;
-    Key key{type, &lveDevice};
-    if (instance.samplerMap.find(key) == instance.samplerMap.end())
+    if (samplers.find(type) == samplers.end())
     {
-        createSampler(key);
+        createSampler(type);
     }
-    return instance.samplerMap[key];
+    return samplers[type];
 }
 
-Samplers::~Samplers()
+SamplerManager::~SamplerManager()
 {
-    for (auto &sampler : samplerMap)
+    for (auto &sampler : samplers)
     {
-        vkDestroySampler(sampler.first.lveDevice->vkDevice(), sampler.second, nullptr);
+        vkDestroySampler(lveDevice.vkDevice(), sampler.second, nullptr);
     }
 }
 } // namespace lve
