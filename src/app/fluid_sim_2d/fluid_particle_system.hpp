@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lve/GO/geo/line.hpp"
-#include "lve/util/config_manager.hpp"
+#include "lve/util/config.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
 
@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+namespace fluidsim2d
+{
 class FluidParticleSystem
 {
 public:
@@ -27,8 +29,8 @@ public:
     float getSmoothRadius() const { return smoothRadius; }
     float getTargetDensity() const { return targetDensity; }
     float getDataScale() const { return dataScale; }
-    std::vector<glm::vec2> &getPositionData() { return positionData; }
-    std::vector<glm::vec2> &getVelocityData() { return velocityData; }
+    const std::vector<glm::vec2> &getPositionData() const { return positionData; }
+    const std::vector<glm::vec2> &getVelocityData() const { return velocityData; }
 
     void setRangeForcePos(bool sign, glm::vec2 mousePosition);
 
@@ -44,11 +46,11 @@ public:
     void toggleNeighborView() { isNeighborViewActive = !isNeighborViewActive; }
     void toggleDensityView() { isDensityViewActive = !isDensityViewActive; }
     void renderPausedNextFrame() { pausedNextFrame = true; }
-    bool isDebugLineOn() { return isDebugLineVisible; }
-    bool isNeighborViewOn() { return isNeighborViewActive; }
-    bool isDensityViewOn() { return isDensityViewActive; }
+    bool isDebugLineOn() const { return isDebugLineVisible; }
+    bool isNeighborViewOn() const { return isNeighborViewActive; }
+    bool isDensityViewOn() const { return isDensityViewActive; }
     void setDebugLineType(DebugLineType type) { debugLineType = type; }
-    std::vector<int> &getFirstParticleNeighborIndex() { return firstParticleNeighborIndex; }
+    const std::vector<int> &getFirstParticleNeighborIndex() const { return firstParticleNeighborIndex; }
     std::vector<lve::Line> &getDebugLines() { return debugLines; }
 
 private:
@@ -154,3 +156,4 @@ private:
     };
     RangeForceInfo rangeForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};
 };
+} // namespace fluidsim2d

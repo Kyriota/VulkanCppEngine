@@ -1,7 +1,7 @@
 #include "app/fluid_sim_2d/fluid_particle_system.hpp"
 
 #include "lve/path.hpp"
-#include "lve/util/config_manager.hpp"
+#include "lve/util/config.hpp"
 #include "lve/util/file_io.hpp"
 #include "lve/util/math.hpp"
 
@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <iostream>
 
+namespace fluidsim2d
+{
 FluidParticleSystem::FluidParticleSystem(VkExtent2D windowExtent) : windowExtent(windowExtent)
 {
     const lve::YamlConfig config = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D);
@@ -447,3 +449,4 @@ void FluidParticleSystem::foreachNeighbor(size_t particleIndex, std::function<vo
         }
     }
 }
+} // namespace fluidsim2d

@@ -7,23 +7,49 @@
 
 namespace lve
 {
-    enum class SamplerType
+class Samplers // Singleton
+{
+public: // enums
+    enum class Type
     {
         DEFAULT,
     };
 
-    class SamplerManager
-    {
-    public:
-        SamplerManager(lve::Device &device) : lveDevice(device) {}
-        ~SamplerManager();
-        VkSampler getSampler(SamplerType type);
+public: // methods
+    static VkSampler getSampler(lve::Device &lveDevice, Type type);
 
-    private:
-        lve::Device &lveDevice;
-        VkSampler getDefaultSampler();
-        void createSampler(SamplerType type);
-        void createSamplerWithInfo(VkSamplerCreateInfo &createInfo, VkSampler &sampler);
-        std::unordered_map<SamplerType, VkSampler> samplers;
+private: // structs
+    struct Key
+    {
+        Type type;
+        lve::Device *lveDevice;
+
+        bool operator==(const Key &other) const
+        {
+            return type == other.type && lveDevice->vkDevice() == other.lveDevice->vkDevice();
+        }
+
+        struct Hash
+        {
+            std::size_t operator()(const Key &key) const
+            {
+                return std::hash<int>()(static_cast<int>(key.type)) ^
+                       std::hash<VkDevice>()(key.lveDevice->vkDevice());
+            }
+        };
     };
+
+private: // constructors
+    Samplers() = default;
+    ~Samplers();
+
+private: // methods
+    static VkSampler getDefaultSampler(lve::Device &lveDevice);
+    static void createSampler(Key key);
+    static void
+    createSamplerWithInfo(lve::Device &lveDevice, VkSamplerCreateInfo &createInfo, VkSampler &sampler);
+
+private: // variables
+    std::unordered_map<Key, VkSampler, Key::Hash> samplerMap;
+};
 } // namespace lve

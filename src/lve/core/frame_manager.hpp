@@ -38,6 +38,9 @@ namespace lve
             return currentFrameIndex;
         }
 
+        Device &getDevice() const { return lveDevice; }
+        Window &getWindow() const { return lveWindow; }
+
         VkCommandBuffer beginFrame();
         void endFrame();
         void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
