@@ -13,60 +13,63 @@
 
 namespace lve
 {
-    class FrameManager
+class FrameManager
+{
+public:
+    FrameManager(Window &window, Device &device);
+    ~FrameManager();
+
+    FrameManager(const FrameManager &) = delete;
+    FrameManager &operator=(const FrameManager &) = delete;
+
+    VkRenderPass getSwapChainRenderPass() const { return lveSwapChain->getRenderPass(); }
+    float getAspectRatio() const { return lveSwapChain->extentAspectRatio(); }
+    bool isFrameInProgress() const { return isFrameStarted; }
+
+    VkCommandBuffer getCurrentCommandBuffer() const
     {
-    public:
-        FrameManager(Window &window, Device &device);
-        ~FrameManager();
+        assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
+        return commandBuffers[currentFrameIndex];
+    }
 
-        FrameManager(const FrameManager &) = delete;
-        FrameManager &operator=(const FrameManager &) = delete;
+    int getFrameIndex() const
+    {
+        assert(isFrameStarted && "Cannot get frame index when frame not in progress");
+        return currentFrameIndex;
+    }
 
-        VkRenderPass getSwapChainRenderPass() const { return lveSwapChain->getRenderPass(); }
-        float getAspectRatio() const { return lveSwapChain->extentAspectRatio(); }
-        bool isFrameInProgress() const { return isFrameStarted; }
+    Device &getDevice() const { return lveDevice; }
+    Window &getWindow() const { return lveWindow; }
 
-        VkCommandBuffer getCurrentCommandBuffer() const
-        {
-            assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
-            return commandBuffers[currentFrameIndex];
-        }
+    VkCommandBuffer beginFrame();
+    void endFrame();
+    void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
+    void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
-        int getFrameIndex() const
-        {
-            assert(isFrameStarted && "Cannot get frame index when frame not in progress");
-            return currentFrameIndex;
-        }
+    using SwapChainResizedCallback = std::function<void(VkExtent2D)>;
+    void registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback)
+    {
+        swapChainResizedCallbacks[name] = callback;
+    }
+    void unregisterSwapChainResizedCallback(const std::string &name)
+    {
+        swapChainResizedCallbacks.erase(name);
+    }
 
-        Device &getDevice() const { return lveDevice; }
-        Window &getWindow() const { return lveWindow; }
+private:
+    void createCommandBuffers();
+    void freeCommandBuffers();
+    bool recreateSwapChain();
 
-        VkCommandBuffer beginFrame();
-        void endFrame();
-        void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
-        void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
+    Window &lveWindow;
+    Device &lveDevice;
+    std::unique_ptr<SwapChain> lveSwapChain;
+    std::vector<VkCommandBuffer> commandBuffers;
 
-        using SwapChainResizedCallback = std::function<void(VkExtent2D)>;
-        void registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback)
-        {
-            swapChainResizedCallbacks[name] = callback;
-        }
-        void unregisterSwapChainResizedCallback(const std::string &name) { swapChainResizedCallbacks.erase(name); }
+    uint32_t currentImageIndex;
+    int currentFrameIndex{0};
+    bool isFrameStarted{false};
 
-    private:
-        void createCommandBuffers();
-        void freeCommandBuffers();
-        bool recreateSwapChain();
-
-        Window &lveWindow;
-        Device &lveDevice;
-        std::unique_ptr<SwapChain> lveSwapChain;
-        std::vector<VkCommandBuffer> commandBuffers;
-
-        uint32_t currentImageIndex;
-        int currentFrameIndex{0};
-        bool isFrameStarted{false};
-
-        std::unordered_map<std::string, SwapChainResizedCallback> swapChainResizedCallbacks;
-    };
+    std::unordered_map<std::string, SwapChainResizedCallback> swapChainResizedCallbacks;
+};
 } // namespace lve

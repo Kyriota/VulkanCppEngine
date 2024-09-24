@@ -11,16 +11,18 @@
 #include <memory>
 #include <vector>
 
-class RendererApp
+namespace app::renderer
+{
+class App
 {
 public:
     static constexpr int INIT_WIDTH = 800;
     static constexpr int INIT_HEIGHT = 600;
 
-    RendererApp();
+    App();
 
-    RendererApp(const RendererApp &) = delete;
-    RendererApp &operator=(const RendererApp &) = delete;
+    App(const App &) = delete;
+    App &operator=(const App &) = delete;
 
     void run();
 
@@ -40,3 +42,4 @@ private:
 
     void updateGlobalDescriptorSets();
 };
+} // namespace app::renderer

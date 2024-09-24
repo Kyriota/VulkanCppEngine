@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace fluidsim2d
+namespace app::fluidsim2d
 {
 class FluidParticleSystem
 {
@@ -50,7 +50,10 @@ public:
     bool isNeighborViewOn() const { return isNeighborViewActive; }
     bool isDensityViewOn() const { return isDensityViewActive; }
     void setDebugLineType(DebugLineType type) { debugLineType = type; }
-    const std::vector<int> &getFirstParticleNeighborIndex() const { return firstParticleNeighborIndex; }
+    const std::vector<int> &getFirstParticleNeighborIndex() const
+    {
+        return firstParticleNeighborIndex;
+    }
     std::vector<lve::Line> &getDebugLines() { return debugLines; }
 
 private:
@@ -156,4 +159,4 @@ private:
     };
     RangeForceInfo rangeForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};
 };
-} // namespace fluidsim2d
+} // namespace app::fluidsim2d

@@ -12,45 +12,45 @@
 namespace lve
 {
 
-    struct TransformComponent
+struct TransformComponent
+{
+    glm::vec3 translation{};
+    glm::vec3 scale{1.f, 1.f, 1.f};
+    glm::vec3 rotation{};
+
+    // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
+    // Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
+    // https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+    glm::mat4 mat4();
+
+    glm::mat3 normalMatrix();
+};
+
+class GameObject
+{
+public:
+    using Map = std::unordered_map<size_t, GameObject>;
+
+    static GameObject createGameObject()
     {
-        glm::vec3 translation{};
-        glm::vec3 scale{1.f, 1.f, 1.f};
-        glm::vec3 rotation{};
+        static size_t currentId = 0;
+        return GameObject{currentId++};
+    }
 
-        // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
-        // Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
-        // https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
-        glm::mat4 mat4();
+    GameObject(const GameObject &) = delete;
+    GameObject &operator=(const GameObject &) = delete;
+    GameObject(GameObject &&) = default;
+    GameObject &operator=(GameObject &&) = default;
 
-        glm::mat3 normalMatrix();
-    };
+    size_t getId() { return id; }
 
-    class GameObject
-    {
-    public:
-        using Map = std::unordered_map<size_t, GameObject>;
+    std::shared_ptr<Model> model{};
+    glm::vec3 color{};
+    TransformComponent transform{};
 
-        static GameObject createGameObject()
-        {
-            static size_t currentId = 0;
-            return GameObject{currentId++};
-        }
+private:
+    GameObject(size_t objId) : id{objId} {}
 
-        GameObject(const GameObject &) = delete;
-        GameObject &operator=(const GameObject &) = delete;
-        GameObject(GameObject &&) = default;
-        GameObject &operator=(GameObject &&) = default;
-
-        size_t getId() { return id; }
-
-        std::shared_ptr<Model> model{};
-        glm::vec3 color{};
-        TransformComponent transform{};
-
-    private:
-        GameObject(size_t objId) : id{objId} {}
-
-        size_t id;
-    };
+    size_t id;
+};
 } // namespace lve

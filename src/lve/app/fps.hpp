@@ -20,7 +20,8 @@ public:
 
 private:
     int frameCount = 0;
-    std::chrono::_V2::system_clock::time_point countStartTime, currentFrameStartTime, lastFrameStartTime;
+    std::chrono::_V2::system_clock::time_point countStartTime, currentFrameStartTime,
+        lastFrameStartTime;
     double maxFrameDuration;
     double minFrameDuration;
     bool isFrameRateLimited = false;

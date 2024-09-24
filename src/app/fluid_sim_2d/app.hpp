@@ -3,6 +3,7 @@
 #include "app/fluid_sim_2d/fluid_particle_system.hpp"
 #include "app/fluid_sim_2d/gpu_resources.hpp"
 #include "lve/GO/geo/line.hpp"
+#include "lve/app/fps.hpp"
 #include "lve/core/device.hpp"
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/resource/descriptors.hpp"
@@ -10,14 +11,13 @@
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/window.hpp"
 #include "lve/path.hpp"
-#include "lve/app/fps.hpp"
 
 // std
 #include <atomic>
 #include <memory>
 #include <vector>
 
-namespace fluidsim2d
+namespace app::fluidsim2d
 {
 class App
 {
@@ -58,4 +58,4 @@ private:
     std::atomic<bool> isRunning{true};
     void renderLoop();
 };
-} // namespace fluidsim2d
+} // namespace app::fluidsim2d

@@ -7,32 +7,32 @@
 
 namespace lve
 {
-    class Pipeline
-    {
-    public:
-        Pipeline(Device &device) : lveDevice(device) {}
-        ~Pipeline() { cleanUp(); }
+class Pipeline
+{
+public:
+    Pipeline(Device &device) : lveDevice(device) {}
+    ~Pipeline() { cleanUp(); }
 
-        Pipeline(const Pipeline &) = delete;
-        Pipeline &operator=(const Pipeline &) = delete;
+    Pipeline(const Pipeline &) = delete;
+    Pipeline &operator=(const Pipeline &) = delete;
 
-        Pipeline(Pipeline &&other);
-        Pipeline &operator=(Pipeline &&other);
+    Pipeline(Pipeline &&other);
+    Pipeline &operator=(Pipeline &&other);
 
-        VkPipeline getPipeline() { return pipeline; }
-        VkPipelineLayout getPipelineLayout() { return pipelineLayout; }
+    VkPipeline getPipeline() { return pipeline; }
+    VkPipelineLayout getPipelineLayout() { return pipelineLayout; }
 
-        virtual void bind(VkCommandBuffer commandBuffer) = 0;
+    virtual void bind(VkCommandBuffer commandBuffer) = 0;
 
-    protected:
-        void cleanUp();
-        void initShaderModule(std::string moduleName, const std::vector<char> &code);
+protected:
+    void cleanUp();
+    void initShaderModule(std::string moduleName, const std::vector<char> &code);
 
-        Device &lveDevice;
-        VkPipeline pipeline;
-        VkPipelineLayout pipelineLayout;
-        std::unordered_map<std::string, VkShaderModule> shaderModules;
+    Device &lveDevice;
+    VkPipeline pipeline;
+    VkPipelineLayout pipelineLayout;
+    std::unordered_map<std::string, VkShaderModule> shaderModules;
 
-        bool initialized = false;
-    };
+    bool initialized = false;
+};
 } // namespace lve

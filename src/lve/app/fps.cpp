@@ -18,7 +18,8 @@ double FpsManager::step(std::function<void(int)> callback)
         frameCount = 0;
         countStartTime = currentFrameStartTime;
     }
-    double frameDuration = std::chrono::duration<double>(currentFrameStartTime - lastFrameStartTime).count();
+    double frameDuration =
+        std::chrono::duration<double>(currentFrameStartTime - lastFrameStartTime).count();
     lastFrameStartTime = currentFrameStartTime;
     return frameDuration;
 }
@@ -26,7 +27,10 @@ double FpsManager::step(std::function<void(int)> callback)
 void FpsManager::fpsLimitBusyWait()
 {
     if (isFrameRateLimited)
-        while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - currentFrameStartTime).count() < minFrameDuration)
+        while (std::chrono::duration<double>(
+                   std::chrono::high_resolution_clock::now() - currentFrameStartTime
+               )
+                   .count() < minFrameDuration)
             continue;
 }
 } // namespace lve

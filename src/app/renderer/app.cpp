@@ -18,6 +18,8 @@
 #include <cmath>
 #include <string>
 
+namespace app::renderer
+{
 struct GlobalUbo
 {
     glm::mat4 projectionView{1.f};
@@ -26,7 +28,7 @@ struct GlobalUbo
     alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
 };
 
-RendererApp::RendererApp()
+App::App()
 {
     globalPool =
         lve::DescriptorPool::Builder(lveDevice)
@@ -36,7 +38,7 @@ RendererApp::RendererApp()
     loadGameObjects();
 }
 
-void RendererApp::run()
+void App::run()
 {
     uboBuffers.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
     globalDescriptorSets.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -44,11 +46,7 @@ void RendererApp::run()
     for (int i = 0; i < uboBuffers.size(); i++)
     {
         uboBuffers[i] = std::make_unique<lve::Buffer>(
-            lveDevice,
-            sizeof(GlobalUbo),
-            1,
-            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+            lveDevice, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
         );
         uboBuffers[i]->map();
     }
@@ -94,8 +92,7 @@ void RendererApp::run()
 
         auto newTime = std::chrono::high_resolution_clock::now();
         float frameTime =
-            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime)
-                .count();
+            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
         currentTime = newTime;
 
         cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
@@ -133,7 +130,7 @@ void RendererApp::run()
     vkDeviceWaitIdle(lveDevice.vkDevice());
 }
 
-void RendererApp::loadGameObjects()
+void App::loadGameObjects()
 {
     std::shared_ptr<lve::Model> lveModel =
         lve::Model::createModelFromFile(lveDevice, lve::path::asset::MODEL + "flat_vase.obj");
@@ -159,7 +156,7 @@ void RendererApp::loadGameObjects()
     gameObjects.emplace(floor.getId(), std::move(floor));
 }
 
-void RendererApp::updateGlobalDescriptorSets()
+void App::updateGlobalDescriptorSets()
 {
     for (int i = 0; i < globalDescriptorSets.size(); i++)
     {
@@ -171,3 +168,4 @@ void RendererApp::updateGlobalDescriptorSets()
         writer.overwrite(globalDescriptorSets[i]);
     }
 }
+} // namespace app::renderer

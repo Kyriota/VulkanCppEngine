@@ -17,7 +17,7 @@
 #include <iostream>
 #include <thread>
 
-namespace fluidsim2d
+namespace app::fluidsim2d
 {
 App::App()
 {
@@ -124,4 +124,4 @@ void App::renderLoop()
         fpsManager.fpsLimitBusyWait();
     }
 }
-} // namespace fluidsim2d
+} // namespace app::fluidsim2d

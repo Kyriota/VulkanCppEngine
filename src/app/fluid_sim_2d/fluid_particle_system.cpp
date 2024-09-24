@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <iostream>
 
-namespace fluidsim2d
+namespace app::fluidsim2d
 {
 FluidParticleSystem::FluidParticleSystem(VkExtent2D windowExtent) : windowExtent(windowExtent)
 {
@@ -32,12 +32,7 @@ void FluidParticleSystem::reloadConfigParam()
     initSimParams();
 }
 
-void FluidParticleSystem::initParticleData(
-    glm::vec2 startPoint,
-    float stride,
-    float maxWidth,
-    bool randomize
-)
+void FluidParticleSystem::initParticleData(glm::vec2 startPoint, float stride, float maxWidth, bool randomize)
 {
     positionData.resize(particleCount);
     nextPositionData.resize(particleCount);
@@ -408,8 +403,7 @@ glm::int2 FluidParticleSystem::pos2gridCoord(glm::vec2 position, float gridWidth
 
 int FluidParticleSystem::hashGridCoord2D(glm::int2 gridCoord) const
 {
-    return static_cast<uint32_t>(gridCoord.x) * 15823 +
-           static_cast<uint32_t>(gridCoord.y) * 9737333;
+    return static_cast<uint32_t>(gridCoord.x) * 15823 + static_cast<uint32_t>(gridCoord.y) * 9737333;
 }
 
 /*
@@ -425,8 +419,7 @@ void FluidParticleSystem::foreachNeighbor(size_t particleIndex, std::function<vo
     for (int i = 0; i < 9; i++)
     {
         glm::int2 offsetGridPos = gridPos + offset2D[i];
-        unsigned int hashKey =
-            lve::math::positiveMod(hashGridCoord2D(offsetGridPos), particleCount);
+        unsigned int hashKey = lve::math::positiveMod(hashGridCoord2D(offsetGridPos), particleCount);
         int startIndex = spacialLookupEntry[hashKey];
         if (startIndex == -1) // no particle in this grid
             continue;
@@ -449,4 +442,4 @@ void FluidParticleSystem::foreachNeighbor(size_t particleIndex, std::function<vo
         }
     }
 }
-} // namespace fluidsim2d
+} // namespace app::fluidsim2d

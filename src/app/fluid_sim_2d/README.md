@@ -10,20 +10,20 @@ Source: [Github Repo](https://github.com/Kyriota/VulkanCppEngine)
 
 Controls:
 
-- `Space`: Pause/Resume simulation
-- `F`: Render next frame (only works when paused)
-- `Mouse Left Click`: Add repulsive external force
-- `Mouse Right Click`: Add attractive external force
-- `R`: Reload configuration (excluding particle count setting, only restarting the app will apply new particle count)
+-   `Space`: Pause/Resume simulation
+-   `F`: Render next frame (only works when paused)
+-   `Mouse Left Click`: Add repulsive external force
+-   `Mouse Right Click`: Add attractive external force
+-   `R`: Reload configuration (excluding particle count setting, only restarting the app will apply new particle count)
 
 Visualizations:
 
-- `D`: Toggle density visualization
-- `N`: Toggle neighbor visualization
-- `V`: Toggle vector debug visualization
-    - `1`: Switch to velocity
-    - `2`: Switch to pressure force
-    - `3`: Switch to external force
+-   `D`: Toggle density visualization
+-   `N`: Toggle neighbor visualization
+-   `V`: Toggle vector debug visualization
+    -   `1`: Switch to velocity
+    -   `2`: Switch to pressure force
+    -   `3`: Switch to external force
 
 ## Change Config
 

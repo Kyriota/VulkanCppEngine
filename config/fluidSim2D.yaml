@@ -12,12 +12,12 @@ rangeForceScale: 75
 rangeForceRadius: 2.0
 
 startPoint:
-  - 4
-  - 1
+    - 4
+    - 1
 stride: 0.1
 maxWidth: 4
 randomize: yes # Change as needed
 
 windowSize:
-  - 400 # Change as needed
-  - 400 # Change as needed
+    - 400 # Change as needed
+    - 400 # Change as needed

@@ -4,16 +4,14 @@
 #include <cstddef>
 #include <functional>
 
-namespace lve
+namespace lve::math
 {
-    namespace math
-    {
-        template <typename T> T intPow(T base, unsigned int exp);
+template <typename T>
+T intPow(T base, unsigned int exp);
 
-        unsigned int positiveMod(int value, unsigned int m);
-        float fastInvSqrt(float x);
-        float fastSqrt(float x);
-    } // namespace math
-} // namespace lve
+unsigned int positiveMod(int value, unsigned int m);
+float fastInvSqrt(float x);
+float fastSqrt(float x);
+} // namespace lve::math
 
 #include "lve/util/math.tpp"

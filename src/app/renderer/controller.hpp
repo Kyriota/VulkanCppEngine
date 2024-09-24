@@ -3,6 +3,8 @@
 #include "lve/GO/game_object.hpp"
 #include "lve/core/window.hpp"
 
+namespace app::renderer
+{
 class KeyboardMovementController
 {
 public:
@@ -26,3 +28,4 @@ public:
     float moveSpeed{3.f};
     float lookSpeed{1.5f};
 };
+} // namespace app::renderer

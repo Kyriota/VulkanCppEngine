@@ -8,11 +8,7 @@
                 "${workspaceFolder}/vcpkg/installed/x64-mingw-dynamic/include/",
                 "${env:VULKAN_SDK}/Include/"
             ],
-            "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE"
-            ],
+            "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
             "windowsSdkVersion": "10.0.22000.0",
             "compilerPath": "C:/MinGW/bin/g++.exe",
             "cStandard": "c17",
