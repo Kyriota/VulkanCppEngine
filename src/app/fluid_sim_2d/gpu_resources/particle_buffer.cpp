@@ -2,7 +2,8 @@
 
 namespace app::fluidsim2d
 {
-ParticleBuffers::ParticleBuffers(lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys)
+ParticleBuffers::ParticleBuffers(
+    lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys)
     : lveFrameManager(frameManager), fluidParticleSys(fluidParticleSys)
 {
     initParticleBuffer();
@@ -24,8 +25,7 @@ void ParticleBuffers::initParticleBuffer()
             sizeof(glm::vec2) * particleCount,  // velocity
         1,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     particleBuffer->map();
     particleBuffer->writeToBuffer(&particleCount, sizeof(int));
 
@@ -34,8 +34,7 @@ void ParticleBuffers::initParticleBuffer()
         sizeof(int) * particleCount,
         1,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     neighborBuffer->map();
 }
 
@@ -55,11 +54,9 @@ void ParticleBuffers::writeParticleBuffer()
     particleBuffer->writeToBufferOrdered(&isNeighborViewActive, sizeof(uint32_t));
     particleBuffer->writeToBufferOrdered(&isDensityViewActive, sizeof(uint32_t));
     particleBuffer->writeToBufferOrdered(
-        (void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount
-    );
+        (void *)fluidParticleSys.getPositionData().data(), sizeof(glm::vec2) * particleCount);
     particleBuffer->writeToBufferOrdered(
-        (void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount
-    );
+        (void *)fluidParticleSys.getVelocityData().data(), sizeof(glm::vec2) * particleCount);
 
     neighborBuffer->writeToBuffer((void *)fluidParticleSys.getFirstParticleNeighborIndex().data());
 }

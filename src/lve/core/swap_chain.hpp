@@ -36,7 +36,8 @@ public:
 
     float extentAspectRatio()
     {
-        return static_cast<float>(swapChainExtent.width) / static_cast<float>(swapChainExtent.height);
+        return static_cast<float>(swapChainExtent.width) /
+            static_cast<float>(swapChainExtent.height);
     }
     VkFormat findDepthFormat();
 
@@ -46,7 +47,7 @@ public:
     bool compareSwapFormats(const SwapChain &swapChain) const
     {
         return swapChain.swapChainDepthFormat == swapChainDepthFormat &&
-               swapChain.swapChainImageFormat == swapChainImageFormat;
+            swapChain.swapChainImageFormat == swapChainImageFormat;
     }
 
 private:
@@ -59,9 +60,10 @@ private:
     void createSyncObjects();
 
     // Helper functions
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats
-    );
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+    VkSurfaceFormatKHR
+        chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+    VkPresentModeKHR
+        chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
     VkFormat swapChainImageFormat;

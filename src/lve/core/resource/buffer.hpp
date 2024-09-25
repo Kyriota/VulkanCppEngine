@@ -14,8 +14,7 @@ public:
         uint32_t instanceCount,
         VkBufferUsageFlags usageFlags,
         VkMemoryPropertyFlags memoryPropertyFlags,
-        VkDeviceSize minOffsetAlignment = 1
-    );
+        VkDeviceSize minOffsetAlignment = 1);
     ~Buffer();
 
     Buffer(const Buffer &) = delete;
@@ -26,8 +25,7 @@ public:
         VkBufferUsageFlags usage,
         VkMemoryPropertyFlags properties,
         VkBuffer &buffer,
-        VkDeviceMemory &bufferMemory
-    );
+        VkDeviceMemory &bufferMemory);
 
     VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
     void unmap();
@@ -35,7 +33,8 @@ public:
     void copyBufferFrom(VkBuffer srcBuffer, VkDeviceSize size);
     void writeToBuffer(void *data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
     VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-    VkDescriptorBufferInfo descriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
+    VkDescriptorBufferInfo
+        descriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
     VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
     void writeToBufferOrdered(void *data, VkDeviceSize size);

@@ -28,7 +28,7 @@ public:
         bool operator==(const Vertex &other) const
         {
             return position == other.position && color == other.color && normal == other.normal &&
-                   uv == other.uv;
+                uv == other.uv;
         }
     };
 

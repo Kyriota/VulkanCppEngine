@@ -1,4 +1,4 @@
-# pragma once
+#pragma once
 
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/pipeline/graphics_pipeline.hpp"

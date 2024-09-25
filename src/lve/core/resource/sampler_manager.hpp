@@ -7,7 +7,7 @@
 
 namespace lve
 {
-enum class SamplerType
+enum SamplerType
 {
     DEFAULT,
 };

@@ -47,7 +47,8 @@ public:
     void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
     using SwapChainResizedCallback = std::function<void(VkExtent2D)>;
-    void registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback)
+    void
+        registerSwapChainResizedCallback(const std::string &name, SwapChainResizedCallback callback)
     {
         swapChainResizedCallbacks[name] = callback;
     }

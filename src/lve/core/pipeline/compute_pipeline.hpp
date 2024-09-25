@@ -16,15 +16,13 @@ public:
     ComputePipeline(
         Device &device,
         const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
-        const std::string &compFilePath
-    );
+        const std::string &compFilePath);
 
     void dispatchComputePipeline(
         VkCommandBuffer cmdBuffer,
         const VkDescriptorSet *pGlobalDescriptorSet,
         uint32_t width,
-        uint32_t height
-    );
+        uint32_t height);
 
     void bind(VkCommandBuffer commandBuffer) override;
 

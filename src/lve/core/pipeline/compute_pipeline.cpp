@@ -16,8 +16,7 @@ namespace lve
 ComputePipeline::ComputePipeline(
     Device &device,
     const std::vector<VkDescriptorSetLayout> descriptorSetLayouts,
-    const std::string &compFilePath
-)
+    const std::string &compFilePath)
     : Pipeline(device)
 {
     createPipelineLayout(descriptorSetLayouts);
@@ -29,13 +28,18 @@ void ComputePipeline::dispatchComputePipeline(
     VkCommandBuffer cmdBuffer,
     const VkDescriptorSet *pGlobalDescriptorSet,
     uint32_t width,
-    uint32_t height
-)
+    uint32_t height)
 {
     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
     vkCmdBindDescriptorSets(
-        cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
-    );
+        cmdBuffer,
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        pipelineLayout,
+        0,
+        1,
+        pGlobalDescriptorSet,
+        0,
+        nullptr);
 
     vkCmdDispatch(cmdBuffer, width, height, 1);
 }
@@ -54,8 +58,8 @@ void ComputePipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout> de
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-    if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
-        VK_SUCCESS)
+    if (vkCreatePipelineLayout(
+            lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout");
     }
@@ -63,7 +67,9 @@ void ComputePipeline::createPipelineLayout(std::vector<VkDescriptorSetLayout> de
 
 void ComputePipeline::createPipeline(const std::string &compFilePath)
 {
-    assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout is initialized");
+    assert(
+        pipelineLayout != nullptr &&
+        "Cannot create pipeline before pipeline layout is initialized");
 
     std::vector<char> compCode;
     io::readBinaryFile(lve::path::asset::SHADER + compFilePath, compCode);
@@ -83,8 +89,8 @@ void ComputePipeline::createPipeline(const std::string &compFilePath)
     pipelineInfo.basePipelineIndex = -1;
 
     if (vkCreateComputePipelines(
-            lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline
-        ) != VK_SUCCESS)
+            lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) !=
+        VK_SUCCESS)
     {
         throw std::runtime_error("failed to create compute pipeline");
     }

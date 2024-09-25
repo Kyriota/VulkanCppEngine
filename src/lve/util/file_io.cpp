@@ -94,8 +94,7 @@ void writeFile(const std::string &filePath, const std::string &data)
 
 void foreachFileInDirectory(
     const std::string &dir,
-    std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback
-)
+    std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback)
 {
     if (!std::filesystem::is_directory(dir))
     {

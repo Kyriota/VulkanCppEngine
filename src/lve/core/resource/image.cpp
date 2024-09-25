@@ -5,7 +5,8 @@
 
 namespace lve
 {
-Image::Image(Device &device, VkImageCreateInfo imageCreateInfo, VkMemoryPropertyFlags memPropertyFlags)
+Image::Image(
+    Device &device, VkImageCreateInfo imageCreateInfo, VkMemoryPropertyFlags memPropertyFlags)
     : lveDevice{device}
 {
     VkImageLayout initialLayout = imageCreateInfo.initialLayout;
@@ -136,8 +137,7 @@ void Image::convertLayout(VkImageLayout newLayout)
         0,
         nullptr,
         1,
-        &imageMemoryBarrier
-    );
+        &imageMemoryBarrier);
 
     lveDevice.endSingleTimeCommands(commandBuffer);
 
@@ -147,8 +147,7 @@ void Image::convertLayout(VkImageLayout newLayout)
 VkDescriptorImageInfo Image::getDescriptorImageInfo(int imageViewId, VkSampler sampler) const
 {
     return VkDescriptorImageInfo{
-        .sampler = sampler, .imageView = getImageView(imageViewId), .imageLayout = imageLayout
-    };
+        .sampler = sampler, .imageView = getImageView(imageViewId), .imageLayout = imageLayout};
 }
 
 void Image::allocateMemory(VkMemoryPropertyFlags memPropertyFlags)

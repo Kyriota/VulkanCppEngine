@@ -5,7 +5,8 @@
 
 namespace app::renderer
 {
-void KeyboardMovementController::moveInPlaneXZ(GLFWwindow *window, float dt, lve::GameObject &gameObject)
+void KeyboardMovementController::moveInPlaneXZ(
+    GLFWwindow *window, float dt, lve::GameObject &gameObject)
 {
     glm::vec3 rotate{0};
     if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS)
@@ -24,7 +25,8 @@ void KeyboardMovementController::moveInPlaneXZ(GLFWwindow *window, float dt, lve
 
     // limit pitch values between about +/- 85ish degrees
     gameObject.transform.rotation.x = glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
-    gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
+    gameObject.transform.rotation.y =
+        glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
 
     float yaw = gameObject.transform.rotation.y;
     const glm::vec3 forwardDir{sin(yaw), 0.f, cos(yaw)};

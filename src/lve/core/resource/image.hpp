@@ -13,7 +13,8 @@ namespace lve
 class Image // wrapper for VkImage, VkDeviceMemory, and VkImageView
 {
 public:
-    Image(Device &device, VkImageCreateInfo imageCreateInfo, VkMemoryPropertyFlags memPropertyFlags);
+    Image(
+        Device &device, VkImageCreateInfo imageCreateInfo, VkMemoryPropertyFlags memPropertyFlags);
     Image(Device &device) : lveDevice(device) {}
 
     ~Image();

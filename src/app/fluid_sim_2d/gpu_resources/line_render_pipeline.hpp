@@ -24,7 +24,8 @@ private: // variables
     FluidParticleSystem &fluidParticleSys;
 
     // resources
-    lve::LineCollection lineCollection{lveFrameManager.getDevice(), fluidParticleSys.getParticleCount()};
+    lve::LineCollection lineCollection{
+        lveFrameManager.getDevice(), fluidParticleSys.getParticleCount()};
 
     std::unique_ptr<lve::GraphicPipeline> lineRenderPipeline;
 };

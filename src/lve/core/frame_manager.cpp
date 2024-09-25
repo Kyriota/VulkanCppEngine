@@ -45,8 +45,7 @@ bool FrameManager::recreateSwapChain()
         printf(
             " >>> recreating swap chain with window extent: %d, %d\n",
             windowExtent.width,
-            windowExtent.height
-        );
+            windowExtent.height);
         std::shared_ptr<SwapChain> oldSwapChain = std::move(lveSwapChain);
         lveSwapChain = std::make_unique<SwapChain>(lveDevice, windowExtent, oldSwapChain);
 
@@ -82,8 +81,7 @@ void FrameManager::freeCommandBuffers()
         lveDevice.vkDevice(),
         lveDevice.getCommandPool(),
         static_cast<uint32_t>(commandBuffers.size()),
-        commandBuffers.data()
-    );
+        commandBuffers.data());
     commandBuffers.clear();
 }
 
@@ -127,16 +125,20 @@ void FrameManager::endFrame()
 
     VkResult result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || // The swap chain has become incompatible with
-                                              // the surface and can no longer be used for
-                                              // rendering. Usually happens after a window resize.
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || // The swap chain has become
+                                              // incompatible with the surface
+                                              // and can no longer be used for
+                                              // rendering. Usually happens
+                                              // after a window resize.
 
         result == VK_SUBOPTIMAL_KHR // The swap chain can still be used to
                                     // successfully present to the surface,
-                                    // but the surface properties are no longer matched exactly.
+                                    // but the surface properties are no longer
+                                    // matched exactly.
     )
     {
-        // This branch is usually entered when the window is resized or minimized
+        // This branch is usually entered when the window is resized or
+        // minimized
         bool isSwapChainRecreated = recreateSwapChain();
         if (isSwapChainRecreated)
         {
@@ -161,8 +163,7 @@ void FrameManager::beginSwapChainRenderPass(VkCommandBuffer commandBuffer)
     assert(isFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
     assert(
         commandBuffer == getCurrentCommandBuffer() &&
-        "Can't begin render pass on command buffer from a different frame"
-    );
+        "Can't begin render pass on command buffer from a different frame");
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -200,8 +201,7 @@ void FrameManager::endSwapChainRenderPass(VkCommandBuffer commandBuffer)
     assert(isFrameStarted && "Can't call endSwapChainRenderPass if frame is not in progress");
     assert(
         commandBuffer == getCurrentCommandBuffer() &&
-        "Can't end render pass on command buffer from a different frame"
-    );
+        "Can't end render pass on command buffer from a different frame");
     vkCmdEndRenderPass(commandBuffer);
 }
 } // namespace lve

@@ -55,8 +55,7 @@ public:
     GraphicPipeline(
         Device &device,
         const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
-        const GraphicPipelineConfigInfo &pipelineConfigInfo
-    );
+        const GraphicPipelineConfigInfo &pipelineConfigInfo);
 
     void bind(VkCommandBuffer commandBuffer) override;
 
@@ -70,20 +69,15 @@ void renderGameObjects(
     const VkDescriptorSet *pDescriptorSet,
     GameObject::Map &gameObjects,
     VkPipelineLayout graphicPipelineLayout,
-    GraphicPipeline *graphicPipeline
-);
+    GraphicPipeline *graphicPipeline);
 
 void renderScreenTexture(
     VkCommandBuffer cmdBuffer,
     const VkDescriptorSet *pDescriptorSet,
     VkPipelineLayout graphicPipelineLayout,
     GraphicPipeline *graphicPipeline,
-    VkExtent2D extent
-);
+    VkExtent2D extent);
 
 void renderLines(
-    VkCommandBuffer cmdBuffer,
-    GraphicPipeline *graphicPipeline,
-    LineCollection &lineCollection
-);
+    VkCommandBuffer cmdBuffer, GraphicPipeline *graphicPipeline, LineCollection &lineCollection);
 } // namespace lve

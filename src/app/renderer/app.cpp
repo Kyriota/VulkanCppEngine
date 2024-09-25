@@ -46,8 +46,11 @@ void App::run()
     for (int i = 0; i < uboBuffers.size(); i++)
     {
         uboBuffers[i] = std::make_unique<lve::Buffer>(
-            lveDevice, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-        );
+            lveDevice,
+            sizeof(GlobalUbo),
+            1,
+            VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
         uboBuffers[i]->map();
     }
 
@@ -74,8 +77,7 @@ void App::run()
                                              .pushConstantRanges =
                 {{VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                   0,
-                  sizeof(lve::SimplePushConstantData)}}
-        },
+                  sizeof(lve::SimplePushConstantData)}}},
         graphicPipelineConfigInfo
     };
 
@@ -92,7 +94,8 @@ void App::run()
 
         auto newTime = std::chrono::high_resolution_clock::now();
         float frameTime =
-            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime)
+                .count();
         currentTime = newTime;
 
         cameraController.moveInPlaneXZ(lveWindow.getGLFWwindow(), frameTime, viewerObject);
@@ -119,8 +122,7 @@ void App::run()
                 &globalDescriptorSets[frameIndex],
                 gameObjects,
                 simpleRenderPipeline.getPipelineLayout(),
-                &simpleRenderPipeline
-            );
+                &simpleRenderPipeline);
 
             lveFrameManager.endSwapChainRenderPass(commandBuffer);
             lveFrameManager.endFrame();

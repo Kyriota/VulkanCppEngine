@@ -6,16 +6,16 @@
 namespace app::fluidsim2d
 {
 ParticleRenderPipeline::ParticleRenderPipeline(
-    lve::FrameManager &frameManager,
-    ParticleBuffers &particleBuffers
-)
+    lve::FrameManager &frameManager, ParticleBuffers &particleBuffers)
     : lveFrameManager{frameManager}, particleBuffers{particleBuffers}
 {
     descriptorPool =
         lve::DescriptorPool::Builder(lveFrameManager.getDevice())
             .setMaxSets(lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
-            .addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
+            .addPoolSize(
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT)
+            .addPoolSize(
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, lve::SwapChain::MAX_FRAMES_IN_FLIGHT * 2)
             .build();
 
     descriptorSets.resize(lve::SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -36,17 +36,14 @@ ParticleRenderPipeline::ParticleRenderPipeline(
     screenTexturePipelineConfigInfo.renderPass = lveFrameManager.getSwapChainRenderPass();
 
     VkPushConstantRange screenExtentPushRange = {
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::vec2)
-    };
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::vec2)};
 
     screenTextureRenderPipeline = std::make_unique<lve::GraphicPipeline>(
         lveFrameManager.getDevice(),
         lve::GraphicPipelineLayoutConfigInfo{
             .descriptorSetLayouts = {descriptorSetLayout->getDescriptorSetLayout()},
-            .pushConstantRanges = {screenExtentPushRange}
-        },
-        screenTexturePipelineConfigInfo
-    );
+            .pushConstantRanges = {screenExtentPushRange}},
+        screenTexturePipelineConfigInfo);
 }
 
 void ParticleRenderPipeline::renderTexture(VkCommandBuffer cmdBuffer)
@@ -56,17 +53,17 @@ void ParticleRenderPipeline::renderTexture(VkCommandBuffer cmdBuffer)
         &descriptorSets[lveFrameManager.getFrameIndex()],
         screenTextureRenderPipeline->getPipelineLayout(),
         screenTextureRenderPipeline.get(),
-        lveFrameManager.getWindow().getExtent()
-    );
+        lveFrameManager.getWindow().getExtent());
 }
 
 void ParticleRenderPipeline::updateDescriptorSets(bool needMemoryAlloc)
 {
     VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
-        0, samplerManager.getSampler(lve::SamplerType::DEFAULT)
-    );
-    VkDescriptorBufferInfo particleBufferInfo = particleBuffers.getParticleBuffer().descriptorInfo();
-    VkDescriptorBufferInfo neighborBufferInfo = particleBuffers.getNeighborBuffer().descriptorInfo();
+        0, samplerManager.getSampler(lve::SamplerType::DEFAULT));
+    VkDescriptorBufferInfo particleBufferInfo =
+        particleBuffers.getParticleBuffer().descriptorInfo();
+    VkDescriptorBufferInfo neighborBufferInfo =
+        particleBuffers.getNeighborBuffer().descriptorInfo();
 
     for (int i = 0; i < descriptorSets.size(); i++)
     {
@@ -89,8 +86,7 @@ void ParticleRenderPipeline::recreateScreenTextureImage(VkExtent2D extent)
     screenTextureImage = lve::Image(
         lveFrameManager.getDevice(),
         createScreenTextureInfo(extent),
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    );
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     createScreenTextureImageView();
 }

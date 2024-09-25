@@ -53,8 +53,8 @@ GraphicPipelineConfigInfo::GraphicPipelineConfigInfo()
     this->multisampleInfo.flags = 0;
     this->multisampleInfo.pNext = nullptr;
 
-    this->colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    this->colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+        VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     this->colorBlendAttachment.blendEnable = VK_FALSE;
     this->colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
     this->colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -108,8 +108,7 @@ GraphicPipelineConfigInfo::GraphicPipelineConfigInfo()
 GraphicPipeline::GraphicPipeline(
     Device &device,
     const GraphicPipelineLayoutConfigInfo &layoutConfigInfo,
-    const GraphicPipelineConfigInfo &pipelineConfigInfo
-)
+    const GraphicPipelineConfigInfo &pipelineConfigInfo)
     : Pipeline(device)
 {
     createGraphicPipelineLayout(layoutConfigInfo);
@@ -122,8 +121,8 @@ void GraphicPipeline::bind(VkCommandBuffer commandBuffer)
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 }
 
-void GraphicPipeline::createGraphicPipelineLayout(const GraphicPipelineLayoutConfigInfo &layoutConfigInfo
-)
+void GraphicPipeline::createGraphicPipelineLayout(
+    const GraphicPipelineLayoutConfigInfo &layoutConfigInfo)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -137,8 +136,8 @@ void GraphicPipeline::createGraphicPipelineLayout(const GraphicPipelineLayoutCon
     pipelineLayoutInfo.pPushConstantRanges =
         pushConstantRangeCount == 0 ? nullptr : layoutConfigInfo.pushConstantRanges.data();
 
-    if (vkCreatePipelineLayout(lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) !=
-        VK_SUCCESS)
+    if (vkCreatePipelineLayout(
+            lveDevice.vkDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
     }
@@ -148,12 +147,11 @@ void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pi
 {
     assert(
         pipelineLayout != VK_NULL_HANDLE &&
-        "Cannot create graphics pipeline: pipelineLayout not initialized yet"
-    );
+        "Cannot create graphics pipeline: pipelineLayout not initialized yet");
     assert(
         pipelineConfigInfo.renderPass != VK_NULL_HANDLE &&
-        "Cannot create graphics pipeline: renderPass not provided in pipelineConfigInfo"
-    );
+        "Cannot create graphics pipeline: renderPass not provided in "
+        "pipelineConfigInfo");
 
     std::vector<char> vertCode, fragCode;
     io::readBinaryFile(lve::path::asset::SHADER + pipelineConfigInfo.vertFilePath, vertCode);
@@ -185,7 +183,8 @@ void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pi
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexAttributeDescriptionCount =
         static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+    vertexInputInfo.vertexBindingDescriptionCount =
+        static_cast<uint32_t>(bindingDescriptions.size());
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
     vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 
@@ -210,8 +209,8 @@ void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pi
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(
-            lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline
-        ) != VK_SUCCESS)
+            lveDevice.vkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) !=
+        VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline");
     }
@@ -222,14 +221,19 @@ void renderGameObjects(
     const VkDescriptorSet *pDescriptorSet,
     GameObject::Map &gameObjects,
     VkPipelineLayout pipelineLayout,
-    GraphicPipeline *pipeline
-)
+    GraphicPipeline *pipeline)
 {
     pipeline->bind(cmdBuffer);
 
     vkCmdBindDescriptorSets(
-        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pDescriptorSet, 0, nullptr
-    );
+        cmdBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelineLayout,
+        0,
+        1,
+        pDescriptorSet,
+        0,
+        nullptr);
 
     for (auto &kv : gameObjects)
     {
@@ -246,8 +250,7 @@ void renderGameObjects(
             VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
             0,
             sizeof(SimplePushConstantData),
-            &push
-        );
+            &push);
         obj.model->bind(cmdBuffer);
         obj.model->draw(cmdBuffer);
     }
@@ -258,14 +261,19 @@ void renderScreenTexture(
     const VkDescriptorSet *pDescriptorSet,
     VkPipelineLayout pipelineLayout,
     GraphicPipeline *pipeline,
-    VkExtent2D extent
-)
+    VkExtent2D extent)
 {
     pipeline->bind(cmdBuffer);
 
     vkCmdBindDescriptorSets(
-        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pDescriptorSet, 0, nullptr
-    );
+        cmdBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelineLayout,
+        0,
+        1,
+        pDescriptorSet,
+        0,
+        nullptr);
 
     glm::vec2 push(extent.width, extent.height);
 
@@ -275,13 +283,13 @@ void renderScreenTexture(
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         0,
         sizeof(glm::vec2),
-        &push
-    );
+        &push);
 
     vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
 }
 
-void renderLines(VkCommandBuffer cmdBuffer, GraphicPipeline *pipeline, LineCollection &lineCollection)
+void renderLines(
+    VkCommandBuffer cmdBuffer, GraphicPipeline *pipeline, LineCollection &lineCollection)
 {
     pipeline->bind(cmdBuffer);
     lineCollection.bind(cmdBuffer);

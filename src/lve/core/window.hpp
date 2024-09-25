@@ -31,8 +31,8 @@ public:
     bool isKeyRepeated(int keyCode) const { return keyState.at(keyCode) == KeyState::REPEAT; }
     bool isKeyUpdated(int keyCode) const { return keyUpdated.at(keyCode); }
     void clearKeyUpdate(int keyCode) { keyUpdated[keyCode] = false; }
-    void
-    oneTimeKeyUse(int keyCode, std::function<void()> callback, KeyState targetState = KeyState::PRESS);
+    void oneTimeKeyUse(
+        int keyCode, std::function<void()> callback, KeyState targetState = KeyState::PRESS);
 
     KeyState getMouseButtonState(int button) const { return mouseButtonState.at(button); }
     void getMousePosition(double &x, double &y) const

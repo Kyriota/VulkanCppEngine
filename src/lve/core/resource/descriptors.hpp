@@ -22,8 +22,7 @@ public:
             uint32_t binding,
             VkDescriptorType descriptorType,
             VkShaderStageFlags stageFlags,
-            uint32_t count = 1
-        );
+            uint32_t count = 1);
         std::unique_ptr<DescriptorSetLayout> build() const;
 
     private:
@@ -32,9 +31,7 @@ public:
     };
 
     DescriptorSetLayout(
-        Device &lveDevice,
-        std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings
-    );
+        Device &lveDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
     ~DescriptorSetLayout();
     DescriptorSetLayout(const DescriptorSetLayout &) = delete;
     DescriptorSetLayout &operator=(const DescriptorSetLayout &) = delete;
@@ -73,16 +70,13 @@ public:
         Device &lveDevice,
         uint32_t maxSets,
         VkDescriptorPoolCreateFlags poolFlags,
-        const std::vector<VkDescriptorPoolSize> &poolSizes
-    );
+        const std::vector<VkDescriptorPoolSize> &poolSizes);
     ~DescriptorPool();
     DescriptorPool(const DescriptorPool &) = delete;
     DescriptorPool &operator=(const DescriptorPool &) = delete;
 
     bool allocateDescriptorSet(
-        const VkDescriptorSetLayout descriptorSetLayout,
-        VkDescriptorSet &descriptorSet
-    ) const;
+        const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptorSet) const;
 
     void freeDescriptorSet(std::vector<VkDescriptorSet> &descriptorSet) const;
 

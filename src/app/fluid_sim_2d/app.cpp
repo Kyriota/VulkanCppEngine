@@ -28,13 +28,11 @@ App::App()
 
     // register callback functions for window resize
     lveFrameManager.registerSwapChainResizedCallback(
-        WINDOW_RESIZED_CALLBACK_NAME,
-        [this](VkExtent2D extent) {
+        WINDOW_RESIZED_CALLBACK_NAME, [this](VkExtent2D extent) {
             particleRenderPipeline.recreateScreenTextureImage(extent);
             particleRenderPipeline.updateDescriptorSets();
             fluidParticleSys.updateWindowExtent(extent);
-        }
-    );
+        });
 }
 
 void App::run()
@@ -58,8 +56,7 @@ void App::handleInput()
         lveWindow.input.getMousePosition(mouseX, mouseY);
         glm::vec2 mousePos = {static_cast<float>(mouseX), static_cast<float>(mouseY)};
         fluidParticleSys.setRangeForcePos(
-            lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT), mousePos
-        );
+            lveWindow.input.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT), mousePos);
     }
 
     lveWindow.input.oneTimeKeyUse(GLFW_KEY_R, [this] {

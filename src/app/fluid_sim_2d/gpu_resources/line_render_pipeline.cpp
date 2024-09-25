@@ -2,7 +2,8 @@
 
 namespace app::fluidsim2d
 {
-LineRenderPipeline::LineRenderPipeline(lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys)
+LineRenderPipeline::LineRenderPipeline(
+    lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys)
     : lveFrameManager{frameManager}, fluidParticleSys{fluidParticleSys}
 {
     lve::GraphicPipelineConfigInfo linePipelineConfigInfo;
@@ -13,10 +14,11 @@ LineRenderPipeline::LineRenderPipeline(lve::FrameManager &frameManager, FluidPar
     linePipelineConfigInfo.vertexBindingDescriptions = lve::Line::Vertex::getBindingDescriptions();
     linePipelineConfigInfo.vertexAttributeDescriptions =
         lve::Line::Vertex::getAttributeDescriptions();
-        
+
     lineRenderPipeline = std::make_unique<lve::GraphicPipeline>(
-        lveFrameManager.getDevice(), lve::GraphicPipelineLayoutConfigInfo{}, linePipelineConfigInfo
-    );
+        lveFrameManager.getDevice(),
+        lve::GraphicPipelineLayoutConfigInfo{},
+        linePipelineConfigInfo);
 }
 
 void LineRenderPipeline::drawDebugLines(VkCommandBuffer cmdBuffer)

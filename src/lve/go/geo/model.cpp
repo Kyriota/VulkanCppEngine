@@ -66,8 +66,7 @@ void Model::createVertexBuffer(const std::vector<Vertex> &vertices)
         vertexSize,
         vertexCount,
         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    );
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     vertexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
 }
@@ -101,8 +100,7 @@ void Model::createIndexBuffer(const std::vector<uint32_t> &indices)
         indexSize,
         indexCount,
         VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-    );
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     indexBuffer->copyBufferFrom(stagingBuffer.getBuffer(), bufferSize);
 }

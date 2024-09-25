@@ -28,8 +28,7 @@ void FpsManager::fpsLimitBusyWait()
 {
     if (isFrameRateLimited)
         while (std::chrono::duration<double>(
-                   std::chrono::high_resolution_clock::now() - currentFrameStartTime
-               )
+                   std::chrono::high_resolution_clock::now() - currentFrameStartTime)
                    .count() < minFrameDuration)
             continue;
 }

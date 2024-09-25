@@ -7,7 +7,8 @@
 namespace lve
 {
 
-void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float near, float far)
+void Camera::setOrthographicProjection(
+    float left, float right, float top, float bottom, float near, float far)
 {
     projectionMatrix = glm::mat4{1.0f};
     projectionMatrix[0][0] = 2.f / (right - left);

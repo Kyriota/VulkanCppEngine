@@ -58,12 +58,10 @@ void ConfigManager::reloadConfig(const std::string &configReletivePath)
 ConfigManager::ConfigManager()
 {
     io::foreachFileInDirectory(
-        lve::path::config::ROOT,
-        [this](const std::filesystem::directory_entry &entry) {
+        lve::path::config::ROOT, [this](const std::filesystem::directory_entry &entry) {
             std::string configReletivePath = entry.path().string();
             size_t hash = std::hash<std::string>{}(configReletivePath);
             configs[hash] = ConfigWrapper{YamlConfig{configReletivePath}, configReletivePath};
-        }
-    );
+        });
 }
 } // namespace lve
