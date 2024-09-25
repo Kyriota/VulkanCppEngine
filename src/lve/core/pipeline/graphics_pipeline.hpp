@@ -17,11 +17,6 @@ struct SimplePushConstantData
     glm::mat4 normalMatrix{1.f};
 };
 
-struct ScreenExtentPushConstantData
-{
-    glm::vec2 screenExtent;
-};
-
 struct GraphicPipelineConfigInfo
 {
     GraphicPipelineConfigInfo();
@@ -72,7 +67,7 @@ private:
 
 void renderGameObjects(
     VkCommandBuffer cmdBuffer,
-    const VkDescriptorSet *pGlobalDescriptorSet,
+    const VkDescriptorSet *pDescriptorSet,
     GameObject::Map &gameObjects,
     VkPipelineLayout graphicPipelineLayout,
     GraphicPipeline *graphicPipeline
@@ -80,7 +75,7 @@ void renderGameObjects(
 
 void renderScreenTexture(
     VkCommandBuffer cmdBuffer,
-    const VkDescriptorSet *pGlobalDescriptorSet,
+    const VkDescriptorSet *pDescriptorSet,
     VkPipelineLayout graphicPipelineLayout,
     GraphicPipeline *graphicPipeline,
     VkExtent2D extent
@@ -88,8 +83,6 @@ void renderScreenTexture(
 
 void renderLines(
     VkCommandBuffer cmdBuffer,
-    const VkDescriptorSet *pGlobalDescriptorSet,
-    VkPipelineLayout graphicPipelineLayout,
     GraphicPipeline *graphicPipeline,
     LineCollection &lineCollection
 );

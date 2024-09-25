@@ -1,7 +1,11 @@
 #pragma once
 
-#include "app/fluid_sim_2d/fluid_particle_system.hpp"
-#include "app/fluid_sim_2d/gpu_resources.hpp"
+#include "fluid_particle_system.hpp"
+#include "gpu_resources/particle_buffer.hpp"
+#include "gpu_resources/particle_render_pipeline.hpp"
+#include "gpu_resources/line_render_pipeline.hpp"
+
+// lve
 #include "lve/GO/geo/line.hpp"
 #include "lve/app/fps.hpp"
 #include "lve/core/device.hpp"
@@ -37,10 +41,6 @@ private:
 #else
     const std::string APP_NAME = "FluidSim2D (debug)";
 #endif
-    // TODO:
-    //  - Format all files for namespace indentation
-    //  - Separate global ubo etc. from gpu resources
-    //  - Separate private and public into more detailed sections
     lve::Window lveWindow{128, 128, APP_NAME};
     lve::Device lveDevice{lveWindow};
     lve::FrameManager lveFrameManager{lveWindow, lveDevice};
@@ -49,7 +49,9 @@ private:
 
     FluidParticleSystem fluidParticleSys{lveWindow.getExtent()};
 
-    GpuResources gpuResources{lveFrameManager, fluidParticleSys};
+    ParticleBuffers particleBuffers = ParticleBuffers(lveFrameManager, fluidParticleSys);
+    ParticleRenderPipeline particleRenderPipeline = ParticleRenderPipeline(lveFrameManager, particleBuffers);
+    LineRenderPipeline lineRenderPipeline = LineRenderPipeline(lveFrameManager, fluidParticleSys);
 
     // Input
     void handleInput();

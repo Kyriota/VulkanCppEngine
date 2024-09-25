@@ -13,3 +13,10 @@ Currently working on fluid simulation part.
 Compiler: gcc version 13.2.0 (x86_64-posix-seh-rev0, Built by MinGW-Builds project)
 
 Platform: Windows Only (for now)
+
+## TODO
+
+-   Separate global ubo etc. from gpu resources.
+-   Separate private and public into more detailed sections.
+-   Replace screen texture shader with a real frag shader.
+-   Reletive include in lve.

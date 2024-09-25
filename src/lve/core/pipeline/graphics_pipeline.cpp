@@ -217,7 +217,7 @@ void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pi
 
 void renderGameObjects(
     VkCommandBuffer cmdBuffer,
-    const VkDescriptorSet *pGlobalDescriptorSet,
+    const VkDescriptorSet *pDescriptorSet,
     GameObject::Map &gameObjects,
     VkPipelineLayout pipelineLayout,
     GraphicPipeline *pipeline
@@ -226,7 +226,7 @@ void renderGameObjects(
     pipeline->bind(cmdBuffer);
 
     vkCmdBindDescriptorSets(
-        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
+        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pDescriptorSet, 0, nullptr
     );
 
     for (auto &kv : gameObjects)
@@ -253,7 +253,7 @@ void renderGameObjects(
 
 void renderScreenTexture(
     VkCommandBuffer cmdBuffer,
-    const VkDescriptorSet *pGlobalDescriptorSet,
+    const VkDescriptorSet *pDescriptorSet,
     VkPipelineLayout pipelineLayout,
     GraphicPipeline *pipeline,
     VkExtent2D extent
@@ -262,18 +262,17 @@ void renderScreenTexture(
     pipeline->bind(cmdBuffer);
 
     vkCmdBindDescriptorSets(
-        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
+        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pDescriptorSet, 0, nullptr
     );
 
-    ScreenExtentPushConstantData push{};
-    push.screenExtent = glm::vec2(extent.width, extent.height);
+    glm::vec2 push(extent.width, extent.height);
 
     vkCmdPushConstants(
         cmdBuffer,
         pipelineLayout,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         0,
-        sizeof(ScreenExtentPushConstantData),
+        sizeof(glm::vec2),
         &push
     );
 
@@ -282,18 +281,11 @@ void renderScreenTexture(
 
 void renderLines(
     VkCommandBuffer cmdBuffer,
-    const VkDescriptorSet *pGlobalDescriptorSet,
-    VkPipelineLayout pipelineLayout,
     GraphicPipeline *pipeline,
     LineCollection &lineCollection
 )
 {
     pipeline->bind(cmdBuffer);
-
-    vkCmdBindDescriptorSets(
-        cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, pGlobalDescriptorSet, 0, nullptr
-    );
-
     lineCollection.bind(cmdBuffer);
     lineCollection.draw(cmdBuffer);
 }

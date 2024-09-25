@@ -2,17 +2,13 @@
 
 #define M_PI 3.1415926535897932384626433832795
 
-layout(location = 0) in vec2 fragTexCoord;
-
-layout(set = 0, binding = 1) uniform sampler2D inputTexture;
-
-layout(location = 0) out vec4 outColor;
-
 layout(push_constant) uniform Push {
 	vec2 screenExtent;
 } push;
 
-layout(binding = 3) buffer Particles {
+layout(set = 0, binding = 0) uniform sampler2D inputTexture;
+
+layout(binding = 1) buffer Particles {
 	uint numParticles;
 	float smoothRadius;
 	float targetDensity;
@@ -22,9 +18,13 @@ layout(binding = 3) buffer Particles {
 	vec2 data[];
 };
 
-layout(binding = 4) buffer Neighbors {
+layout(binding = 2) buffer Neighbors {
 	int neighborIndex[];
 };
+
+layout(location = 0) in vec2 fragTexCoord;
+
+layout(location = 0) out vec4 outColor;
 
 const float particleRadiusSqr = 4.0 * 4.0;
 

@@ -1,4 +1,4 @@
-#include "app/fluid_sim_2d/app.hpp"
+#include "app.hpp"
 
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
@@ -30,8 +30,8 @@ App::App()
     lveFrameManager.registerSwapChainResizedCallback(
         WINDOW_RESIZED_CALLBACK_NAME,
         [this](VkExtent2D extent) {
-            gpuResources.recreateScreenTextureImage(extent);
-            gpuResources.updateGlobalDescriptorSets();
+            particleRenderPipeline.recreateScreenTextureImage(extent);
+            particleRenderPipeline.updateDescriptorSets();
             fluidParticleSys.updateWindowExtent(extent);
         }
     );
@@ -109,13 +109,12 @@ void App::renderLoop()
 
             // fluid particle system
             fluidParticleSys.updateParticleData(frameDuration);
-            gpuResources.writeParticleBuffer();
+            particleBuffers.writeParticleBuffer();
 
             // render
             lveFrameManager.beginSwapChainRenderPass(commandBuffer);
-
-            gpuResources.renderTexture(commandBuffer);
-            gpuResources.drawDebugLines(commandBuffer);
+            particleRenderPipeline.renderTexture(commandBuffer);
+            lineRenderPipeline.drawDebugLines(commandBuffer);
 
             lveFrameManager.endSwapChainRenderPass(commandBuffer);
             lveFrameManager.endFrame();
