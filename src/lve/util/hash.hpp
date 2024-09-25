@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstddef>
+#include <vector>
+
 namespace lve
 {
 // from: https://stackoverflow.com/a/57595105
