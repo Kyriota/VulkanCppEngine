@@ -103,7 +103,7 @@ void App::renderLoop()
             lveWindow.setTitle(APP_NAME + " (FPS: " + std::to_string(frameCountInLastSecond) + ")");
         });
 
-        if (auto commandBuffer = lveFrameManager.beginFrame())
+        if (VkCommandBuffer commandBuffer = lveFrameManager.beginFrame())
         {
             handleInput();
 

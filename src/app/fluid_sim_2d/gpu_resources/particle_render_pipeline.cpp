@@ -65,8 +65,8 @@ void ParticleRenderPipeline::updateDescriptorSets(bool needMemoryAlloc)
     VkDescriptorImageInfo screenTextureDescriptorInfo = screenTextureImage.getDescriptorImageInfo(
         0, samplerManager.getSampler(lve::SamplerType::DEFAULT)
     );
-    auto particleBufferInfo = particleBuffers.getParticleBuffer().descriptorInfo();
-    auto neighborBufferInfo = particleBuffers.getNeighborBuffer().descriptorInfo();
+    VkDescriptorBufferInfo particleBufferInfo = particleBuffers.getParticleBuffer().descriptorInfo();
+    VkDescriptorBufferInfo neighborBufferInfo = particleBuffers.getNeighborBuffer().descriptorInfo();
 
     for (int i = 0; i < descriptorSets.size(); i++)
     {

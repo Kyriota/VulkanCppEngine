@@ -99,7 +99,7 @@ void Device::createInstance()
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
-    auto extensions = getRequiredExtensions();
+    std::vector<const char *> extensions = getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -335,7 +335,7 @@ void Device::hasGflwRequiredInstanceExtensions()
     }
 
     std::cout << "required extensions:" << std::endl;
-    auto requiredExtensions = getRequiredExtensions();
+    std::vector<const char *> requiredExtensions = getRequiredExtensions();
     for (const auto &required : requiredExtensions)
     {
         std::cout << "\t" << required << std::endl;

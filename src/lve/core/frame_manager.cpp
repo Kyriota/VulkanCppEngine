@@ -91,7 +91,7 @@ VkCommandBuffer FrameManager::beginFrame()
 {
     assert(!isFrameStarted && "Can't call beginFrame while already in progress");
 
-    auto result = lveSwapChain->acquireNextImage(&currentImageIndex);
+    VkResult result = lveSwapChain->acquireNextImage(&currentImageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreateSwapChain();
@@ -105,7 +105,7 @@ VkCommandBuffer FrameManager::beginFrame()
 
     isFrameStarted = true;
 
-    auto commandBuffer = getCurrentCommandBuffer();
+    VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -119,13 +119,13 @@ VkCommandBuffer FrameManager::beginFrame()
 void FrameManager::endFrame()
 {
     assert(isFrameStarted && "Can't call endFrame while frame is not in progress");
-    auto commandBuffer = getCurrentCommandBuffer();
+    VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to record command buffer!");
     }
 
-    auto result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
+    VkResult result = lveSwapChain->submitCommandBuffers(&commandBuffer, &currentImageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || // The swap chain has become incompatible with
                                               // the surface and can no longer be used for

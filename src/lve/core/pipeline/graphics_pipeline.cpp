@@ -177,8 +177,10 @@ void GraphicPipeline::createGraphicsPipeline(const GraphicPipelineConfigInfo &pi
     shaderStages[1].pNext = nullptr;
     shaderStages[1].pSpecializationInfo = nullptr;
 
-    auto bindingDescriptions = pipelineConfigInfo.vertexBindingDescriptions;
-    auto attributeDescriptions = pipelineConfigInfo.vertexAttributeDescriptions;
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions =
+        pipelineConfigInfo.vertexBindingDescriptions;
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions =
+        pipelineConfigInfo.vertexAttributeDescriptions;
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexAttributeDescriptionCount =
@@ -279,11 +281,7 @@ void renderScreenTexture(
     vkCmdDraw(cmdBuffer, 6, 1, 0, 0);
 }
 
-void renderLines(
-    VkCommandBuffer cmdBuffer,
-    GraphicPipeline *pipeline,
-    LineCollection &lineCollection
-)
+void renderLines(VkCommandBuffer cmdBuffer, GraphicPipeline *pipeline, LineCollection &lineCollection)
 {
     pipeline->bind(cmdBuffer);
     lineCollection.bind(cmdBuffer);
