@@ -9,7 +9,6 @@
 #include "lve/core/resource/descriptors.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/core/swap_chain.hpp"
-#include "particle_buffer.hpp"
 
 namespace app::fluidsim2d
 {

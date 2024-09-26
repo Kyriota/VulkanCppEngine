@@ -84,9 +84,6 @@ void App::handleInput()
     lveWindow.input.oneTimeKeyUse(GLFW_KEY_N, [this] {
         fluidParticleSys.toggleNeighborView();
     });
-    lveWindow.input.oneTimeKeyUse(GLFW_KEY_D, [this] {
-        fluidParticleSys.toggleDensityView();
-    });
 }
 
 void App::renderLoop()
@@ -104,7 +101,6 @@ void App::renderLoop()
 
             // fluid particle system
             fluidParticleSys.updateParticleData(frameDuration);
-            particleBuffers.writeParticleBuffer();
 
             // render
             lveFrameManager.beginSwapChainRenderPass(commandBuffer);

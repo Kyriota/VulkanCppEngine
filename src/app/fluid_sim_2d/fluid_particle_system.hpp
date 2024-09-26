@@ -44,11 +44,9 @@ public:
     void togglePause() { isPaused = !isPaused; }
     void toggleDebugLine() { isDebugLineVisible = !isDebugLineVisible; }
     void toggleNeighborView() { isNeighborViewActive = !isNeighborViewActive; }
-    void toggleDensityView() { isDensityViewActive = !isDensityViewActive; }
     void renderPausedNextFrame() { pausedNextFrame = true; }
     bool isDebugLineOn() const { return isDebugLineVisible; }
     bool isNeighborViewOn() const { return isNeighborViewActive; }
-    bool isDensityViewOn() const { return isDensityViewActive; }
     void setDebugLineType(DebugLineType type) { debugLineType = type; }
     const std::vector<int> &getFirstParticleNeighborIndex() const
     {
@@ -77,7 +75,6 @@ private:
     bool isDebugLineVisible = false;
     DebugLineType debugLineType = VELOCITY;
     bool isNeighborViewActive = false;
-    bool isDensityViewActive = false;
     std::vector<glm::vec2> pressureForceData;
     std::vector<glm::vec2> externalForceData;
     std::vector<glm::vec2> viscosityForceData;

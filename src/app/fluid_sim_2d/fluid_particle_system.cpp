@@ -48,7 +48,7 @@ void FluidParticleSystem::initParticleData(
     pressureForceData.resize(particleCount);
     externalForceData.resize(particleCount);
     viscosityForceData.resize(particleCount);
-    firstParticleNeighborIndex.resize(particleCount);
+    firstParticleNeighborIndex.reserve(particleCount);
     debugLines.resize(particleCount);
     for (int i = 0; i < particleCount; i++)
     {
@@ -164,7 +164,6 @@ void FluidParticleSystem::updateParticleData(float deltaTime)
         foreachNeighbor(0, [&](int neighborIndex) {
             firstParticleNeighborIndex.push_back(neighborIndex);
         });
-        firstParticleNeighborIndex.push_back(-1); // mark the end of the list
     }
 
     for (int i = 0; i < particleCount; i++) // calculate density using predicted position

@@ -2,7 +2,6 @@
 
 #include "fluid_particle_system.hpp"
 #include "gpu_resources/line_render_pipeline.hpp"
-#include "gpu_resources/particle_buffer.hpp"
 #include "gpu_resources/dot_render_pipeline.hpp"
 
 // lve
@@ -49,7 +48,6 @@ private:
 
     FluidParticleSystem fluidParticleSys{lveWindow.getExtent()};
 
-    ParticleBuffers particleBuffers = ParticleBuffers(lveFrameManager, fluidParticleSys);
     DotRenderPipeline dotRenderPipeline = DotRenderPipeline(lveFrameManager, fluidParticleSys);
     LineRenderPipeline lineRenderPipeline = LineRenderPipeline(lveFrameManager, fluidParticleSys);
 

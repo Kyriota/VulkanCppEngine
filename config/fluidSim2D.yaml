@@ -1,5 +1,5 @@
 ---
-particleCount: 200 # Change as needed
+particleCount: 300 # Change as needed
 smoothRadius: 0.35
 targetDensity: 55
 pressureMultiplier: 150

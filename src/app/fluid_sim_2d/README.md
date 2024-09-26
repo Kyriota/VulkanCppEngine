@@ -18,7 +18,6 @@ Controls:
 
 Visualizations:
 
--   `D`: Toggle density visualization
 -   `N`: Toggle neighbor visualization
 -   `V`: Toggle vector debug visualization
     -   `1`: Switch to velocity
