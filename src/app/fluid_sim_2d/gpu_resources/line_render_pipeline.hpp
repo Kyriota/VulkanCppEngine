@@ -17,7 +17,7 @@ public: // constructors
     LineRenderPipeline &operator=(const LineRenderPipeline &) = delete;
 
 public: // methods
-    void drawDebugLines(VkCommandBuffer cmdBuffer);
+    void render(VkCommandBuffer cmdBuffer);
 
 private: // variables
     lve::FrameManager &lveFrameManager;

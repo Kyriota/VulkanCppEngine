@@ -3,7 +3,7 @@
 #include "fluid_particle_system.hpp"
 #include "gpu_resources/line_render_pipeline.hpp"
 #include "gpu_resources/particle_buffer.hpp"
-#include "gpu_resources/particle_render_pipeline.hpp"
+#include "gpu_resources/dot_render_pipeline.hpp"
 
 // lve
 #include "lve/GO/geo/line.hpp"
@@ -50,8 +50,7 @@ private:
     FluidParticleSystem fluidParticleSys{lveWindow.getExtent()};
 
     ParticleBuffers particleBuffers = ParticleBuffers(lveFrameManager, fluidParticleSys);
-    ParticleRenderPipeline particleRenderPipeline =
-        ParticleRenderPipeline(lveFrameManager, particleBuffers);
+    DotRenderPipeline dotRenderPipeline = DotRenderPipeline(lveFrameManager, fluidParticleSys);
     LineRenderPipeline lineRenderPipeline = LineRenderPipeline(lveFrameManager, fluidParticleSys);
 
     // Input

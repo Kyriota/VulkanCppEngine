@@ -21,11 +21,8 @@ LineRenderPipeline::LineRenderPipeline(
         linePipelineConfigInfo);
 }
 
-void LineRenderPipeline::drawDebugLines(VkCommandBuffer cmdBuffer)
+void LineRenderPipeline::render(VkCommandBuffer cmdBuffer)
 {
-    if (!fluidParticleSys.isDebugLineOn())
-        return;
-
     lineCollection.clearLines();
     lineCollection.addLines(fluidParticleSys.getDebugLines());
     lve::renderLines(cmdBuffer, lineRenderPipeline.get(), lineCollection);

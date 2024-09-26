@@ -29,8 +29,6 @@ App::App()
     // register callback functions for window resize
     lveFrameManager.registerSwapChainResizedCallback(
         WINDOW_RESIZED_CALLBACK_NAME, [this](VkExtent2D extent) {
-            particleRenderPipeline.recreateScreenTextureImage(extent);
-            particleRenderPipeline.updateDescriptorSets();
             fluidParticleSys.updateWindowExtent(extent);
         });
 }
@@ -110,8 +108,9 @@ void App::renderLoop()
 
             // render
             lveFrameManager.beginSwapChainRenderPass(commandBuffer);
-            particleRenderPipeline.renderTexture(commandBuffer);
-            lineRenderPipeline.drawDebugLines(commandBuffer);
+            dotRenderPipeline.render(commandBuffer);
+            if (fluidParticleSys.isDebugLineOn())
+                lineRenderPipeline.render(commandBuffer);
 
             lveFrameManager.endSwapChainRenderPass(commandBuffer);
             lveFrameManager.endFrame();

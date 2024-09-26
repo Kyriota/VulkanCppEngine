@@ -102,9 +102,6 @@ void LineCollection::clearLines()
 
 void LineCollection::updateBuffer()
 {
-    if (lineCount == 0)
-        return;
-
     stagingBuffer->writeToBuffer((void *)lines.data());
     lineBuffer->copyBufferFrom(stagingBuffer->getBuffer(), sizeof(Line) * maxLineCount);
 }
