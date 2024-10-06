@@ -18,5 +18,4 @@ Platform: Windows Only (for now)
 
 -   Separate global ubo etc. from gpu resources.
 -   Separate private and public into more detailed sections.
--   Replace screen texture shader with a real frag shader.
--   Reletive include in lve.
+-   Reletive path include in lve.

@@ -13,7 +13,7 @@ function(set_phony_targets target_name)
 
     add_custom_target(setup_runtime_environment
         COMMAND ${CMAKE_COMMAND} -E echo "Running make scripts for WIN32..."
-        COMMAND ${CMAKE_SOURCE_DIR}/MakeScripts/win32/setup_runtime_environment/run.bat ${IS_DEBUG} ${RUNTIME_OUTPUT_DIRECTORY} ${CMAKE_SOURCE_DIR}/assets/shaders ${CMAKE_SOURCE_DIR}/assets ${CMAKE_SOURCE_DIR}/config ${DYNAMIC_LIB_DIR}
+        COMMAND ${CMAKE_SOURCE_DIR}/MakeScripts/win32/setup_runtime_environment/run.bat ${IS_DEBUG} ${RUNTIME_OUTPUT_DIRECTORY} ${CMAKE_SOURCE_DIR}/shaders ${CMAKE_SOURCE_DIR}/assets ${CMAKE_SOURCE_DIR}/config ${DYNAMIC_LIB_DIR}
         VERBATIM
     )
 

@@ -8,7 +8,8 @@
         "MakeScripts",
         "build",
         "vcpkg",
-        "assets"
+        "assets",
+        "shaders",
     ],
     "files.associations": {
         "*.ejs": "html",

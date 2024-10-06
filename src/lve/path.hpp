@@ -8,6 +8,6 @@ const std::string FLUID_SIM_2D = ROOT + "fluidSim2D.yaml";
 
 namespace lve::path::asset
 {
-constexpr std::string SHADER = "assets/shaders/";
+constexpr std::string SHADER = "shaders/";
 constexpr std::string MODEL = "assets/models/";
 } // namespace lve::path::asset

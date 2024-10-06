@@ -1,5 +1,5 @@
 @echo off
-set SHADER_OUTPUT_DIR=%1\assets\shaders
+set SHADER_OUTPUT_DIR=%1\shaders
 set SHADER_DIR=%2
 
 set GLSLC_PATH=%VULKAN_SDK%\Bin\glslc.exe
