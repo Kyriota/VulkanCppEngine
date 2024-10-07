@@ -1,4 +1,4 @@
-#include "app/fluid_sim_2d/fluid_particle_system.hpp"
+#include "sph.hpp"
 
 #include "lve/path.hpp"
 #include "lve/util/config.hpp"
@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <iostream>
 
-namespace app::fluidsim2d
+namespace app::fluidsim
 {
-FluidParticleSystem::FluidParticleSystem(VkExtent2D windowExtent) : windowExtent(windowExtent)
+SPH::SPH(VkExtent2D windowExtent) : windowExtent(windowExtent)
 {
     const lve::YamlConfig config = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D);
     particleCount = config.get<size_t>("particleCount");
@@ -26,13 +26,13 @@ FluidParticleSystem::FluidParticleSystem(VkExtent2D windowExtent) : windowExtent
     initParticleData(glm::vec2(startPoint[0], startPoint[1]), stride, maxWidth, randomize);
 }
 
-void FluidParticleSystem::reloadConfigParam()
+void SPH::reloadConfigParam()
 {
     lve::ConfigManager::reloadConfig(lve::path::config::FLUID_SIM_2D);
     initSimParams();
 }
 
-void FluidParticleSystem::initParticleData(
+void SPH::initParticleData(
     glm::vec2 startPoint, float stride, float maxWidth, bool randomize)
 {
     positionData.resize(particleCount);
@@ -78,7 +78,7 @@ void FluidParticleSystem::initParticleData(
     }
 }
 
-void FluidParticleSystem::initSimParams()
+void SPH::initSimParams()
 {
     lve::YamlConfig config = lve::ConfigManager::getConfig(lve::path::config::FLUID_SIM_2D);
 
@@ -105,19 +105,19 @@ void FluidParticleSystem::initSimParams()
     scalingFactorSpikyPow2_2D_atZero = kernelSpikyPow2_2D(0.f, smoothRadius);
 }
 
-glm::vec2 FluidParticleSystem::scaledPos2ScreenPos(glm::vec2 scaledPos) const
+glm::vec2 SPH::scaledPos2ScreenPos(glm::vec2 scaledPos) const
 {
     return 2.f * scaledPos / scaledWindowExtent - glm::vec2(1.f, 1.f);
 }
 
-void FluidParticleSystem::updateWindowExtent(VkExtent2D newExtent)
+void SPH::updateWindowExtent(VkExtent2D newExtent)
 {
     windowExtent = newExtent;
     scaledWindowExtent.x = static_cast<float>(windowExtent.width) * dataScale;
     scaledWindowExtent.y = static_cast<float>(windowExtent.height) * dataScale;
 }
 
-void FluidParticleSystem::updateParticleData(float deltaTime)
+void SPH::updateParticleData(float deltaTime)
 {
     if (isPaused)
     {
@@ -189,7 +189,7 @@ void FluidParticleSystem::updateParticleData(float deltaTime)
         updateDebugLines();
 }
 
-void FluidParticleSystem::updateDebugLines()
+void SPH::updateDebugLines()
 {
     auto setDebugLines = [&](std::function<glm::vec2(int)> callback) {
         for (int i = 0; i < particleCount; i++)
@@ -216,14 +216,14 @@ void FluidParticleSystem::updateDebugLines()
         });
 }
 
-void FluidParticleSystem::setRangeForcePos(bool isRepulsive, glm::vec2 mousePosition)
+void SPH::setRangeForcePos(bool isRepulsive, glm::vec2 mousePosition)
 {
     rangeForceInfo.active = true;
     rangeForceInfo.isRepulsive = isRepulsive;
     rangeForceInfo.position = mousePosition * dataScale;
 }
 
-float FluidParticleSystem::kernelPoly6_2D(float distance, float radius) const
+float SPH::kernelPoly6_2D(float distance, float radius) const
 {
     if (distance >= radius)
         return 0.f;
@@ -231,7 +231,7 @@ float FluidParticleSystem::kernelPoly6_2D(float distance, float radius) const
     return scalingFactorPoly6_2D * v * v * v;
 }
 
-float FluidParticleSystem::kernelSpikyPow3_2D(float distance, float radius) const
+float SPH::kernelSpikyPow3_2D(float distance, float radius) const
 {
     if (distance >= radius)
         return 0.f;
@@ -239,7 +239,7 @@ float FluidParticleSystem::kernelSpikyPow3_2D(float distance, float radius) cons
     return scalingFactorSpikyPow3_2D * v * v * v;
 }
 
-float FluidParticleSystem::derivativeSpikyPow3_2D(float distance, float radius) const
+float SPH::derivativeSpikyPow3_2D(float distance, float radius) const
 {
     if (distance >= radius)
         return 0.f;
@@ -247,7 +247,7 @@ float FluidParticleSystem::derivativeSpikyPow3_2D(float distance, float radius) 
     return -3.f * scalingFactorSpikyPow3_2D * v * v;
 }
 
-float FluidParticleSystem::kernelSpikyPow2_2D(float distance, float radius) const
+float SPH::kernelSpikyPow2_2D(float distance, float radius) const
 {
     if (distance >= radius)
         return 0.f;
@@ -255,7 +255,7 @@ float FluidParticleSystem::kernelSpikyPow2_2D(float distance, float radius) cons
     return scalingFactorSpikyPow2_2D * v * v;
 }
 
-float FluidParticleSystem::derivativeSpikyPow2_2D(float distance, float radius) const
+float SPH::derivativeSpikyPow2_2D(float distance, float radius) const
 {
     if (distance >= radius)
         return 0.f;
@@ -263,7 +263,7 @@ float FluidParticleSystem::derivativeSpikyPow2_2D(float distance, float radius) 
     return -2.f * scalingFactorSpikyPow2_2D * v;
 }
 
-FluidParticleSystem::Density FluidParticleSystem::calculateDensity(size_t particleIndex)
+SPH::Density SPH::calculateDensity(size_t particleIndex)
 {
     float density = massData[particleIndex] * scalingFactorSpikyPow2_2D_atZero;
     float nearDensity = massData[particleIndex] * scalingFactorSpikyPow3_2D_atZero;
@@ -278,7 +278,7 @@ FluidParticleSystem::Density FluidParticleSystem::calculateDensity(size_t partic
     return {density, nearDensity};
 }
 
-glm::vec2 FluidParticleSystem::calculatePressureForce(size_t particleIndex)
+glm::vec2 SPH::calculatePressureForce(size_t particleIndex)
 {
     glm::vec2 pressureForce = glm::vec2(0.f, 0.f);
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
@@ -309,7 +309,7 @@ glm::vec2 FluidParticleSystem::calculatePressureForce(size_t particleIndex)
     return pressureForce;
 }
 
-glm::vec2 FluidParticleSystem::calculateExternalForce(size_t particleIndex)
+glm::vec2 SPH::calculateExternalForce(size_t particleIndex)
 {
     glm::vec2 externalForce = glm::vec2(0.f, 0.f);
 
@@ -378,7 +378,7 @@ glm::vec2 FluidParticleSystem::calculateExternalForce(size_t particleIndex)
     return externalForce;
 }
 
-glm::vec2 FluidParticleSystem::calculateViscosityForce(size_t particleIndex)
+glm::vec2 SPH::calculateViscosityForce(size_t particleIndex)
 {
     glm::vec2 viscosityForce = glm::vec2(0.f, 0.f);
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
@@ -393,14 +393,14 @@ glm::vec2 FluidParticleSystem::calculateViscosityForce(size_t particleIndex)
     return viscosityForce * viscosityMultiplier;
 }
 
-glm::int2 FluidParticleSystem::pos2gridCoord(glm::vec2 position, float gridWidth) const
+glm::int2 SPH::pos2gridCoord(glm::vec2 position, float gridWidth) const
 {
     int x = static_cast<int>(position.x / gridWidth);
     int y = static_cast<int>(position.y / gridWidth);
     return {x, y};
 }
 
-int FluidParticleSystem::hashGridCoord2D(glm::int2 gridCoord) const
+int SPH::hashGridCoord2D(glm::int2 gridCoord) const
 {
     return static_cast<uint32_t>(gridCoord.x) * 15823 +
         static_cast<uint32_t>(gridCoord.y) * 9737333;
@@ -411,7 +411,7 @@ int FluidParticleSystem::hashGridCoord2D(glm::int2 gridCoord) const
  * @param particleIndex: index of the particle
  * @param callback: function to be called for each neighbor
  */
-void FluidParticleSystem::foreachNeighbor(size_t particleIndex, std::function<void(int)> callback)
+void SPH::foreachNeighbor(size_t particleIndex, std::function<void(int)> callback)
 {
     glm::vec2 particleNextPos = nextPositionData[particleIndex];
     glm::int2 gridPos = pos2gridCoord(particleNextPos, smoothRadius);
@@ -443,4 +443,4 @@ void FluidParticleSystem::foreachNeighbor(size_t particleIndex, std::function<vo
         }
     }
 }
-} // namespace app::fluidsim2d
+} // namespace app::fluidsim

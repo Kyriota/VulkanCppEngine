@@ -13,12 +13,12 @@
 #include <string>
 #include <vector>
 
-namespace app::fluidsim2d
+namespace app::fluidsim
 {
-class FluidParticleSystem
+class SPH
 {
 public:
-    FluidParticleSystem(VkExtent2D windowExtent);
+    SPH(VkExtent2D windowExtent);
 
     void reloadConfigParam();
 
@@ -156,4 +156,4 @@ private:
     };
     RangeForceInfo rangeForceInfo = {false, false, glm::vec2(0.0f, 0.0f)};
 };
-} // namespace app::fluidsim2d
+} // namespace app::fluidsim

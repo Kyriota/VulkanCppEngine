@@ -1,9 +1,9 @@
 #include "dot_render_pipeline.hpp"
 
-namespace app::fluidsim2d
+namespace app::fluidsim
 {
 DotRenderPipeline::DotRenderPipeline(
-    lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys)
+    lve::FrameManager &frameManager, SPH &fluidParticleSys)
     : lveFrameManager{frameManager}, fluidParticleSys{fluidParticleSys}
 {
     lve::GraphicPipelineConfigInfo dotPipelineConfigInfo;
@@ -132,4 +132,4 @@ void DotRenderPipeline::render(VkCommandBuffer cmdBuffer)
     quads->bind(cmdBuffer);
     quads->draw(cmdBuffer);
 }
-} // namespace app::fluidsim2d
+} // namespace app::fluidsim

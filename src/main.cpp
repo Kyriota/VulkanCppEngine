@@ -11,7 +11,7 @@ int main()
 {
     try
     {
-        app::fluidsim2d::App app{};
+        app::fluidsim::App app{};
         // app::renderer::App app{};
 
         app.run();

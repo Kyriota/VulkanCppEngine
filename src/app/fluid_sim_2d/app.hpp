@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fluid_particle_system.hpp"
+#include "sph.hpp"
 #include "gpu_resources/line_render_pipeline.hpp"
 #include "gpu_resources/dot_render_pipeline.hpp"
 
@@ -20,7 +20,7 @@
 #include <memory>
 #include <vector>
 
-namespace app::fluidsim2d
+namespace app::fluidsim
 {
 class App
 {
@@ -34,7 +34,7 @@ public:
 
     void run();
 
-private:
+protected:
 #ifdef NDEBUG
     const std::string APP_NAME = "FluidSim2D";
 #else
@@ -46,7 +46,7 @@ private:
 
     lve::FpsManager fpsManager{30, 165};
 
-    FluidParticleSystem fluidParticleSys{lveWindow.getExtent()};
+    SPH fluidParticleSys{lveWindow.getExtent()};
 
     DotRenderPipeline dotRenderPipeline = DotRenderPipeline(lveFrameManager, fluidParticleSys);
     LineRenderPipeline lineRenderPipeline = LineRenderPipeline(lveFrameManager, fluidParticleSys);
@@ -58,4 +58,4 @@ private:
     std::atomic<bool> isRunning{true};
     void renderLoop();
 };
-} // namespace app::fluidsim2d
+} // namespace app::fluidsim

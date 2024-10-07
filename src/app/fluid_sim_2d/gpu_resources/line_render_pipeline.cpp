@@ -1,9 +1,9 @@
 #include "line_render_pipeline.hpp"
 
-namespace app::fluidsim2d
+namespace app::fluidsim
 {
 LineRenderPipeline::LineRenderPipeline(
-    lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys)
+    lve::FrameManager &frameManager, SPH &fluidParticleSys)
     : lveFrameManager{frameManager}, fluidParticleSys{fluidParticleSys}
 {
     lve::GraphicPipelineConfigInfo linePipelineConfigInfo;
@@ -27,4 +27,4 @@ void LineRenderPipeline::render(VkCommandBuffer cmdBuffer)
     lineCollection.addLines(fluidParticleSys.getDebugLines());
     lve::renderLines(cmdBuffer, lineRenderPipeline.get(), lineCollection);
 }
-} // namespace app::fluidsim2d
+} // namespace app::fluidsim

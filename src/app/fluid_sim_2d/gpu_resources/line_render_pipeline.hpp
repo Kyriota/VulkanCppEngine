@@ -1,18 +1,18 @@
 #pragma once
 
-#include "../fluid_particle_system.hpp"
+#include "../sph.hpp"
 
 // lve
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/resource/descriptors.hpp"
 
-namespace app::fluidsim2d
+namespace app::fluidsim
 {
 class LineRenderPipeline
 {
 public: // constructors
-    LineRenderPipeline(lve::FrameManager &frameManager, FluidParticleSystem &fluidParticleSys);
+    LineRenderPipeline(lve::FrameManager &frameManager, SPH &fluidParticleSys);
     LineRenderPipeline(const LineRenderPipeline &) = delete;
     LineRenderPipeline &operator=(const LineRenderPipeline &) = delete;
 
@@ -21,7 +21,7 @@ public: // methods
 
 private: // variables
     lve::FrameManager &lveFrameManager;
-    FluidParticleSystem &fluidParticleSys;
+    SPH &fluidParticleSys;
 
     // resources
     lve::LineCollection lineCollection{
@@ -29,4 +29,4 @@ private: // variables
 
     std::unique_ptr<lve::GraphicPipeline> lineRenderPipeline;
 };
-} // namespace app::fluidsim2d
+} // namespace app::fluidsim
