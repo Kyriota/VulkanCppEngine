@@ -1,5 +1,6 @@
-#include "lve/core/pipeline/graphics_pipeline.hpp"
+#include "graphics_pipeline.hpp"
 
+// lve
 #include "lve/GO/geo/model.hpp"
 #include "lve/path.hpp"
 #include "lve/util/config.hpp"

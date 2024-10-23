@@ -1,11 +1,10 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "MinGW",
             "includePath": [
                 "${workspaceFolder}/src/**",
-                "${workspaceFolder}/vcpkg/installed/x64-mingw-static/include/",
-                "${workspaceFolder}/vcpkg/installed/x64-mingw-dynamic/include/",
+                "${workspaceFolder}/build/vcpkg_installed/x64-mingw-static/include/",
                 "${env:VULKAN_SDK}/Include/"
             ],
             "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
@@ -14,6 +13,21 @@
             "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "MSVC",
+            "includePath": [
+                "${workspaceFolder}/src/**",
+                "${workspaceFolder}/build/vcpkg_installed/x64-windows-static/include/",
+                "${env:VULKAN_SDK}/Include/"
+            ],
+            "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
+            "windowsSdkVersion": "10.0.22000.0",
+            "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.39.33519/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "msvc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],

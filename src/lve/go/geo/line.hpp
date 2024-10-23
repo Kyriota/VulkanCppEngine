@@ -1,5 +1,6 @@
 #pragma once
 
+// lve
 #include "lve/core/device.hpp"
 #include "lve/core/resource/buffer.hpp"
 
@@ -61,7 +62,7 @@ public:
     void addLines(const std::vector<Line> &lines);
     void clearLines();
 
-    size_t getLineCount() const { return lineCount; }
+    size_t getLineCount() const { return lines.size(); }
 
 private:
     void createLineBuffer();
@@ -72,7 +73,6 @@ private:
     std::unique_ptr<Buffer> lineBuffer;
     std::unique_ptr<Buffer> stagingBuffer;
     std::vector<Line> lines;
-    size_t lineCount{0};
     size_t maxLineCount;
 };
 } // namespace lve

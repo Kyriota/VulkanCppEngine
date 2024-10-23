@@ -1,4 +1,6 @@
-#include "lve/core/resource/sampler_manager.hpp"
+#include "sampler_manager.hpp"
+
+// lve
 #include "lve/util/math.hpp"
 
 namespace lve

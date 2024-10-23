@@ -1,4 +1,9 @@
-#include "lve/util/file_io.hpp"
+#include "file_io.hpp"
+
+// std
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 
 namespace lve::io
 {
@@ -94,7 +99,7 @@ void writeFile(const std::string &filePath, const std::string &data)
 
 void foreachFileInDirectory(
     const std::string &dir,
-    std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback)
+    std::function<void(const std::filesystem::directory_entry &)> callback)
 {
     if (!std::filesystem::is_directory(dir))
     {
@@ -105,7 +110,7 @@ void foreachFileInDirectory(
     {
         if (entry.is_regular_file())
         {
-            const std::filesystem::__cxx11::directory_entry &entryRef = entry;
+            const std::filesystem::directory_entry &entryRef = entry;
             callback(entryRef);
         }
     }

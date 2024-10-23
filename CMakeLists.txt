@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.5.0)
-project(vulkan-cpp-engine)
 include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/CommonSettings.cmake)
-include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/SetPhonyTargets.cmake)
+include(${CMAKE_SOURCE_DIR}/MakeScripts/cmake/PrePostBuildCommands.cmake)
+apply_settings_before_project()
+project(vulkan-cpp-engine)
 
 # Engine
 add_subdirectory(${CMAKE_SOURCE_DIR}/src/lve)
@@ -15,11 +16,8 @@ set(HEADER ${APP_HDR})
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCE} ${HEADER})
 
-# Set C++ standard
-set_cpp_standard(${PROJECT_NAME})
-
-# Set output deirectories
-set_output_directories(${PROJECT_NAME})
+# Apply common settings
+apply_common_settings(${PROJECT_NAME})
 
 # Add include directories
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src)
@@ -27,5 +25,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # Link Engine
 target_link_libraries(${PROJECT_NAME} Engine)
 
-# Run make scripts
-set_phony_targets(${PROJECT_NAME})
+# Post build command
+set_post_build_command(${PROJECT_NAME})

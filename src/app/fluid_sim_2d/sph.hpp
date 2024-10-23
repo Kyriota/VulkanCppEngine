@@ -1,5 +1,6 @@
 #pragma once
 
+// lve
 #include "lve/GO/geo/line.hpp"
 #include "lve/util/config.hpp"
 #include "lve/util/file_io.hpp"
@@ -90,9 +91,9 @@ private:
     float dataScale;
     float rangeForceScale;
     float rangeForceRadius;
-    float lookAheadTime = 1.0 / 120.0;
-    float maxDeltaTime = 1.0 / 120.0;
-    float boundaryMargin = 0.5;
+    float lookAheadTime = 1.0f / 120.0f;
+    float maxDeltaTime = 1.0f / 120.0f;
+    float boundaryMargin = 0.5f;
 
     // particle data
     struct Density

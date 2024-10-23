@@ -1,5 +1,6 @@
-#include "lve/GO/geo/model.hpp"
+#include "model.hpp"
 
+// lve
 #include "lve/util/hash.hpp"
 
 // libs

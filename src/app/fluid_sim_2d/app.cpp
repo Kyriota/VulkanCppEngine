@@ -1,5 +1,6 @@
 #include "app.hpp"
 
+// lve
 #include "lve/core/resource/buffer.hpp"
 #include "lve/core/resource/sampler_manager.hpp"
 #include "lve/path.hpp"
@@ -13,7 +14,6 @@
 // std
 #include <cassert>
 #include <chrono>
-#include <cmath>
 #include <iostream>
 #include <thread>
 
@@ -26,11 +26,10 @@ App::App()
                                       .get<std::vector<int>>("windowSize");
     lveWindow.resize(windowSize[0], windowSize[1]);
 
-    // register callback functions for window resize
-    lveFrameManager.registerSwapChainResizedCallback(
-        WINDOW_RESIZED_CALLBACK_NAME, [this](VkExtent2D extent) {
-            fluidParticleSys.updateWindowExtent(extent);
-        });
+    // // register callback functions for window resize
+    // lveFrameManager.registerSwapChainResizedCallback(
+    //     WINDOW_RESIZED_CALLBACK_NAME, [this](VkExtent2D extent) {
+    //     });
 }
 
 void App::run()
@@ -59,13 +58,14 @@ void App::renderLoop()
             handleInput();
 
             // fluid particle system
-            fluidParticleSys.updateParticleData(frameDuration);
+            for (int i = 0; i < 10; i++)
+                fluidParticleSys.substep(1e-4f);
 
             // render
             lveFrameManager.beginSwapChainRenderPass(commandBuffer);
             dotRenderPipeline.render(commandBuffer);
-            if (fluidParticleSys.isDebugLineOn())
-                lineRenderPipeline.render(commandBuffer);
+            // if (fluidParticleSys.isDebugLineOn())
+            //     lineRenderPipeline.render(commandBuffer);
 
             lveFrameManager.endSwapChainRenderPass(commandBuffer);
             lveFrameManager.endFrame();

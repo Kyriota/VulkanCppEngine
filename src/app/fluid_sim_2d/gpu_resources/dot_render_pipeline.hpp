@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../sph.hpp"
+#include "../mpm.hpp"
 
-#include "lve/GO/geo/model.hpp"
+// lve
+#include "lve/GO/geo/point.hpp"
 #include "lve/core/frame_manager.hpp"
 #include "lve/core/pipeline/graphics_pipeline.hpp"
 #include "lve/core/resource/buffer.hpp"
@@ -17,7 +18,7 @@ class DotRenderPipeline
 public: // constructors
     DotRenderPipeline(
         lve::FrameManager &frameManager,
-        SPH &fluidParticleSys);
+        MPM &fluidParticleSys);
     DotRenderPipeline(const DotRenderPipeline &) = delete;
     DotRenderPipeline &operator=(const DotRenderPipeline &) = delete;
 
@@ -26,10 +27,11 @@ public: // methods
 
 private: // variables
     lve::FrameManager &lveFrameManager;
-    SPH &fluidParticleSys;
+    MPM &fluidParticleSys;
 
     // resources
-    std::unique_ptr<lve::Model> quads;
+    lve::PointCollection pointCollection{
+        lveFrameManager.getDevice(), fluidParticleSys.getParticleCount()};
 
     std::unique_ptr<lve::GraphicPipeline> dotRenderPipeline;
 };

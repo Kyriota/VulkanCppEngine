@@ -1,4 +1,4 @@
-#include "lve/GO/geo/line.hpp"
+#include "line.hpp"
 
 // std
 #include <memory>
@@ -67,36 +67,33 @@ void LineCollection::bind(VkCommandBuffer commandBuffer)
 
 void LineCollection::draw(VkCommandBuffer commandBuffer)
 {
-    if (lineCount == 0)
+    if (lines.empty())
         return;
 
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(lineCount * 2), 1, 0, 0);
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(lines.size() * 2), 1, 0, 0);
 }
 
 void LineCollection::addLine(const Line &line)
 {
-    if (lineCount >= maxLineCount)
+    if (lines.size() >= maxLineCount)
         throw std::runtime_error("Cannot add more lines to LineCollection than maxLineCount");
 
     lines.push_back(line);
-    lineCount++;
     updateBuffer();
 }
 
 void LineCollection::addLines(const std::vector<Line> &lines)
 {
-    if (lineCount + lines.size() > maxLineCount)
+    if (this->lines.size() + lines.size() > maxLineCount)
         throw std::runtime_error("Cannot add more lines to LineCollection than maxLineCount");
 
     this->lines.insert(this->lines.end(), lines.begin(), lines.end());
-    lineCount += lines.size();
     updateBuffer();
 }
 
 void LineCollection::clearLines()
 {
     lines.clear();
-    lineCount = 0;
     updateBuffer();
 }
 

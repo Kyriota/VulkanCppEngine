@@ -1,6 +1,7 @@
 #pragma once
 
-#include "sph.hpp"
+// app
+#include "mpm.hpp"
 #include "gpu_resources/line_render_pipeline.hpp"
 #include "gpu_resources/dot_render_pipeline.hpp"
 
@@ -46,10 +47,10 @@ protected:
 
     lve::FpsManager fpsManager{30, 165};
 
-    SPH fluidParticleSys{lveWindow.getExtent()};
+    MPM fluidParticleSys{};
 
     DotRenderPipeline dotRenderPipeline = DotRenderPipeline(lveFrameManager, fluidParticleSys);
-    LineRenderPipeline lineRenderPipeline = LineRenderPipeline(lveFrameManager, fluidParticleSys);
+    // LineRenderPipeline lineRenderPipeline = LineRenderPipeline(lveFrameManager, fluidParticleSys);
 
     // Input
     void handleInput();

@@ -13,14 +13,14 @@ public:
 
     void renderStart() { lastFrameStartTime = std::chrono::high_resolution_clock::now(); }
     double step(std::function<void(int)> callback = [](int) {}); // returns frame duration
-    void fpsLimitBusyWait();
+    void fpsLimitBusyWait() const;
 
     double getMinFrameDuration() const { return minFrameDuration; }
     double getMaxFrameDuration() const { return maxFrameDuration; }
 
 private:
     int frameCount = 0;
-    std::chrono::_V2::system_clock::time_point countStartTime, currentFrameStartTime,
+    std::chrono::steady_clock::time_point countStartTime, currentFrameStartTime,
         lastFrameStartTime;
     double maxFrameDuration;
     double minFrameDuration;

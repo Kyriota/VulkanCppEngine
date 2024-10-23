@@ -24,7 +24,7 @@ double FpsManager::step(std::function<void(int)> callback)
     return frameDuration;
 }
 
-void FpsManager::fpsLimitBusyWait()
+void FpsManager::fpsLimitBusyWait() const
 {
     if (isFrameRateLimited)
         while (std::chrono::duration<double>(

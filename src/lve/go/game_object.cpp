@@ -1,4 +1,4 @@
-#include "lve/GO/game_object.hpp"
+#include "game_object.hpp"
 
 namespace lve
 {

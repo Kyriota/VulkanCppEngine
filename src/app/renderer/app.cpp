@@ -8,6 +8,7 @@
 #include "lve/path.hpp"
 #include "lve/util/config.hpp"
 #include "lve/util/file_io.hpp"
+#include "lve/util/math.hpp"
 
 // libs
 #include "include/glm.hpp"
@@ -15,7 +16,6 @@
 // std
 #include <cassert>
 #include <chrono>
-#include <cmath>
 #include <string>
 
 namespace app::renderer

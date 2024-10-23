@@ -1,4 +1,4 @@
-#include "lve/core/window.hpp"
+#include "window.hpp"
 
 // std
 #include <stdexcept>
@@ -74,11 +74,18 @@ Window::~Window()
 
 void Window::initWindow(int width, int height)
 {
-    glfwInit();
+    if (glfwInit() != GLFW_TRUE)
+    {
+		throw std::runtime_error("failed to initialize glfw");
+	}
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
+    if (!window)
+    {
+		throw std::runtime_error("failed to create window");
+	}
     glfwSetWindowUserPointer(window, this);
 
     // set callbacks

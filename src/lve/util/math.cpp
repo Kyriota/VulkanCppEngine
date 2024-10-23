@@ -1,4 +1,4 @@
-#include "lve/util/math.hpp"
+#include "math.hpp"
 
 namespace lve::math
 {

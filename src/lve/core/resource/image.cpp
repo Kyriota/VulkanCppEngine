@@ -1,4 +1,4 @@
-#include "lve/core/resource/image.hpp"
+#include "image.hpp"
 
 // std
 #include <stdexcept>

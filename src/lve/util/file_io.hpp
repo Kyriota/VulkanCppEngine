@@ -2,9 +2,7 @@
 
 // std
 #include <filesystem>
-#include <fstream>
 #include <functional>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -20,5 +18,5 @@ void writeFile(const std::string &filePath, const std::string &data);
 
 void foreachFileInDirectory(
     const std::string &dir,
-    std::function<void(const std::filesystem::__cxx11::directory_entry &)> callback);
+    std::function<void(const std::filesystem::directory_entry &)> callback);
 } // namespace lve::io

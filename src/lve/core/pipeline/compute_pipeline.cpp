@@ -1,5 +1,6 @@
-#include "lve/core/pipeline/compute_pipeline.hpp"
+#include "compute_pipeline.hpp"
 
+// lve
 #include "lve/GO/geo/model.hpp"
 #include "lve/path.hpp"
 #include "lve/util/config.hpp"

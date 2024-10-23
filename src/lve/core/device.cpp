@@ -1,4 +1,4 @@
-#include "lve/core/device.hpp"
+#include "device.hpp"
 
 // std
 #include <cstring>
